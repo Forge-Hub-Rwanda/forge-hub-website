@@ -81,10 +81,11 @@ src/
 ## Adding hero photography
 
 `HeroBackdrop` accepts an optional image and applies the same overlays on top,
-so a photograph slots in without changing the composition:
+so a photograph slots in without changing the composition. It is decorative and
+takes no alt text — the backdrop is `aria-hidden`:
 
 ```tsx
-<HeroBackdrop image={{ src: "/hero.jpg", alt: "" }} />
+<HeroBackdrop image={{ src: "/hero.jpg" }} />
 ```
 
 ## Notes

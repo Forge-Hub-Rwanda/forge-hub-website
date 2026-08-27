@@ -11,7 +11,12 @@
 import Image from "next/image";
 
 type HeroBackdropProps = {
-  image?: { src: string; alt: string };
+  /**
+   * Optional background photograph. Purely decorative — the whole backdrop is
+   * `aria-hidden`, so it takes no alt text: describing it would put a second
+   * copy of the hero's meaning into the accessibility tree.
+   */
+  image?: { src: string };
 };
 
 export function HeroBackdrop({ image }: HeroBackdropProps) {
