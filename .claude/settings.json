@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ ! -d node_modules ]; then npm ci --no-audit --no-fund; fi",
+            "timeout": 300
+          }
+        ]
+      }
+    ]
+  }
+}

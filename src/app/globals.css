@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   ForgeHub design tokens
+   --------------------------------------------------------------------------
+   Tokens are named by ROLE (surface, text, accent), not by colour. Components
+   never name a hue, so re-theming — including flipping light/dark — is an edit
+   to this block alone.
+   ========================================================================== */
+
+@theme {
+  /* ---- Raw palette: "Kigali Teal" -------------------------------------- */
+  --color-ink-900: #0e1110;
+  --color-ink-700: #1c2220;
+  --color-ink-400: #5c6663;
+  --color-ink-200: #b9c2bf;
+
+  --color-bone-50: #fbfaf7;
+  --color-bone-100: #f3f1ec;
+  --color-bone-200: #e4e0d8;
+
+  --color-teal-600: #0b7a72;
+  --color-teal-500: #0d9488;
+  --color-teal-100: #d7ece9;
+
+  /* ---- Semantic roles (light theme) ------------------------------------ */
+  --color-surface: var(--color-bone-50);
+  --color-surface-2: var(--color-bone-100);
+  --color-line: var(--color-bone-200);
+
+  --color-text: var(--color-ink-900);
+  --color-text-muted: var(--color-ink-400);
+  --color-text-invert: var(--color-bone-50);
+
+  --color-accent: var(--color-teal-600);
+  --color-accent-strong: var(--color-teal-500);
+  --color-accent-soft: var(--color-teal-100);
+
+  /* ---- Type ------------------------------------------------------------ */
+  /* Outfit echoes the geometric construction of the ForgeHub monogram;
+     Plus Jakarta Sans carries body copy with more humanist detail so the two
+     stay distinguishable at small sizes. */
+  --font-display: var(--font-outfit), "Segoe UI", system-ui, sans-serif;
+  --font-body: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ---- Base ------------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-text-invert);
+}
+
+/* Visible focus ring for keyboard users, suppressed for mouse clicks. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---- Utilities -------------------------------------------------------- */
+
+/* Optical correction for very large display type. */
+@utility text-display {
+  text-wrap: balance;
+  letter-spacing: -0.035em;
+  font-feature-settings: "ss01";
+}
+
+/* ---- Entrance animation ----------------------------------------------- */
+/* Elements tagged .rise fade up on load, staggered via --delay. */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise {
+  animation: rise 1s var(--ease-out-expo) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@utility marquee {
+  animation: marquee 42s linear infinite;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -2%, 0) scale(1.05);
+  }
+}
+
+@utility drift {
+  animation: drift 16s ease-in-out infinite;
+}
+
+/* Honour the OS "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
