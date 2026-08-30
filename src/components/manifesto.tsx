@@ -1,0 +1,42 @@
+import { Reveal } from "@/components/reveal";
+import { Section } from "@/components/section-heading";
+import { manifesto } from "@/lib/site";
+
+/**
+ * Full-width statement band. No cards, no images — one long sentence set large
+ * enough that it has to be read, which is the whole point of the section.
+ */
+export function Manifesto() {
+  return (
+    <Section id="about" className="border-line border-t">
+      <Reveal>
+        <p className="text-label text-text-muted flex items-center gap-4">
+          <span aria-hidden className="bg-text h-px w-8" />
+          {manifesto.eyebrow}
+        </p>
+      </Reveal>
+
+      <Reveal delay={100}>
+        <p className="font-display text-heading text-text mt-10 max-w-[24ch] text-[clamp(1.75rem,3.6vw,3.25rem)]">
+          {manifesto.statement}
+        </p>
+      </Reveal>
+
+      <div className="mt-12 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <Reveal delay={200} className="lg:max-w-[46ch]">
+          <p className="text-text-muted text-lg leading-snug">
+            {manifesto.body}
+          </p>
+        </Reveal>
+        <Reveal delay={280}>
+          <a
+            href={manifesto.cta.href}
+            className="border-text text-text hover:bg-text hover:text-text-invert inline-flex items-center justify-center border px-8 py-4 font-bold transition-colors duration-300"
+          >
+            {manifesto.cta.label}
+          </a>
+        </Reveal>
+      </div>
+    </Section>
+  );
+}

@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
+import { Figtree } from "next/font/google";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+/**
+ * One family across the whole site, mirroring the reference design, which runs
+ * a single geometric grotesque from 400 to 900 plus a heavy oblique for the
+ * display line. The italic axis is loaded because the hero needs it.
+ */
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbfaf7",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -36,11 +36,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.variable} ${jakarta.variable}`}>
+      <body className={figtree.variable}>
         {/* Keyboard users can jump straight past the nav. */}
         <a
           href="#top"
-          className="focus:bg-accent focus:text-text-invert sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:rounded-full focus:px-5 focus:py-2.5 focus:font-semibold"
+          className="focus:bg-text focus:text-text-invert sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-100 focus:px-5 focus:py-2.5 focus:font-semibold"
         >
           Skip to content
         </a>

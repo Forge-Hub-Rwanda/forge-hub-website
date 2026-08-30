@@ -3,57 +3,72 @@
 /* ==========================================================================
    ForgeHub design tokens
    --------------------------------------------------------------------------
-   Tokens are named by ROLE (surface, text, accent), not by colour. Components
-   never name a hue, so re-theming — including flipping light/dark — is an edit
-   to this block alone.
+   Calibrated against the reference design: a stark white/black page, one
+   typeface across every weight, square corners throughout, and colour carried
+   almost entirely by the gradient blobs rather than by surfaces or text.
+
+   Tokens are named by ROLE (surface, text, accent), never by hue, so a
+   re-theme is an edit to this block alone.
    ========================================================================== */
 
 @theme {
-  /* ---- Raw palette: "Kigali Teal" -------------------------------------- */
-  --color-ink-900: #0e1110;
-  --color-ink-700: #1c2220;
-  --color-ink-400: #5c6663;
-  --color-ink-200: #b9c2bf;
+  /* ---- Raw palette ------------------------------------------------------ */
+  /* Near-black rather than #000: pure black on pure white vibrates at the
+     very large display sizes this page uses. */
+  --color-ink-900: #0a0a0a;
+  --color-ink-600: #4a4a4a;
+  --color-ink-300: #b4b4b4;
+  --color-ink-100: #e6e6e6;
 
-  --color-bone-50: #fbfaf7;
-  --color-bone-100: #f3f1ec;
-  --color-bone-200: #e4e0d8;
+  --color-paper: #ffffff;
+  --color-paper-alt: #f4f2ef;
 
-  --color-teal-600: #0b7a72;
-  --color-teal-500: #0d9488;
-  --color-teal-100: #d7ece9;
+  /* Brand oxblood — the logo tile and hover states. */
+  --color-brand-700: #6d2621;
+  --color-brand-500: #8f342c;
 
-  /* ---- Semantic roles (light theme) ------------------------------------ */
-  --color-surface: var(--color-bone-50);
-  --color-surface-2: var(--color-bone-100);
-  --color-line: var(--color-bone-200);
+  /* Blob gradient stops. These are the only saturated colour on the page. */
+  --color-blob-amber: #f0a45c;
+  --color-blob-coral: #f4574b;
+  --color-blob-lime: #a9c957;
+  --color-blob-sky: #7fb3d5;
+
+  /* ---- Semantic roles --------------------------------------------------- */
+  --color-surface: var(--color-paper);
+  --color-surface-2: var(--color-paper-alt);
+  --color-surface-invert: var(--color-ink-900);
+  --color-line: var(--color-ink-100);
+  --color-line-strong: var(--color-ink-900);
 
   --color-text: var(--color-ink-900);
-  --color-text-muted: var(--color-ink-400);
-  --color-text-invert: var(--color-bone-50);
+  --color-text-muted: var(--color-ink-600);
+  --color-text-invert: var(--color-paper);
 
-  --color-accent: var(--color-teal-600);
-  --color-accent-strong: var(--color-teal-500);
-  --color-accent-soft: var(--color-teal-100);
+  --color-accent: var(--color-brand-700);
+  --color-accent-strong: var(--color-brand-500);
 
-  /* ---- Type ------------------------------------------------------------ */
-  /* Outfit echoes the geometric construction of the ForgeHub monogram;
-     Plus Jakarta Sans carries body copy with more humanist detail so the two
-     stay distinguishable at small sizes. */
-  --font-display: var(--font-outfit), "Segoe UI", system-ui, sans-serif;
-  --font-body: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+  /* ---- Type ------------------------------------------------------------- */
+  /* One family, many weights — matching the reference, which uses a single
+     geometric grotesque from 400 through 900 plus a heavy oblique for the
+     display line. Figtree is the closest widely-available match. */
+  --font-display: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
+  --font-body: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
 
-  /* ---- Motion ---------------------------------------------------------- */
+  /* ---- Motion ----------------------------------------------------------- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ---- Base ------------------------------------------------------------- */
+/* ---- Base --------------------------------------------------------------- */
 
 html {
   scroll-behavior: smooth;
 }
 
 body {
+  /* `clip` rather than `hidden`: it contains the hero blob's horizontal bleed
+     without turning the body into a scroll container, which would break the
+     scroll-driven behaviour further down the page. */
+  overflow-x: clip;
   background-color: var(--color-surface);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -62,33 +77,52 @@ body {
 }
 
 ::selection {
-  background-color: var(--color-accent);
+  background-color: var(--color-text);
   color: var(--color-text-invert);
 }
 
-/* Visible focus ring for keyboard users, suppressed for mouse clicks. */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-text);
   outline-offset: 3px;
-  border-radius: 2px;
 }
 
-/* ---- Utilities -------------------------------------------------------- */
+/* ---- Utilities ---------------------------------------------------------- */
 
-/* Optical correction for very large display type. */
-@utility text-display {
-  text-wrap: balance;
+/* The oversized oblique display line. Tight tracking and a manual skew:
+   Figtree's true italic is too gentle at this size to read as the reference's
+   hard oblique, so the skew is applied on top of the italic face. */
+@utility text-oblique {
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.86;
+  transform: skewX(-4deg);
+  text-wrap: nowrap;
+}
+
+/* Large upright headings — the sub-headline and every section title. */
+@utility text-heading {
+  font-weight: 800;
   letter-spacing: -0.035em;
-  font-feature-settings: "ss01";
+  line-height: 1.02;
+  text-wrap: balance;
 }
 
-/* ---- Entrance animation ----------------------------------------------- */
-/* Elements tagged .rise fade up on load, staggered via --delay. */
+/* Small uppercase label used for eyebrows and meta rows. */
+@utility text-label {
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ---- Entrance animation ------------------------------------------------- */
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translate3d(0, 1.75rem, 0);
+    transform: translate3d(0, 1.5rem, 0);
   }
   to {
     opacity: 1;
@@ -97,9 +131,27 @@ body {
 }
 
 @utility rise {
-  animation: rise 1s var(--ease-out-expo) both;
+  animation: rise 0.9s var(--ease-out-expo) both;
   animation-delay: var(--delay, 0ms);
 }
+
+/* Scroll-triggered reveal. `.reveal` starts hidden; the Reveal component adds
+   `data-shown` when the element enters the viewport. */
+@utility reveal {
+  opacity: 0;
+  transform: translate3d(0, 2rem, 0);
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+  transition-delay: var(--delay, 0ms);
+
+  &[data-shown="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---- Marquee ------------------------------------------------------------ */
 
 @keyframes marquee {
   from {
@@ -114,21 +166,71 @@ body {
   animation: marquee 42s linear infinite;
 }
 
-@keyframes drift {
+/* ---- Blob --------------------------------------------------------------- */
+/* The organic shape behind the hero. The silhouette itself is an SVG path
+   (see blob.tsx) because an animated border-radius can only ever describe a
+   rounded rectangle tending toward an ellipse — it cannot produce the
+   asymmetric teardrop this design needs.
+
+   Motion is split across two independently-timed animations so the shape and
+   the colour never visibly change in step: `blob-float` drifts and rotates the
+   whole path, while the two `blob-stop-*` animations walk the gradient through
+   the palette. Both are plain CSS, so the reduced-motion block below disables
+   them along with everything else. */
+
+@keyframes blob-float {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: rotate(-6deg) scale(1);
   }
-  50% {
-    transform: translate3d(0, -2%, 0) scale(1.05);
+  33% {
+    transform: rotate(5deg) scale(1.05);
+  }
+  66% {
+    transform: rotate(-2deg) scale(0.97);
   }
 }
 
-@utility drift {
-  animation: drift 16s ease-in-out infinite;
+@keyframes blob-stop-a {
+  0%,
+  100% {
+    stop-color: var(--color-blob-amber);
+  }
+  33% {
+    stop-color: var(--color-blob-amber);
+  }
+  66% {
+    stop-color: var(--color-blob-coral);
+  }
 }
 
-/* Honour the OS "reduce motion" setting. */
+@keyframes blob-stop-b {
+  0%,
+  100% {
+    stop-color: var(--color-blob-coral);
+  }
+  33% {
+    stop-color: var(--color-blob-lime);
+  }
+  66% {
+    stop-color: var(--color-blob-sky);
+  }
+}
+
+@utility blob {
+  animation: blob-float 19s ease-in-out infinite;
+}
+
+@utility blob-stop-a {
+  animation: blob-stop-a 23s ease-in-out infinite;
+}
+
+@utility blob-stop-b {
+  animation: blob-stop-b 23s ease-in-out infinite;
+}
+
+/* ---- Reduced motion ----------------------------------------------------- */
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -139,5 +241,10 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  /* Without the transition the reveal would never paint, so show it outright. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
