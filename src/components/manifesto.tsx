@@ -1,3 +1,4 @@
+import { ImigongoRule, ImigongoWatermark } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { manifesto } from "@/lib/site";
@@ -8,10 +9,16 @@ import { manifesto } from "@/lib/site";
  */
 export function Manifesto() {
   return (
-    <Section id="about" className="border-line border-t">
+    <Section
+      id="about"
+      className="border-line border-t"
+      watermark={
+        <ImigongoWatermark id="imigongo-manifesto" motif="spiral" scale={1.4} />
+      }
+    >
       <Reveal>
         <p className="text-label text-text-muted flex items-center gap-4">
-          <span aria-hidden className="bg-text h-px w-8" />
+          <ImigongoRule />
           {manifesto.eyebrow}
         </p>
       </Reveal>
@@ -31,7 +38,7 @@ export function Manifesto() {
         <Reveal delay={280}>
           <a
             href={manifesto.cta.href}
-            className="border-text text-text hover:bg-text hover:text-text-invert inline-flex items-center justify-center border px-8 py-4 font-bold transition-colors duration-300"
+            className="btn"
           >
             {manifesto.cta.label}
           </a>

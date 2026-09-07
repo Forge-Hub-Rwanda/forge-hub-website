@@ -1,3 +1,4 @@
+import { HERO_RELEASE_ID } from "@/lib/motion";
 import { hero } from "@/lib/site";
 
 /**
@@ -8,8 +9,17 @@ import { hero } from "@/lib/site";
  */
 export function HeroIntro() {
   return (
-    <div className="relative z-20 px-6 pt-14 pb-24 lg:px-[3.6vw] lg:pt-28 lg:pb-32">
+    // tabIndex -1 so the skip link moves focus here, not just the scroll
+    // position; without it a keyboard user lands visually but tabs on from the
+    // header they were trying to skip.
+    <div
+      id="hero-intro"
+      tabIndex={-1}
+      className="relative z-20 px-6 pt-10 pb-20 lg:px-[3.6vw] lg:pt-20 lg:pb-28"
+    >
+      {/* The sticky display line above releases as this headline reaches it. */}
       <h2
+        id={HERO_RELEASE_ID}
         className="rise font-display text-heading text-text max-w-[19ch] text-[clamp(2.25rem,5.4vw,4.75rem)]"
         style={{ "--delay": "140ms" } as React.CSSProperties}
       >
@@ -17,13 +27,13 @@ export function HeroIntro() {
       </h2>
 
       <div
-        className="rise mt-14 max-w-[68ch] space-y-5 lg:mt-24"
+        className="rise mt-10 space-y-5 lg:mt-16"
         style={{ "--delay": "280ms" } as React.CSSProperties}
       >
         {hero.body.map((paragraph) => (
           <p
             key={paragraph.text}
-            className="text-text text-lg leading-snug sm:text-xl lg:text-[1.4rem]"
+            className="text-text max-w-[90ch] text-lg leading-snug sm:text-xl lg:text-[1.4rem]"
           >
             {paragraph.text}
             {"strong" in paragraph && paragraph.strong ? (
@@ -35,12 +45,12 @@ export function HeroIntro() {
       </div>
 
       <div
-        className="rise mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
+        className="rise mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 lg:justify-end"
         style={{ "--delay": "400ms" } as React.CSSProperties}
       >
         <a
           href={hero.primaryCta.href}
-          className="group bg-text text-text-invert hover:bg-accent inline-flex items-center justify-center gap-3 px-8 py-4 font-bold transition-colors duration-300"
+          className="group btn gap-3"
         >
           {hero.primaryCta.label}
           <svg
@@ -60,7 +70,7 @@ export function HeroIntro() {
         </a>
         <a
           href={hero.secondaryCta.href}
-          className="border-text text-text hover:bg-text hover:text-text-invert inline-flex items-center justify-center border px-8 py-4 font-bold transition-colors duration-300"
+          className="btn"
         >
           {hero.secondaryCta.label}
         </a>

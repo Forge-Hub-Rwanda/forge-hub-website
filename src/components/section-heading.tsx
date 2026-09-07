@@ -1,3 +1,4 @@
+import { ImigongoRule } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 
 /**
@@ -22,7 +23,7 @@ export function SectionHeading({
     <div className="mb-14 lg:mb-20">
       <Reveal>
         <p className="text-label text-text-muted flex items-center gap-4">
-          <span aria-hidden className="bg-text h-px w-8" />
+          <ImigongoRule />
           {eyebrow}
         </p>
       </Reveal>
@@ -51,7 +52,7 @@ export function SectionHeading({
             className="group text-text mt-8 inline-flex items-center gap-3 font-bold"
           >
             {action.label}
-            <span className="bg-text text-text-invert flex h-8 w-8 items-center justify-center transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1">
+            <span className="bg-text text-text-invert flex h-8 w-8 items-center justify-center rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1">
               <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
                 <path
                   d="M4 12h15m0 0-6-6m6 6-6 6"
@@ -75,17 +76,24 @@ export function Section({
   id,
   children,
   className,
+  watermark,
 }: {
   id?: string;
   children: React.ReactNode;
   className?: string;
+  /** Decorative full-bleed layer painted behind the content. */
+  watermark?: React.ReactNode;
 }) {
   return (
+    // `relative` so a watermark can fill the band edge to edge, and the content
+    // wrapper is positioned too: both are then in the same stacking context and
+    // document order alone decides that the content paints on top.
     <section
       id={id}
-      className={`px-6 py-24 lg:px-[3.6vw] lg:py-36 ${className ?? ""}`}
+      className={`relative px-6 py-24 lg:px-[3.6vw] lg:py-36 ${className ?? ""}`}
     >
-      <div className="mx-auto max-w-[110rem]">{children}</div>
+      {watermark}
+      <div className="relative mx-auto max-w-[110rem]">{children}</div>
     </section>
   );
 }

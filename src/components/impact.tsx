@@ -1,3 +1,4 @@
+import { ImigongoRule, ImigongoWatermark } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { impact, impactSection } from "@/lib/site";
@@ -10,12 +11,22 @@ import { impact, impactSection } from "@/lib/site";
  */
 export function Impact() {
   return (
-    <Section className="bg-surface-2">
+    <Section
+      className="bg-surface-2"
+      watermark={
+        <ImigongoWatermark
+          id="imigongo-impact"
+          motif="lozenge"
+          angle={12}
+          opacity={0.05}
+        />
+      }
+    >
       <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
         <div>
           <Reveal>
             <p className="text-label text-text-muted flex items-center gap-4">
-              <span aria-hidden className="bg-text h-px w-8" />
+              <ImigongoRule />
               {impactSection.eyebrow}
             </p>
           </Reveal>
@@ -42,7 +53,7 @@ export function Impact() {
           <Reveal delay={240}>
             <a
               href={impactSection.cta.href}
-              className="bg-text text-text-invert hover:bg-accent mt-10 inline-flex items-center justify-center px-8 py-4 font-bold transition-colors duration-300"
+              className="btn mt-10"
             >
               {impactSection.cta.label}
             </a>

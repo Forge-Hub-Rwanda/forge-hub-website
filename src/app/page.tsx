@@ -1,4 +1,5 @@
 import { Blob } from "@/components/blob";
+import { ImigongoCorner } from "@/components/imigongo";
 import { ClosingCta } from "@/components/closing-cta";
 import { Community } from "@/components/community";
 import { Events } from "@/components/events";
@@ -10,7 +11,7 @@ import { Membership } from "@/components/membership";
 import { PartnerMarquee } from "@/components/partner-marquee";
 import { Programs } from "@/components/programs";
 import { SiteFooter } from "@/components/site-footer";
-import { NAV_PIN_SENTINEL_ID, SiteHeader } from "@/components/site-header";
+import { SiteHeader } from "@/components/site-header";
 import { Spaces } from "@/components/spaces";
 
 export default function Home() {
@@ -24,8 +25,16 @@ export default function Home() {
         <HeroDisplay />
         <SiteHeader />
         <HeroIntro />
-        {/* Crossing the top of the viewport is what pins the nav. */}
-        <div id={NAV_PIN_SENTINEL_ID} aria-hidden className="h-0" />
+
+        {/* Anchored in the hero's bottom-right corner and dissolving away from
+            it. Sits at z-0, below the display line and the intro copy, both of
+            which are z-20. */}
+        <ImigongoCorner
+          id="imigongo-hero-corner"
+          motif="lozenge"
+          opacity={0.13}
+          className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+        />
       </div>
 
       <main>

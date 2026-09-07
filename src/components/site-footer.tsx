@@ -1,3 +1,4 @@
+import { ImigongoBand } from "@/components/imigongo";
 import { Logo } from "@/components/logo";
 import { contact, footerColumns, site, socials } from "@/lib/site";
 
@@ -14,13 +15,22 @@ export function SiteFooter() {
   return (
     <footer
       id="contact"
-      className="bg-text text-text-invert px-6 pt-24 pb-10 lg:px-[3.6vw] lg:pt-32"
+      className="bg-text text-text-invert relative px-6 pt-24 pb-10 lg:px-[3.6vw] lg:pt-32"
     >
+      {/* Edge banding along the top, the way a real panel is framed. Light on
+          the dark ground rather than oxblood, which would disappear here. */}
+      <ImigongoBand
+        id="imigongo-footer"
+        flip
+        opacity={0.18}
+        className="absolute inset-x-0 top-0"
+      />
+
       <div className="mx-auto max-w-[110rem]">
         <div className="grid gap-16 lg:grid-cols-12 lg:gap-10">
           {/* Contact block */}
           <div className="lg:col-span-4">
-            <Logo className="w-16 text-[1.35rem]" />
+            <Logo variant="lockup" className="w-56" />
 
             <address className="mt-8 space-y-6 not-italic">
               <div>
@@ -92,12 +102,15 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* Legal rail */}
-        <div className="border-text-invert/20 mt-20 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-text-invert/50 text-sm">
-            © {year} {site.name} {site.region}. {site.tagline.join(" · ")}.
+        {/* Legal rail: credits, centred tagline, socials */}
+        <div className="border-text-invert/20 mt-20 flex flex-col items-center gap-6 border-t pt-8 sm:grid sm:grid-cols-3 sm:items-center">
+          <p className="text-text-invert/50 order-3 text-sm sm:order-none sm:justify-self-start">
+            © {year} {site.name} {site.region}.
           </p>
-          <ul className="flex flex-wrap gap-6">
+          <p className="text-label text-text-invert/70 order-1 text-center sm:order-none sm:justify-self-center">
+            {site.tagline.join(" · ")}
+          </p>
+          <ul className="order-2 flex flex-wrap justify-center gap-6 sm:order-none sm:justify-self-end">
             {socials.map((social) => (
               <li key={social.label}>
                 <a

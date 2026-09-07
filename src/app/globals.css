@@ -4,8 +4,10 @@
    ForgeHub design tokens
    --------------------------------------------------------------------------
    Calibrated against the reference design: a stark white/black page, one
-   typeface across every weight, square corners throughout, and colour carried
-   almost entirely by the gradient blobs rather than by surfaces or text.
+   typeface across every weight, and colour carried almost entirely by the
+   gradient blobs rather than by surfaces or text. Surfaces and cards keep
+   square corners; every call to action is a full pill, which is the one
+   deliberate exception.
 
    Tokens are named by ROLE (surface, text, accent), never by hue, so a
    re-theme is an edit to this block alone.
@@ -32,6 +34,7 @@
   --color-blob-coral: #f4574b;
   --color-blob-lime: #a9c957;
   --color-blob-sky: #7fb3d5;
+  --color-blob-teal: #59b3a3;
 
   /* ---- Semantic roles --------------------------------------------------- */
   --color-surface: var(--color-paper);
@@ -49,10 +52,12 @@
 
   /* ---- Type ------------------------------------------------------------- */
   /* One family, many weights — matching the reference, which uses a single
-     geometric grotesque from 400 through 900 plus a heavy oblique for the
-     display line. Figtree is the closest widely-available match. */
-  --font-display: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
-  --font-body: var(--font-figtree), "Helvetica Neue", Arial, sans-serif;
+     grotesque from 400 through 900 plus a heavy oblique for the display line.
+     Chivo is the match: a grotesque with flat terminals and genuine weight at
+     900, so the oversized oblique reads as a poster line, and straight-sided
+     forms that sit well beside the imigongo geometry. */
+  --font-display: var(--font-chivo), "Helvetica Neue", Arial, sans-serif;
+  --font-body: var(--font-chivo), "Helvetica Neue", Arial, sans-serif;
 
   /* ---- Motion ----------------------------------------------------------- */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -88,17 +93,16 @@ body {
 
 /* ---- Utilities ---------------------------------------------------------- */
 
-/* The oversized oblique display line. Tight tracking and a manual skew:
-   Figtree's true italic is too gentle at this size to read as the reference's
-   hard oblique, so the skew is applied on top of the italic face. */
+/* The oversized oblique display line. Tight tracking plus a small manual skew:
+   Chivo's true italic already leans close to the reference's hard oblique, so
+   the extra skew is only a nudge — much less than a geometric face would need. */
 @utility text-oblique {
   font-weight: 900;
   font-style: italic;
   text-transform: uppercase;
   letter-spacing: -0.03em;
   line-height: 0.86;
-  transform: skewX(-4deg);
-  text-wrap: nowrap;
+  transform: skewX(-2deg);
 }
 
 /* Large upright headings — the sub-headline and every section title. */
@@ -115,6 +119,82 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+/* ---- Call to action ------------------------------------------------------ */
+/* Every pill CTA on the page shares this one definition, so a restyle is an
+   edit here rather than a sweep through eight components.
+
+   The outline fills with ink on hover AND on keyboard focus: the focus ring
+   alone told keyboard users far less than the fill tells pointer users.
+   `--btn-border-width` is read with a fallback rather than set, so `btn-strong`
+   can thicken the rule without depending on which utility the cascade emits
+   last. */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(infinity * 1px);
+  border-style: solid;
+  border-width: var(--btn-border-width, 1px);
+  border-color: var(--color-text);
+  padding-inline: 1.25rem;
+  padding-block: 0.625rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text);
+  transition:
+    background-color 0.3s,
+    border-color 0.3s,
+    color 0.3s;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--color-text);
+    color: var(--color-text-invert);
+  }
+
+  @variant lg {
+    font-size: 1.1875rem;
+  }
+}
+
+/* Mirrored for dark surfaces — the featured membership card. Deliberately a
+   standalone definition rather than a modifier on `btn`: an ink fill on an ink
+   card would leave the button invisible, so this swaps both ends of the pair
+   instead of overriding one half of it. */
+@utility btn-invert {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(infinity * 1px);
+  border-style: solid;
+  border-width: var(--btn-border-width, 1px);
+  border-color: var(--color-text-invert);
+  padding-inline: 1.25rem;
+  padding-block: 0.625rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-text-invert);
+  transition:
+    background-color 0.3s,
+    border-color 0.3s,
+    color 0.3s;
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--color-text-invert);
+    color: var(--color-text);
+  }
+
+  @variant lg {
+    font-size: 1.1875rem;
+  }
+}
+
+/* The heavier rule the menu overlay's CTAs carry. */
+@utility btn-strong {
+  --btn-border-width: 2px;
 }
 
 /* ---- Entrance animation ------------------------------------------------- */
@@ -170,24 +250,80 @@ body {
 /* The organic shape behind the hero. The silhouette itself is an SVG path
    (see blob.tsx) because an animated border-radius can only ever describe a
    rounded rectangle tending toward an ellipse — it cannot produce the
-   asymmetric teardrop this design needs.
+   multi-lobed outline this design needs, where some edges bulge out while
+   others pull inward into a notch.
 
-   Motion is split across two independently-timed animations so the shape and
-   the colour never visibly change in step: `blob-float` drifts and rotates the
-   whole path, while the two `blob-stop-*` animations walk the gradient through
-   the palette. Both are plain CSS, so the reduced-motion block below disables
-   them along with everything else. */
+   Motion is split across three independently-timed animations so the position,
+   the shape and the colour never visibly change in step: `blob-drift` glides
+   and rotates the whole svg, `blob-morph` reshapes the path itself, and the two
+   `blob-stop-*` animations walk the gradient through the palette. The three
+   durations are mutually prime (71s / 29s / 23s), so the combination takes
+   hours to repeat exactly — the wander reads as irregular rather than looped.
 
-@keyframes blob-float {
+   All of it is plain CSS, so the reduced-motion block below disables it along
+   with everything else. Because every animation's 100% keyframe equals its
+   starting state, a reduced-motion visitor lands on the original static blob. */
+
+/* Position. Stops are deliberately unevenly spaced so the travel never settles
+   into an obvious rhythm, and the vw/vh units let it bleed past the viewport
+   edge — `overflow-x: clip` on the body stops that becoming a scrollbar. */
+@keyframes blob-drift {
   0%,
   100% {
-    transform: rotate(-6deg) scale(1);
+    transform: translate3d(0, 0, 0) rotate(-6deg) scale(1);
+  }
+  17% {
+    transform: translate3d(6vw, 3vh, 0) rotate(4deg) scale(1.06);
   }
   33% {
-    transform: rotate(5deg) scale(1.05);
+    transform: translate3d(11vw, -2vh, 0) rotate(9deg) scale(0.98);
   }
-  66% {
-    transform: rotate(-2deg) scale(0.97);
+  52% {
+    transform: translate3d(4vw, -6vh, 0) rotate(-3deg) scale(1.08);
+  }
+  68% {
+    transform: translate3d(-5vw, -3vh, 0) rotate(-11deg) scale(1.02);
+  }
+  84% {
+    transform: translate3d(-8vw, 4vh, 0) rotate(-2deg) scale(0.96);
+  }
+}
+
+/* Silhouette. Interpolating `d` requires every keyframe to use the identical
+   command sequence, so all four variants are written as M + eight absolute
+   cubics + Z, and only the anchor positions differ.
+
+   The variants are not drawn by hand: each is eight anchors placed at fixed but
+   irregularly-spaced angles around the centre, at radii between 0.58 and 1.18
+   of the base, joined through a Catmull-Rom conversion. That keeps every join
+   C1-continuous, so the lobes stay soft however deep the notches get, while the
+   radii do the shaping. Between variants the deep and shallow radii sit at
+   different angles, so bulges and notches trade places as it morphs rather than
+   the whole shape simply breathing.
+
+   Where the CSS `d` property is unsupported the path attribute stands and the
+   blob simply keeps its base silhouette while still drifting and cycling. */
+@keyframes blob-morph {
+  0%,
+  100% {
+    d: path(
+      "M116.4 7.3C130.8 7.6 155.9 49.6 161 70.1C166.2 90.6 149.5 106.4 147.3 130.1C145 153.8 157.4 203.1 147.5 212.1C137.6 221.2 109.1 190.2 87.8 184.3C66.5 178.3 28.2 190 19.6 176.3C11 162.6 26.9 120.1 36.1 102.1C45.2 84.1 61.1 84.3 74.5 68.4C87.8 52.6 102 7 116.4 7.3Z"
+    );
+  }
+  27% {
+    d: path(
+      "M108.9 58.9C127.7 61 165.5 45.5 175.6 58.2C185.7 70.8 177.8 116.6 169.3 134.8C160.8 153.1 139.6 151.9 124.6 167.7C109.6 183.5 91.8 231.6 79.1 229.6C66.5 227.7 59.5 178.2 48.7 155.9C37.9 133.6 11.9 114.5 14.3 96C16.6 77.5 47.1 51.4 62.9 45.2C78.7 39 90.1 56.7 108.9 58.9Z"
+    );
+  }
+  51% {
+    d: path(
+      "M115.3 14.9C130 25.1 128.2 65.5 141.1 86.4C154.1 107.2 193.9 122.8 193 139.9C192 157 152.9 183 135.6 189.1C118.3 195.2 107.1 179.8 89.2 176.7C71.3 173.6 35.5 182.5 27.9 170.4C20.4 158.4 39.7 128.5 43.9 104.3C48.1 80.1 41.1 40.1 53 25.2C64.9 10.3 100.6 4.7 115.3 14.9Z"
+    );
+  }
+  76% {
+    d: path(
+      "M111.7 39.8C130.1 39.9 171.5 40.8 178.3 56C185 71.2 157.6 105.9 152 131.1C146.4 156.3 156.4 194.2 144.9 207.2C133.5 220.2 97.3 218.7 83.1 208.8C68.9 199 72.1 167.2 59.8 148.1C47.6 129.1 8.2 110.2 9.6 94.7C10.9 79.2 50.8 64.3 67.9 55.1C84.9 46 93.3 39.6 111.7 39.8Z"
+    );
   }
 }
 
@@ -196,11 +332,14 @@ body {
   100% {
     stop-color: var(--color-blob-amber);
   }
-  33% {
-    stop-color: var(--color-blob-amber);
-  }
-  66% {
+  25% {
     stop-color: var(--color-blob-coral);
+  }
+  50% {
+    stop-color: var(--color-blob-coral);
+  }
+  75% {
+    stop-color: var(--color-blob-amber);
   }
 }
 
@@ -209,16 +348,35 @@ body {
   100% {
     stop-color: var(--color-blob-coral);
   }
-  33% {
+  13% {
+    stop-color: var(--color-blob-amber);
+  }
+  25% {
     stop-color: var(--color-blob-lime);
   }
-  66% {
+  38% {
+    stop-color: var(--color-blob-teal);
+  }
+  50% {
     stop-color: var(--color-blob-sky);
+  }
+  63% {
+    stop-color: var(--color-blob-teal);
+  }
+  75% {
+    stop-color: var(--color-blob-lime);
+  }
+  88% {
+    stop-color: var(--color-blob-amber);
   }
 }
 
 @utility blob {
-  animation: blob-float 19s ease-in-out infinite;
+  animation: blob-drift 71s ease-in-out infinite;
+}
+
+@utility blob-shape {
+  animation: blob-morph 29s ease-in-out infinite;
 }
 
 @utility blob-stop-a {
@@ -227,6 +385,18 @@ body {
 
 @utility blob-stop-b {
   animation: blob-stop-b 23s ease-in-out infinite;
+}
+
+/* Off-screen blobs stop animating. `data-animate` is set by the component's
+   IntersectionObserver, which only ever turns the animation off — a blob with
+   no observer, or one not yet reported on, keeps running. One rule catches all
+   four animations, since the path and the gradient stops are both descendants
+   of the svg that carries the attribute. */
+.blob[data-animate="false"],
+.blob[data-animate="false"] .blob-shape,
+.blob[data-animate="false"] .blob-stop-a,
+.blob[data-animate="false"] .blob-stop-b {
+  animation-play-state: paused;
 }
 
 /* ---- Reduced motion ----------------------------------------------------- */
