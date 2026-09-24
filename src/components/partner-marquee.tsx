@@ -7,7 +7,9 @@ import { partners } from "@/lib/site";
  * track by -50% lands the second copy exactly where the first began, so the
  * loop is seamless without measuring anything at runtime.
  *
- * ⚠️  The names in `partners` are illustrative, not confirmed supporters.
+ * `partners` is currently an empty array and this component is not rendered on
+ * any page — see the note beside the export in `site.ts`. Add a name here only
+ * once that partnership is agreed, then re-add the component to the homepage.
  */
 export function PartnerMarquee() {
   return (

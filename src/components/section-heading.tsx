@@ -77,12 +77,21 @@ export function Section({
   children,
   className,
   watermark,
+  tone,
 }: {
   id?: string;
   children: React.ReactNode;
   className?: string;
   /** Decorative full-bleed layer painted behind the content. */
   watermark?: React.ReactNode;
+  /**
+   * Paints the band in a colour instead of on the page surface. The attribute
+   * is all that is needed: `globals.css` redefines the semantic colour roles
+   * under it, so every component inside re-colours itself without being told.
+   * It is also what `SiteHeader` measures to decide whether the fixed chrome
+   * above it needs to switch to white.
+   */
+  tone?: "oxblood";
 }) {
   return (
     // `relative` so a watermark can fill the band edge to edge, and the content
@@ -90,6 +99,7 @@ export function Section({
     // document order alone decides that the content paints on top.
     <section
       id={id}
+      data-tone={tone}
       className={`relative px-6 py-24 lg:px-[3.6vw] lg:py-36 ${className ?? ""}`}
     >
       {watermark}

@@ -1,3 +1,4 @@
+import { ImigongoWatermark } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
 import { programs, programsSection } from "@/lib/site";
@@ -6,10 +7,49 @@ import { programs, programsSection } from "@/lib/site";
  * Programs as full-width rows rather than cards: each one has a status and two
  * spec fields, which read better on a line than stacked in a tile. The whole
  * row inverts on hover, so the hit target is the row itself.
+ *
+ * `tone="band"` paints the section in oxblood edge to edge. It is opt-in per
+ * placement rather than baked in because this component appears twice — on the
+ * homepage, where it is the page's one raised voice, and again on /services,
+ * where it follows the services list and a second full-bleed colour would be
+ * one statement too many on a page that is already dense.
+ *
+ * Nothing below reads `tone` beyond passing it on. The band's colours come
+ * from the semantic roles redefined under `[data-tone="oxblood"]` in
+ * `globals.css`, so the markup is identical either way: `text-text` is white
+ * on the band and near-black off it, and the row's hover fill — `bg-text` with
+ * `text-text-invert` — comes out white-on-oxblood as near-black-on-white.
  */
-export function Programs() {
+export function Programs({ tone = "plain" }: { tone?: "plain" | "band" }) {
+  const band = tone === "band";
+
   return (
-    <Section id="programs" className="border-line border-t">
+    <Section
+      id="programs"
+      tone={band ? "oxblood" : undefined}
+      /* The colour IS the separation, so the band drops the hairline rule that
+         divides one white section from the next. */
+      className={band ? undefined : "border-line border-t"}
+      watermark={
+        band ? (
+          /* Herringbone rather than the triangle field this started as: the
+             band's own geometry should not simply restate the sawtooth the
+             footer is edged with, and solid triangles read as blocks of tone
+             at any opacity. Planks are strokes, so the motif stays linework —
+             large enough to read as parquet, faint enough that it is texture
+             you notice on second glance rather than a layer the rows have to
+             sit on top of. */
+          <ImigongoWatermark
+            id="imigongo-programs"
+            motif="herringbone"
+            tone="accent"
+            angle={-8}
+            scale={3.5}
+            opacity={0.05}
+          />
+        ) : undefined
+      }
+    >
       <SectionHeading {...programsSection} />
 
       <ul className="border-line border-t">

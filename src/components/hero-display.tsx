@@ -120,8 +120,9 @@ export function HeroDisplay() {
              against the container's padding — a fixed 24px each side below lg,
              3.6vw each side from lg — with slack for the skew's extra width.
              Verified by comparing scrollWidth against clientWidth, since the
-             nowrap text overflows its box without changing the box. */
-          className="font-display text-oblique text-text text-[9.1vw] text-nowrap lg:text-[9.7vw]"
+             nowrap text overflows its box without changing the box. SiteHeader's
+             nav spacer is calculated from this size, so change both together. */
+          className="font-display text-oblique text-text text-[8.6vw] text-nowrap lg:text-[9.2vw]"
         >
           {hero.display}
         </h1>

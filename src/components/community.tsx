@@ -5,9 +5,10 @@ import { communitySection, testimonials } from "@/lib/site";
 /**
  * Member quotes, three across.
  *
- * ⚠️  The quotes and attributions in `testimonials` are INVENTED placeholders.
- * They must be replaced with sourced quotes, attributed to real members who
- * have given written permission, before this page is published.
+ * `testimonials` currently holds one honest holding entry — "Member stories /
+ * Coming soon" — rather than invented praise. Keep it that way: add a quote
+ * here only once it is real, sourced, and attributed to a member who has given
+ * written permission.
  */
 export function Community() {
   return (

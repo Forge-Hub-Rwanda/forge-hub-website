@@ -24,9 +24,13 @@ export function Manifesto() {
       </Reveal>
 
       <Reveal delay={100}>
-        <p className="font-display text-heading text-text mt-10 max-w-[24ch] text-[clamp(1.75rem,3.6vw,3.25rem)]">
+        {/* An `h2`, not a `p`. The classes are unchanged, so this renders
+            exactly as before — but the band previously had no heading of any
+            kind, which left the whole "why we exist" section missing from the
+            document outline and unreachable by heading navigation. */}
+        <h2 className="font-display text-heading text-text mt-10 max-w-[24ch] text-[clamp(1.75rem,3.6vw,3.25rem)]">
           {manifesto.statement}
-        </p>
+        </h2>
       </Reveal>
 
       <div className="mt-12 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
@@ -36,10 +40,7 @@ export function Manifesto() {
           </p>
         </Reveal>
         <Reveal delay={280}>
-          <a
-            href={manifesto.cta.href}
-            className="btn"
-          >
+          <a href={manifesto.cta.href} className="btn">
             {manifesto.cta.label}
           </a>
         </Reveal>

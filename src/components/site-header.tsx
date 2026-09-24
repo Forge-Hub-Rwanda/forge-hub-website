@@ -1,16 +1,31 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { getLenis } from "@/lib/lenis";
 import {
   HERO_DISPLAY_ID,
   LOCALE_FADE_TRAVEL,
   LOGO_SCROLL_TRAVEL,
   NAV_TUCK_TRAVEL,
 } from "@/lib/motion";
-import { footerColumns, hero, navItems, socials } from "@/lib/site";
+import { hero, menuColumns, navItems, socials } from "@/lib/site";
 
 const LOCALES = ["EN", "RW"] as const;
+
+/**
+ * The hero's primary CTA is an in-page anchor (`#programs`), which is correct
+ * in the hero itself — that band is on the same page. The menu is global
+ * chrome shown on all seven routes, and four of them have no `#programs`
+ * element at all, so the bare fragment there is a link that does nothing.
+ * Rooting it at "/" makes it navigate home and then scroll, from anywhere.
+ */
+const menuPrimaryHref = hero.primaryCta.href.startsWith("#")
+  ? `/${hero.primaryCta.href}`
+  : hero.primaryCta.href;
 
 /** How small the logo tile gets once the page has scrolled. */
 const LOGO_MIN_SCALE = 0.65;
@@ -24,6 +39,7 @@ const LOGO_MIN_SCALE = 0.65;
  * The two never collide because the logo is centred and the nav is right-set.
  */
 export function SiteHeader() {
+  const pathname = usePathname();
   const [pinned, setPinned] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [locale, setLocale] = useState<(typeof LOCALES)[number]>("EN");
@@ -165,6 +181,68 @@ export function SiteHeader() {
     return () => observer.disconnect();
   }, []);
 
+  // The fixed chrome — the logo tile, the menu button and the theme toggle —
+  // rides over whatever the page happens to be showing. Over a full-bleed
+  // colour band the tile, which is oxblood itself, would vanish into oxblood,
+  // and the controls, drawn in near-black, would be close behind it. So the
+  // overlap is measured here and `data-chrome` on <html> switches the lot to
+  // white; the rules that act on it live in `globals.css`.
+  //
+  // Unlike every other scroll effect in this component, this one runs under
+  // `prefers-reduced-motion` as well. It is a legibility fix rather than
+  // decoration, and a visitor who has asked for less motion still has to be
+  // able to see the logo.
+  useEffect(() => {
+    const root = document.documentElement;
+
+    // The menu overlay covers the chrome and carries a theme toggle of its own,
+    // sitting on an ordinary page surface — leaving the flag set would paint
+    // that one white on white. Clearing it while the menu is open is the whole
+    // reason this effect depends on `menuOpen`.
+    if (menuOpen) {
+      root.removeAttribute("data-chrome");
+      return;
+    }
+
+    let frame = 0;
+
+    const update = () => {
+      frame = 0;
+
+      // One probe line through the middle of the chrome cluster is enough: a
+      // band spans the full width of the page, so anything crossing this line
+      // crosses all of it. 30px is inside the logo tile at every scale it
+      // takes, and inside the corner controls' 32px circles.
+      const PROBE_Y = 30;
+
+      const onColor = Array.from(document.querySelectorAll("[data-tone]")).some(
+        (band) => {
+          const rect = band.getBoundingClientRect();
+          return rect.top <= PROBE_Y && rect.bottom >= PROBE_Y;
+        },
+      );
+
+      if (onColor) root.setAttribute("data-chrome", "on-color");
+      else root.removeAttribute("data-chrome");
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+      root.removeAttribute("data-chrome");
+    };
+    // `pathname` re-measures after a navigation, where the bands are different
+    // ones at different offsets and the old measurement means nothing.
+  }, [menuOpen, pathname]);
+
   // Lock body scroll and allow Escape to close while the drawer is open.
   useEffect(() => {
     if (!menuOpen) return;
@@ -183,11 +261,16 @@ export function SiteHeader() {
     };
   }, [menuOpen]);
 
-  // Home links return to the very top of the page. They keep href="#top" so
-  // they still work with JavaScript unavailable — with no element of that id,
-  // the fragment "top" is specified to mean the start of the document — while
-  // the handler takes over to keep the hash out of the address bar.
+  // Home links point at "/", so they work with JavaScript unavailable and from
+  // any page on the site. On the homepage itself a full navigation would be
+  // wasteful, so the handler takes over there and scrolls to the top instead.
   const goHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Off the homepage this is a real navigation — leave it to the browser.
+    if (pathname !== "/") {
+      setMenuOpen(false);
+      return;
+    }
+
     // Leave modified clicks alone, so "open in new tab" still behaves.
     if (
       event.metaKey ||
@@ -200,36 +283,39 @@ export function SiteHeader() {
     }
     event.preventDefault();
     setMenuOpen(false);
-    window.scrollTo({
-      top: 0,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth",
-    });
+
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    // Native smooth scrolling and Lenis fight over the same journey, so hand it
+    // to whichever is actually driving the page.
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(0, { immediate: reduced });
+    else window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
   const primaryNav = navItems.filter((item) => item.primary);
 
-  // Small hover-reveal links per menu item, grouped from the footer's existing
-  // link columns so the flyout doesn't need its own content to maintain.
+  // Small hover-reveal links per menu item, grouped in `site.ts` so the flyout
+  // doesn't need its own content to maintain.
   const linksByColumn = (title: string) =>
-    footerColumns.find((column) => column.title === title)?.links ?? [];
+    menuColumns.find((column) => column.title === title)?.links ?? [];
   const subLinksByLabel: Record<string, ReturnType<typeof linksByColumn>> = {
-    Spaces: linksByColumn("The building"),
-    Membership: linksByColumn("Join"),
-    Programs: linksByColumn("Programs"),
-    Events: linksByColumn("More"),
-    About: linksByColumn("More"),
-    Community: linksByColumn("More"),
+    About: linksByColumn("Company"),
+    Services: linksByColumn("What we do"),
+    Team: linksByColumn("Company"),
+    Contact: linksByColumn("Join"),
   };
 
   return (
     <>
       {/* --- Fixed centre logo tile --------------------------------------- */}
-      <a
+      <Link
         ref={logoRef}
-        href="#top"
+        href="/"
         onClick={goHome}
+        data-logo-tile
         /* The centring translate lives in the inline transform rather than in a
            utility class: an inline transform replaces the class outright, so
            -translate-x-1/2 would be lost the moment the scale is applied.
@@ -243,13 +329,17 @@ export function SiteHeader() {
         }
       >
         <Logo className="w-[3.1rem] sm:w-[3.875rem] lg:w-[4.4rem]" />
-      </a>
+      </Link>
 
       {/* --- Corner controls, below lg only ---------------------------------
           Phones and tablets have no nav row, so the hamburger and the language
           toggle live pinned in the corner. From lg they move into the nav row,
           sitting after the links — see below. */}
       <div className="fixed top-0 right-0 z-60 flex items-center gap-4 px-6 py-4 lg:hidden">
+        {/* Unlike the locale toggle it is kept at every width: one 32px circle
+            leaves the cluster narrow enough to clear the centred logo tile even
+            on the smallest phone, once EN/RW has dropped out below sm. */}
+        <ThemeToggle className="flex" />
         <LocaleToggle
           locale={locale}
           onChange={setLocale}
@@ -257,6 +347,18 @@ export function SiteHeader() {
         />
         <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
       </div>
+
+      {/* Drops the desktop nav row to the vertical middle of the first screen,
+          so the space above it matches the space below. It is the viewport's
+          half-height, less the half-row (2.25rem), the display block's top
+          padding (8rem) and the line itself (9.2vw at a 0.86 line-height — see
+          HeroDisplay). Placed above the pin sentinel so the row still pins
+          exactly when it reaches the top, rather than jumping up from
+          mid-screen; floored at zero for short, wide windows. */}
+      <div
+        aria-hidden
+        className="hidden lg:block lg:h-[max(0px,calc(50vh-10.25rem-7.91vw))]"
+      />
 
       {/* Marks the nav row's resting position for the pin observer above. */}
       <div ref={pinSentinelRef} aria-hidden className="h-0" />
@@ -292,8 +394,13 @@ export function SiteHeader() {
                       className="group text-text relative block py-1 text-[1.05rem] font-medium"
                     >
                       {item.label}
-                      {/* Rule draws in from the left on hover. */}
-                      <span className="bg-text absolute inset-x-0 -bottom-0.5 h-0.5 origin-left scale-x-0 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:scale-x-100" />
+                      {/* An imigongo zigzag draws in from the left on hover,
+                          and on keyboard focus, which is the same cue for
+                          anyone not using a mouse. See `imigongo-underline`. */}
+                      <span
+                        aria-hidden
+                        className="imigongo-underline group-hover:imigongo-underline-on group-focus-visible:imigongo-underline-on absolute inset-x-0 -bottom-1 h-[5px] bg-current"
+                      />
                     </a>
                   </li>
                 ))}
@@ -303,8 +410,14 @@ export function SiteHeader() {
 
           {/* At the right end of the row, after the links. Outside the tucking
               wrapper, so the hamburger holds its place as the links slide away
-              and stays reachable once the row pins to the top. */}
+              and stays reachable once the row pins to the top.
+
+              The theme toggle sits here too and, unlike the locale toggle
+              beside it, carries no fade: the locale belongs to the hero, but
+              the theme is a setting for the whole site and should be reachable
+              from anywhere on the page without opening the menu first. */}
           <div className="flex items-center gap-6">
+            <ThemeToggle className="flex" />
             <LocaleToggle
               locale={locale}
               onChange={setLocale}
@@ -334,8 +447,8 @@ export function SiteHeader() {
           <div className="flex items-center justify-end">
             {/* Doubles as the "back to home" exit: it closes the drawer and
                 the `href` carries the page back to the hero. */}
-            <a
-              href="#top"
+            <Link
+              href="/"
               onClick={goHome}
               className="text-text flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-70"
             >
@@ -349,20 +462,20 @@ export function SiteHeader() {
                   strokeLinecap="round"
                 />
               </svg>
-            </a>
+            </Link>
           </div>
 
           <nav
             aria-label="All pages"
             className="flex flex-1 flex-col justify-center py-10"
           >
-            <a
-              href="#top"
+            <Link
+              href="/"
               onClick={goHome}
               className="font-display text-heading text-text hover:text-accent mb-10 inline-block w-fit text-[clamp(2rem,6vw,3.5rem)] transition-colors sm:mb-16"
             >
               Home
-            </a>
+            </Link>
 
             <ul className="border-line border-t">
               {navItems.map((item) => {
@@ -375,22 +488,28 @@ export function SiteHeader() {
                     <a
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="group-hover:bg-text group-hover:text-text-invert flex flex-col gap-1 px-2 py-5 transition-colors sm:flex-row sm:items-baseline sm:gap-8 sm:px-4"
+                      className="group-hover:bg-text group-hover:text-text-invert group-focus-within:bg-text group-focus-within:text-text-invert flex flex-col gap-1 px-2 py-5 transition-colors sm:flex-row sm:items-baseline sm:gap-8 sm:px-4"
                     >
                       <span className="font-display text-heading w-full text-[clamp(2rem,6vw,3.5rem)] sm:w-1/2">
                         {item.label}
                       </span>
                       {item.blurb ? (
-                        <span className="text-text-muted group-hover:text-text-invert/70 text-sm sm:text-base">
+                        <span className="text-text-muted group-hover:text-text-invert/70 group-focus-within:text-text-invert/70 text-sm sm:text-base">
                           {item.blurb}
                         </span>
                       ) : null}
                     </a>
 
                     {/* Small related links, tucked into the item's bottom-right
-                        corner and revealed only on hover. */}
+                        corner and revealed on hover — and on focus, which is
+                        the same reveal for anyone using a keyboard. Without the
+                        `group-focus-within` pair these stay at `opacity: 0`
+                        while still being real tab stops, so tabbing through the
+                        menu lands on links nobody can see. The row above
+                        inverts on focus too, so the revealed labels are white
+                        on the dark fill rather than white on white. */}
                     {subLinks.length > 0 ? (
-                      <div className="pointer-events-none absolute right-2 bottom-1.5 flex translate-y-1.5 flex-wrap justify-end gap-x-4 gap-y-1 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:translate-y-0 group-hover:opacity-100 sm:right-4">
+                      <div className="pointer-events-none absolute right-2 bottom-1.5 flex translate-y-1.5 flex-wrap justify-end gap-x-4 gap-y-1 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 sm:right-4">
                         {subLinks.map((sub) => (
                           <a
                             key={`${item.href}-${sub.label}`}
@@ -411,33 +530,42 @@ export function SiteHeader() {
             <div className="mt-10 flex flex-col gap-6 px-2 sm:px-4">
               <div className="flex flex-col gap-4 sm:flex-row">
                 <a
-                  href={hero.primaryCta.href}
+                  href={menuPrimaryHref}
                   onClick={() => setMenuOpen(false)}
                   className="btn btn-strong"
                 >
                   {hero.primaryCta.label}
                 </a>
+                {/* Plain `btn`: with both at `btn-strong` the pair carried no
+                    hierarchy, which is the same problem the page CTAs had. */}
                 <a
                   href={hero.secondaryCta.href}
                   onClick={() => setMenuOpen(false)}
-                  className="btn btn-strong"
+                  className="btn"
                 >
                   {hero.secondaryCta.label}
                 </a>
               </div>
 
-              <ul className="flex flex-wrap gap-6">
-                {socials.map((social) => (
-                  <li key={social.label}>
-                    <a
-                      href={social.href}
-                      className="text-text-muted hover:text-text text-label transition-colors"
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              {/* A third instance. The menu overlay sits above the corner
+                  cluster, so without a copy here the theme could not be
+                  changed while the menu is open. */}
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+                <ThemeToggle className="flex" />
+
+                <ul className="flex flex-wrap gap-6">
+                  {socials.map((social) => (
+                    <li key={social.label}>
+                      <a
+                        href={social.href}
+                        className="text-text-muted hover:text-text text-label transition-colors"
+                      >
+                        {social.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </nav>
         </div>
@@ -483,7 +611,7 @@ function LocaleToggle({
             className={`flex h-8 w-8 items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors ${
               active
                 ? "border-text bg-text text-text-invert"
-                : "border-ink-300 text-text-muted hover:border-text hover:bg-text hover:text-text-invert"
+                : "border-line-mid text-text-muted hover:border-text hover:bg-text hover:text-text-invert"
             }`}
           >
             {code}
@@ -502,6 +630,7 @@ function MenuButton({ open, onOpen }: { open: boolean; onOpen: () => void }) {
       onClick={onOpen}
       aria-expanded={open}
       aria-controls="site-menu"
+      data-chrome-ink
       className="text-text flex h-8 w-8 flex-col items-center justify-center gap-[6px]"
     >
       <span className="sr-only">Open menu</span>

@@ -27,14 +27,20 @@ export function Events() {
               href={eventsSection.cta.href}
               className="group flex flex-col gap-5 py-7 transition-opacity hover:opacity-70 sm:flex-row sm:items-center sm:gap-8 lg:py-8"
             >
-              <time className="bg-text-invert text-text flex h-20 w-20 shrink-0 flex-col items-center justify-center leading-none">
+              {/* A plain box, not `<time>`: the only entry is "TBA" with no
+                  month, and `<time>` requires a parseable date in either its
+                  content or a `dateTime` attribute — neither exists yet, and
+                  inventing one would be worse than not marking it up.
+                  TODO: once events carry real dates, add an ISO date to
+                  `SiteEvent` and restore `<time dateTime={...}>`. */}
+              <div className="bg-text-invert text-text flex h-20 w-20 shrink-0 flex-col items-center justify-center leading-none">
                 <span className="font-display text-2xl font-extrabold">
                   {event.date.day}
                 </span>
                 <span className="text-label mt-1 text-[0.6rem]">
                   {event.date.month}
                 </span>
-              </time>
+              </div>
 
               <div className="flex-1">
                 <p className="text-label text-text-invert/60">{event.kind}</p>

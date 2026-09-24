@@ -6,8 +6,9 @@ import { impact, impactSection } from "@/lib/site";
 /**
  * About copy paired with a figures rail.
  *
- * ⚠️  Every number in `impact` is an invented placeholder. Replace them with
- * verified figures — or drop the rail — before this page is published.
+ * The figures in `impact` are deliberately only what can be stated for certain
+ * — founding year, team size, where we trained, and "Soon" for results. Keep
+ * that bar: add a number here only once it is verified.
  */
 export function Impact() {
   return (
@@ -51,26 +52,30 @@ export function Impact() {
           </Reveal>
 
           <Reveal delay={240}>
-            <a
-              href={impactSection.cta.href}
-              className="btn mt-10"
-            >
+            <a href={impactSection.cta.href} className="btn mt-10">
               {impactSection.cta.label}
             </a>
           </Reveal>
         </div>
 
+        {/* Each Reveal IS a card, rather than wrapping one. A `dl` may contain
+            `dt`/`dd` directly or wrapped in a single `div`; two nested divs —
+            the Reveal plus a card inside it — put them a level too deep and
+            make the list invalid. Merging the card's classes onto the Reveal
+            keeps exactly the same box and fixes the nesting. */}
         <dl className="grid grid-cols-2 gap-px self-start">
           {impact.map((figure, index) => (
-            <Reveal key={figure.label} delay={index * 80}>
-              <div className="bg-surface flex h-full flex-col justify-between p-8 lg:p-10">
-                <dt className="text-label text-text-muted order-2 mt-4">
-                  {figure.label}
-                </dt>
-                <dd className="font-display text-text order-1 text-[clamp(2rem,3.4vw,3rem)] leading-none font-extrabold tracking-[-0.04em]">
-                  {figure.value}
-                </dd>
-              </div>
+            <Reveal
+              key={figure.label}
+              delay={index * 80}
+              className="bg-surface flex h-full flex-col justify-between p-8 lg:p-10"
+            >
+              <dt className="text-label text-text-muted order-2 mt-4">
+                {figure.label}
+              </dt>
+              <dd className="font-display text-text order-1 text-[clamp(2rem,3.4vw,3rem)] leading-none font-extrabold tracking-[-0.04em]">
+                {figure.value}
+              </dd>
             </Reveal>
           ))}
         </dl>

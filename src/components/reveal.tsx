@@ -48,12 +48,28 @@ export function Reveal({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
+
+        const { top, bottom } = entry.boundingClientRect;
+        const viewport = window.innerHeight;
+
+        // Fire a little before the element is fully on screen, so the motion
+        // reads as the page arriving rather than as a delayed reaction. This
+        // is the original 12%-of-viewport lead, expressed as a position test
+        // rather than a negative root margin.
+        //
+        // The second clause is not redundant. An element sitting within that
+        // 12% of the END of the document can never satisfy the first test —
+        // the page runs out of scroll before its top edge gets that high — so
+        // on a margin alone the last line or two of a page stays at opacity 0
+        // forever. Treating "already fully on screen" as qualifying covers it.
+        if (top > viewport * 0.88 && bottom > viewport) return;
+
         setShown(true);
         observer.disconnect();
       },
-      // Fire a little before the element is fully on screen, so the motion
-      // reads as the page arriving rather than as a delayed reaction.
-      { rootMargin: "0px 0px -12% 0px", threshold: 0.1 },
+      // Several thresholds rather than one, so the callback runs again as the
+      // element travels in: at first contact neither test above is met yet.
+      { threshold: [0, 0.1, 0.5, 1] },
     );
 
     observer.observe(node);

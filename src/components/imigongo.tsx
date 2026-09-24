@@ -15,9 +15,30 @@
  * and what keeps these usable as server components.
  */
 
-export type ImigongoMotif = "zigzag" | "lozenge" | "spiral" | "nested";
+export type ImigongoMotif =
+  "zigzag" | "lozenge" | "spiral" | "nested" | "herringbone";
 
 type Tile = { size: number; paint: React.ReactNode };
+
+/**
+ * Which role the artwork paints in. The motifs are all drawn in
+ * `currentColor`, so this is only ever a text-colour utility.
+ *
+ * `invert` is the one that needs explaining: it means "the colour this
+ * surface's own text is in", which is what an inverted panel like the footer
+ * needs. On such a panel `text` would resolve to the panel's own background
+ * and the artwork would be invisible — and because the footer flips with the
+ * theme, no fixed hue would work in both.
+ */
+export type ImigongoTone = "text" | "accent" | "invert";
+
+function toneClass(tone: ImigongoTone) {
+  return tone === "accent"
+    ? "text-accent"
+    : tone === "invert"
+      ? "text-text-invert"
+      : "text-text";
+}
 
 /**
  * One repeating unit per motif. Each is built so its edges meet its own
@@ -76,7 +97,34 @@ const TILES: Record<ImigongoMotif, Tile> = {
       />
     ),
   },
-  // Alternating solid triangles — the densest of the four, so it carries the
+  // Offset diagonal planks — parquet laid in alternating columns, each column
+  // shifted half a plank against its neighbour so that a plank's END butts the
+  // SIDE of the next rather than meeting it at an apex. That offset is the
+  // whole difference between a herringbone and a chevron, and it is why this
+  // motif does not simply restate the zigzag above it.
+  //
+  // The tile is two 24-wide columns. Planks run one way in the left column and
+  // the other in the right, spaced 24 apart, so at the seam the left column's
+  // ends land on y ≡ 0 (mod 24) and the right column's on y ≡ 12 — half a
+  // space out, which is what makes the two interlock.
+  //
+  // One plank is cut by the tile's own top edge and continues across the
+  // bottom, so it is drawn as two segments. Every REAL plank end is inset by
+  // 2, which is what keeps the planks reading as separate pieces rather than
+  // as one unbroken line; the two ends that are a join rather than a plank end
+  // are the only ones left flush, or the seam would show as a gap.
+  herringbone: {
+    size: 48,
+    paint: (
+      <path
+        d="M1.4 1.4 L22.6 22.6 M1.4 25.4 L22.6 46.6 M25.4 34.6 L46.6 13.4 M25.4 10.6 L36 0 M36 48 L46.6 37.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+      />
+    ),
+  },
+  // Alternating solid triangles — the densest of the set, so it carries the
   // most weight at the same opacity.
   nested: {
     size: 40,
@@ -115,20 +163,14 @@ export function ImigongoWatermark({
   scale?: number;
   /** Rotates the tiling, so two sections using one motif still differ. */
   angle?: number;
-  tone?: "text" | "accent" | "invert";
+  tone?: ImigongoTone;
 }) {
   const tile = TILES[motif];
-  const tone_ =
-    tone === "accent"
-      ? "text-accent"
-      : tone === "invert"
-        ? "text-text-invert"
-        : "text-text";
 
   return (
     <svg
       aria-hidden
-      className={`pointer-events-none absolute inset-0 h-full w-full ${tone_} ${className ?? ""}`}
+      className={`pointer-events-none absolute inset-0 h-full w-full ${toneClass(tone)} ${className ?? ""}`}
     >
       <defs>
         <pattern
@@ -221,6 +263,7 @@ export function ImigongoCorner({
   scale = 1,
   /** How far across the patch the pattern survives before it has gone. */
   reach = "72%",
+  tone = "text",
 }: {
   motif: ImigongoMotif;
   id: string;
@@ -228,6 +271,8 @@ export function ImigongoCorner({
   opacity?: number;
   scale?: number;
   reach?: string;
+  /** `invert` for a placement on an inverted panel — see `ImigongoTone`. */
+  tone?: ImigongoTone;
 }) {
   const tile = TILES[motif];
   // Densest at the corner itself, gone by `reach` — hence "fading outwards".
@@ -236,7 +281,7 @@ export function ImigongoCorner({
   return (
     <svg
       aria-hidden
-      className={`text-text pointer-events-none absolute ${className ?? ""}`}
+      className={`pointer-events-none absolute ${toneClass(tone)} ${className ?? ""}`}
       style={{ maskImage: mask, WebkitMaskImage: mask }}
     >
       <defs>

@@ -1,20 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Chivo } from "next/font/google";
+import localFont from "next/font/local";
+import { SmoothScroll } from "@/components/smooth-scroll";
+import { ThemeScript } from "@/components/theme-script";
 import "./globals.css";
 
 /**
  * One family across the whole site, mirroring the reference design, which runs
- * a single grotesque from 400 to 900 plus a heavy oblique for the display line.
- * Chivo rather than a geometric sans: it is a true grotesque with flat
- * terminals and real weight at 900, which is what the oversized oblique needs
- * to read as a poster line rather than as merely large text. Its straight-sided
- * letterforms also rhyme with the imigongo geometry. The italic axis is loaded
- * because the hero needs it.
+ * a single sans from 400 to 900 plus a heavy oblique for the display line.
+ * Satoshi, self-hosted from Fontshare (ITF Free Font License — see
+ * `fonts/Satoshi-LICENSE.txt`). The two variable files cover every weight from
+ * 300 to 900; the italic file is loaded because the hero needs it. The files
+ * are used exactly as distributed — the licence forbids modifying them.
  */
-const chivo = Chivo({
-  variable: "--font-chivo",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
+const satoshi = localFont({
+  src: [
+    { path: "./fonts/Satoshi-Variable.woff2", weight: "300 900", style: "normal" },
+    {
+      path: "./fonts/Satoshi-VariableItalic.woff2",
+      weight: "300 900",
+      style: "italic",
+    },
+  ],
+  variable: "--font-satoshi",
   display: "swap",
 });
 
@@ -31,8 +38,17 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * One tag per scheme, so the browser's own chrome starts out matching the page
+ * for a visitor who has made no choice. A visitor who HAS chosen overrides both
+ * from the client — see `apply()` in `src/lib/theme.ts`. Values must stay in
+ * step with `--color-surface` in `globals.css`.
+ */
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({
@@ -43,8 +59,16 @@ export default function RootLayout({
     // :root and references it, and a custom property is substituted on the
     // element that DECLARES it. On <body> the reference would be unresolvable
     // from :root, making --font-body invalid and silently dropping the family.
-    <html lang="en" className={chivo.variable}>
+    // `suppressHydrationWarning` is for ONE attribute: `data-theme`, which the
+    // script below writes before React exists and so is deliberately absent
+    // from the server-rendered markup. It suppresses warnings on this element
+    // only, not on the tree beneath it.
+    <html lang="en" className={satoshi.variable} suppressHydrationWarning>
       <body>
+        {/* First thing in the body, and blocking: it sets the theme before a
+            single pixel is painted, so a visitor who chose dark never sees the
+            page flash white first. */}
+        <ThemeScript />
         {/* Keyboard users can jump straight past the nav to the hero copy. */}
         <a
           href="#hero-intro"
@@ -52,6 +76,27 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        {/* Every scroll reveal starts at `opacity: 0` and is raised by an
+            IntersectionObserver once it enters the viewport. With scripting
+            unavailable that observer never runs, and since the reveals now
+            carry most of the page — every section heading, every card, the
+            whole footer — the result would be a correctly-structured document
+            that renders as a blank sheet.
+
+            This is the one case where the CSS has to know about JavaScript.
+            The rule is scoped to <noscript>, so it costs nothing to everyone
+            else and cannot interfere with the animations when they do run. */}
+        {/* The theme toggle joins it here: switching theme is entirely a
+            client-side act, so without scripting the control is a button that
+            cannot do anything. The page still honours the visitor's OS setting
+            through the media query in `globals.css` — what is missing is only
+            the ability to contradict it. */}
+        <noscript>
+          <style>{`.reveal{opacity:1!important;transform:none!important}[data-theme-toggle]{display:none!important}`}</style>
+        </noscript>
+
+        {/* Renders nothing; starts Lenis for every page. */}
+        <SmoothScroll />
         {children}
       </body>
     </html>

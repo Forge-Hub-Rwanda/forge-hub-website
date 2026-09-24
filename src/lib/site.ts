@@ -1,15 +1,11 @@
 /**
  * Single source of truth for site copy, navigation and section content.
  *
- * ⚠️  PLACEHOLDER CONTENT WARNING
- * ---------------------------------------------------------------------------
- * Everything below marked `@placeholder` is a DRAFT written to exercise the
- * layout — not verified ForgeHub fact. That includes every figure in `stats`
- * and `impact`, every price in `membership`, every date in `events`, the
- * partner list, the testimonials, and the contact details.
- *
- * None of it should go public unreviewed. Search this file for "@placeholder"
- * to find each one.
+ * Copy below is the approved ForgeHub content draft. Where the draft carried a
+ * `[PLACEHOLDER: ...]` note, nothing has been invented in its place: the copy
+ * either says plainly that the detail is still to come, or carries a `TODO`
+ * marking exactly what needs supplying. Search this file for "TODO" to find
+ * every outstanding item.
  */
 
 export const site = {
@@ -30,39 +26,34 @@ export type NavItem = {
 
 export const navItems: NavItem[] = [
   {
-    label: "Spaces",
-    href: "#spaces",
-    blurb: "Desks, studios and meeting rooms",
-    primary: true,
-  },
-  {
-    label: "Membership",
-    href: "#membership",
-    blurb: "Passes and monthly plans",
-    primary: true,
-  },
-  {
-    label: "Programs",
-    href: "#programs",
-    blurb: "Fellowships, bootcamps, residencies",
-    primary: true,
-  },
-  {
-    label: "Events",
-    href: "#events",
-    blurb: "What’s on this month",
-    primary: true,
-  },
-  {
     label: "About",
-    href: "#about",
+    href: "/about",
     blurb: "Why ForgeHub exists",
     primary: true,
   },
   {
-    label: "Community",
-    href: "#community",
-    blurb: "The people who build here",
+    label: "Services",
+    href: "/services",
+    blurb: "Software development and training",
+    primary: true,
+  },
+  {
+    label: "Portfolio",
+    href: "/portfolio",
+    blurb: "The software we have built",
+    primary: true,
+  },
+  {
+    label: "Team",
+    href: "/team",
+    blurb: "The engineers behind ForgeHub",
+    primary: true,
+  },
+  {
+    label: "Contact",
+    href: "/contact",
+    blurb: "Kigali, Rwanda — and online",
+    primary: true,
   },
 ];
 
@@ -72,48 +63,48 @@ export const hero = {
    * the viewport width edge-to-edge, so any more and it stops fitting on
    * narrow screens without dropping to an unreadable size.
    */
-  display: "Build what’s next",
+  display: "Forge the future",
   /** Upright sub-headline beneath the display line. */
-  headline: "Build, test and launch what you’re making at ForgeHub Kigali",
+  headline: "Building Africa’s next generation of software engineers",
   /**
-   * Lead paragraphs. `strong` marks the run set in bold, matching the
-   * reference's emphasised clause.
+   * The one-line summary under the sub-headline. Sized to hold a single line
+   * on desktop, so keep it at roughly this length.
    */
-  body: [
-    {
-      text: "Somewhere to sit, somewhere to solder, and a room full of people who have already made the mistake you are about to make.",
-    },
-    {
-      text: "We keep the tools, the mentors and the late-night door key in one building in Kigali, so that ",
-      strong:
-        "the distance between having an idea and testing it is a flight of stairs",
-      tail: ", not a funding round.",
-    },
-  ],
-  primaryCta: { label: "Book a tour", href: "#tour" },
-  secondaryCta: { label: "Explore membership", href: "#membership" },
+  summary:
+    "ForgeHub Rwanda is a Kigali software studio and training hub, building software for clients and training Africa’s next engineers.",
+  /**
+   * The paragraph under the summary; free to wrap. `strong` marks the run set
+   * in bold, matching the reference's emphasised clause.
+   */
+  body: {
+    text: "We design and build software for clients, and we train the engineers who will build the rest — ",
+    strong: "online across Africa, and in person in Kigali",
+    tail: ".",
+  },
+  primaryCta: { label: "Explore our programs", href: "#programs" },
+  secondaryCta: { label: "Work with us", href: "/services" },
   scrollCue: "Scroll",
 } as const;
 
 export type Stat = { value: string; label: string };
 
-/** @placeholder — every figure here is invented. */
+/**
+ * Currently unrendered — the homepage figures rail reads from `impact` below.
+ * Kept in step with it so the two can never disagree if this is ever wired up.
+ */
 export const stats: Stat[] = [
-  { value: "1,200+", label: "Members & alumni" },
-  { value: "80+", label: "Ventures launched" },
-  { value: "45", label: "Programs a year" },
-  { value: "24/7", label: "Studio access" },
+  { value: "2026", label: "Founded in Kigali" },
+  { value: "4", label: "Founding engineers" },
+  { value: "ALU", label: "Where we trained" },
+  { value: "Soon", label: "First results published" },
 ];
 
-/** @placeholder — partner names are illustrative, not confirmed sponsors. */
-export const partners: string[] = [
-  "Ministry of ICT",
-  "Norrsken Kigali",
-  "Africa Digital Media",
-  "GIZ",
-  "Mastercard Foundation",
-  "Kigali Innovation City",
-];
+/**
+ * TODO: no partners are confirmed yet, so this list is deliberately empty and
+ * `<PartnerMarquee />` is not rendered on the homepage. Add real, agreed
+ * partners here and re-add the component to `src/app/page.tsx`.
+ */
+export const partners: string[] = [];
 
 /* ========================================================================== */
 /*  Manifesto                                                                 */
@@ -123,81 +114,32 @@ export const manifesto = {
   eyebrow: "Why we exist",
   /** Rendered word-by-word so each can be revealed on scroll. */
   statement:
-    "Rwanda has no shortage of ideas. What it has been short of is somewhere to take one seriously — a bench, a soldering iron, a lawyer who answers, and twenty people who have already failed at the thing you are about to try.",
-  body: "ForgeHub is that somewhere. We keep the doors open late, the tools sharp and the room full of people further along than you.",
-  cta: { label: "Read our story", href: "#about" },
+    "We believe Africa’s biggest opportunity is technology — and its biggest challenge is jobs. ForgeHub exists to close that gap, one engineer at a time.",
+  body: "Founded in 2026 in Kigali by software engineers trained at African Leadership University. Our curriculum put Africa’s grand challenges in front of us and asked us to pick one — we chose job creation.",
+  cta: { label: "Learn more about us", href: "/about" },
 } as const;
-
-/* ========================================================================== */
-/*  Spaces                                                                    */
-/* ========================================================================== */
-
-export type Space = {
-  name: string;
-  blurb: string;
-  detail: string;
-  /** Short spec line — capacity, hours, whatever distinguishes it. */
-  meta: string;
-};
-
-export const spacesSection = {
-  eyebrow: "The building",
-  title: "Six ways to use the floor",
-  lede: "One membership, one address, and a room for whichever part of the work you are doing today.",
-} as const;
-
-export const spaces: Space[] = [
-  {
-    name: "Open floor",
-    blurb: "Hot desks, big windows, good coffee.",
-    detail:
-      "Sit anywhere. Best for the days you want the hum of other people working around you.",
-    meta: "70 seats · 07:00–22:00",
-  },
-  {
-    name: "Dedicated desk",
-    blurb: "Your desk, your monitor, your mess.",
-    detail:
-      "Leave the second screen set up overnight and the prototype half-assembled. Lockable storage included.",
-    meta: "40 desks · 24/7 access",
-  },
-  {
-    name: "Team studios",
-    blurb: "Private rooms for two to twelve.",
-    detail:
-      "Glass-fronted rooms along the north wall. Whiteboard the whole thing and shut the door.",
-    meta: "9 studios · 2–12 people",
-  },
-  {
-    name: "Maker lab",
-    blurb: "3D printers, CNC, electronics bench.",
-    detail:
-      "Resin and FDM printers, a laser cutter, oscilloscopes and a reflow oven. Induction required before first use.",
-    meta: "Induction required · 24/7",
-  },
-  {
-    name: "Meeting rooms",
-    blurb: "Rooms that work on the first try.",
-    detail:
-      "Wired video, a screen that switches inputs without a fight, and a door that actually blocks sound.",
-    meta: "4 rooms · book by the hour",
-  },
-  {
-    name: "Event hall",
-    blurb: "Demo nights, workshops, launches.",
-    detail:
-      "Retractable seating for 120, a proper PA, and a kitchen that can handle catering for the whole room.",
-    meta: "120 seated · 200 standing",
-  },
-];
 
 /* ========================================================================== */
 /*  Membership                                                                */
 /* ========================================================================== */
 
 export type Plan = {
+  /**
+   * Stable id for the panel, and the anchor its index entry links to. Prefixed
+   * so it cannot collide with a section id elsewhere on the homepage.
+   */
+  slug: string;
   name: string;
-  /** @placeholder — pricing is illustrative only. */
+  /**
+   * Not a price. There is no published pricing yet, so this field carries the
+   * step number that used to lead each card rather than a figure that would
+   * have to be invented.
+   *
+   * Nothing renders it since the band became an index: the numeral shown there
+   * is derived from the entry's position, so that real pricing landing in this
+   * field can never turn an index into "from RWF 450,000". Kept because the
+   * TODO still stands. TODO: revisit if and when real pricing is agreed.
+   */
   price: string;
   cadence: string;
   blurb: string;
@@ -207,69 +149,54 @@ export type Plan = {
 };
 
 export const membershipSection = {
-  eyebrow: "Membership",
-  title: "Pick the door you need",
-  lede: "Every plan includes the open floor, the events calendar and the members’ directory. Prices shown are indicative — confirm current rates on your tour.",
+  eyebrow: "Ways in",
+  title: "Three ways to join us",
+  lede: "Whether you want to learn, to build, or to back the mission — there is a door for you. We will publish pricing when there is real pricing to publish.",
 } as const;
 
-/** @placeholder — all prices below are invented for layout purposes. */
 export const plans: Plan[] = [
   {
-    name: "Day pass",
-    price: "RWF 8,000",
-    cadence: "per day",
-    blurb: "For the week you’re in town.",
+    slug: "join-learner",
+    name: "Learner",
+    price: "01",
+    cadence: "Online or in Kigali",
+    blurb: "Join a training cohort.",
     features: [
-      "Open floor, 07:00–22:00",
-      "Fibre wifi and power",
-      "All community events",
-      "Two hours of meeting room",
+      "Online cohorts, open across Africa",
+      "In-person intensives in Kigali",
+      "Taught by working software engineers",
+      "Course names and dates — coming soon",
     ],
-    cta: { label: "Buy a pass", href: "#tour" },
+    cta: { label: "See our training", href: "/services" },
   },
   {
-    name: "Flex",
-    price: "RWF 65,000",
-    cadence: "per month",
-    blurb: "For the ones who come and go.",
+    slug: "join-builder",
+    name: "Builder",
+    price: "02",
+    cadence: "Client projects",
+    blurb: "Bring us your software project.",
     features: [
-      "Ten days a month, any days",
-      "Members’ directory",
-      "Maker lab induction",
-      "Five hours of meeting room",
-      "Guest passes, two a month",
+      "We design and build software products",
+      "Scoped with you before anything starts",
+      "Built by the same engineers we train",
+      "Tell us what you need and we will answer straight",
     ],
     featured: true,
-    cta: { label: "Start with Flex", href: "#tour" },
+    cta: { label: "Start a project", href: "/contact" },
   },
   {
-    name: "Resident",
-    price: "RWF 140,000",
-    cadence: "per month",
-    blurb: "For the ones who are here every day.",
+    slug: "join-partner",
+    name: "Partner",
+    price: "03",
+    cadence: "Support the mission",
+    blurb: "Back the engineers we are training.",
     features: [
-      "Your own dedicated desk",
-      "24/7 building access",
-      "Lockable storage",
-      "Unlimited maker lab",
-      "Fifteen hours of meeting room",
-      "Business address and mail",
+      "Sponsor a cohort or a learner",
+      "Hire from the people we train",
+      "Host or co-run a workshop",
+      "Founding partners — coming soon",
     ],
-    cta: { label: "Take a desk", href: "#tour" },
-  },
-  {
-    name: "Team studio",
-    price: "from RWF 450,000",
-    cadence: "per month",
-    blurb: "For the ones who outgrew the corner.",
-    features: [
-      "A private room, 2–12 people",
-      "Everything in Resident, per seat",
-      "Your name on the door",
-      "Event hall at member rates",
-      "Named point of contact",
-    ],
-    cta: { label: "Talk to us", href: "#tour" },
+    cta: { label: "Talk to us", href: "/contact" },
   },
 ];
 
@@ -282,49 +209,45 @@ export type Program = {
   format: string;
   duration: string;
   blurb: string;
-  /** @placeholder — cohort status is illustrative. */
   status: string;
 };
 
 export const programsSection = {
   eyebrow: "Programs",
-  title: "Structured routes from idea to shipped",
-  lede: "Cohort-based, taught by people who have built here, and free at the point of entry wherever funding allows.",
-  cta: { label: "See all programs", href: "#programs" },
+  title: "Software training built for Africa",
+  lede: "Online cohorts you can join from anywhere, and in-person intensives in Kigali.",
+  cta: { label: "See our services", href: "/services" },
 } as const;
 
+/**
+ * TODO: specific course names, formats and start dates are not confirmed. Each
+ * entry below describes a track we have committed to, not a scheduled cohort —
+ * replace `duration` and `status` with real detail before promoting any of it.
+ */
 export const programs: Program[] = [
   {
-    name: "Forge Fellowship",
-    format: "Full-time cohort",
-    duration: "6 months",
+    name: "Online cohorts",
+    format: "Live, online",
+    duration: "Dates to come",
     blurb:
-      "Twenty builders, one floor, six months. Stipend, desk, mentor and a demo night at the end of it.",
-    status: "Applications open",
+      "Software training you can join from any city in Africa, taught live rather than recorded.",
+    status: "Details soon",
   },
   {
-    name: "Hardware Bootcamp",
-    format: "Evenings & weekends",
-    duration: "10 weeks",
+    name: "Kigali intensives",
+    format: "In person",
+    duration: "Dates to come",
     blurb:
-      "From breadboard to enclosure. Electronics, firmware, CAD and the unglamorous business of manufacturing.",
-    status: "Next cohort in March",
+      "Hands-on training in the room with us, for the people who can get to Kigali.",
+    status: "Details soon",
   },
   {
-    name: "Founder Residency",
-    format: "Part-time",
-    duration: "12 weeks",
+    name: "For organizations",
+    format: "Team training",
+    duration: "By arrangement",
     blurb:
-      "For teams with a product and their first customers. Pricing, hiring, fundraising and saying no.",
-    status: "Rolling admission",
-  },
-  {
-    name: "Schools Outreach",
-    format: "Weekend workshops",
-    duration: "Ongoing",
-    blurb:
-      "We bus in secondary students, hand them tools, and let them break things until something works.",
-    status: "Volunteers wanted",
+      "Software training for your team, shaped around what your organization is actually building.",
+    status: "Talk to us",
   },
 ];
 
@@ -333,7 +256,6 @@ export const programs: Program[] = [
 /* ========================================================================== */
 
 export type SiteEvent = {
-  /** @placeholder — all dates and events below are invented. */
   date: { day: string; month: string };
   name: string;
   kind: string;
@@ -343,39 +265,22 @@ export type SiteEvent = {
 
 export const eventsSection = {
   eyebrow: "What’s on",
-  title: "Something happening most nights",
-  lede: "Open to members and non-members alike unless marked otherwise.",
-  cta: { label: "Full calendar", href: "#events" },
+  title: "Our first meetups are in the works",
+  lede: "Community meetups and demo days are being planned. They will be listed here the moment they are set — and not before.",
+  cta: { label: "Get in touch", href: "/contact" },
 } as const;
 
+/**
+ * TODO: one honest holding row, deliberately. Do not add entries here until an
+ * event has a confirmed name, date, time and location.
+ */
 export const events: SiteEvent[] = [
   {
-    date: { day: "04", month: "Sep" },
-    name: "Demo Night: Fellowship Cohort 6",
-    kind: "Demo night",
-    time: "18:30 – 21:00",
-    location: "Event hall",
-  },
-  {
-    date: { day: "11", month: "Sep" },
-    name: "Soldering for absolute beginners",
-    kind: "Workshop",
-    time: "17:00 – 19:30",
-    location: "Maker lab",
-  },
-  {
-    date: { day: "18", month: "Sep" },
-    name: "Raising your first round in Rwanda",
-    kind: "Panel",
-    time: "18:00 – 20:00",
-    location: "Event hall",
-  },
-  {
-    date: { day: "26", month: "Sep" },
-    name: "Members’ breakfast",
-    kind: "Community",
-    time: "08:00 – 09:30",
-    location: "Open floor",
+    date: { day: "TBA", month: "" },
+    name: "Community meetups and demo days",
+    kind: "Coming soon",
+    time: "Dates to be announced",
+    location: "Kigali and online",
   },
 ];
 
@@ -384,12 +289,6 @@ export const events: SiteEvent[] = [
 /* ========================================================================== */
 
 export type Testimonial = {
-  /**
-   * @placeholder — INVENTED. These are not real people and not real quotes.
-   * Replace every one with a sourced quote and written permission before this
-   * page is published. Fabricated testimonials presented as real are both a
-   * trust problem and, in most markets, a legal one.
-   */
   quote: string;
   name: string;
   role: string;
@@ -397,28 +296,20 @@ export type Testimonial = {
 
 export const communitySection = {
   eyebrow: "Community",
-  title: "The floor is the product",
-  lede: "The desks are fine. The reason people renew is who is sitting at the next one.",
+  title: "More than a company",
+  lede: "A growing community of young African engineers, dreamers and builders determined to turn technology into Africa’s biggest job creator.",
 } as const;
 
+/**
+ * TODO: no member quotes yet. Add them only once they are real, sourced, and
+ * the person has given written permission to publish their name and words.
+ */
 export const testimonials: Testimonial[] = [
   {
     quote:
-      "I came for the 3D printer and stayed because someone two desks over had already solved the exact supply problem that was going to kill us.",
-    name: "[Placeholder name]",
-    role: "Hardware founder · Member since 2023",
-  },
-  {
-    quote:
-      "The fellowship was the first time anyone asked me to defend my numbers. It was miserable and it saved the company.",
-    name: "[Placeholder name]",
-    role: "Fellowship alum · Cohort 3",
-  },
-  {
-    quote:
-      "We moved in as two people with laptops and moved out as nine with a production line. Same building the whole way.",
-    name: "[Placeholder name]",
-    role: "Studio tenant · 2021–2024",
+      "Our first cohort has not finished yet. When it has, this space belongs to their words rather than ours.",
+    name: "Member stories",
+    role: "Coming soon",
   },
 ];
 
@@ -427,21 +318,24 @@ export const testimonials: Testimonial[] = [
 /* ========================================================================== */
 
 export const impactSection = {
-  eyebrow: "About",
-  title: "Built in Kigali, for builders everywhere in Rwanda",
+  eyebrow: "Impact",
+  title: "We’re just getting started",
   body: [
-    "ForgeHub opened because the gap between having an idea in Rwanda and having the means to test it was wider than it needed to be. Workshop time, legal advice, a mentor who has shipped — none of it was scarce exactly, it was just scattered.",
-    "So we put it in one building and kept the lights on late. Everything else — the programs, the fellowship, the schools work — grew out of members asking for it.",
+    "Founded in 2026 in Kigali by a team of software engineers trained at African Leadership University, ForgeHub set out to solve one problem: jobs. Our mission is measured one engineer, one job, one product at a time.",
+    "We will publish real numbers — graduates trained, jobs created, products shipped — as soon as we have earned them. Until then, what follows is only what we can state for certain.",
   ],
-  cta: { label: "Book a tour", href: "#tour" },
+  cta: { label: "Read our story", href: "/about" },
 } as const;
 
-/** @placeholder — every figure here is invented. */
+/**
+ * Only verifiable facts. TODO: replace with graduates trained, jobs created
+ * and products shipped once those figures exist and can be stood behind.
+ */
 export const impact: Stat[] = [
-  { value: "1,200+", label: "Members and alumni" },
-  { value: "80+", label: "Ventures launched" },
-  { value: "RWF 4.2B", label: "Raised by members" },
-  { value: "340", label: "Jobs created" },
+  { value: "2026", label: "Founded in Kigali" },
+  { value: "4", label: "Founding engineers" },
+  { value: "ALU", label: "Where we trained" },
+  { value: "Soon", label: "First results published" },
 ];
 
 /* ========================================================================== */
@@ -449,70 +343,472 @@ export const impact: Stat[] = [
 /* ========================================================================== */
 
 export const closing = {
-  eyebrow: "Come and see it",
-  title: "Bring the idea. We have the bench.",
-  body: "Tours run Tuesday and Thursday afternoons, or whenever you happen to be passing — the door is usually open.",
-  primaryCta: { label: "Book a tour", href: "#tour" },
-  secondaryCta: { label: "Email the team", href: "#contact" },
+  eyebrow: "Build with us",
+  title: "Let’s build what’s next",
+  /**
+   * One line, deliberately. The two buttons under it already say "Join a
+   * program" and "Get in touch", so the invitation the old two-line version
+   * opened with was restating them; what only this line says is where we
+   * work. Kept short enough to sit on a single line inside the 48ch measure
+   * it is set in — a second line puts the height straight back.
+   */
+  body: "In Kigali, and online across Africa.",
+  primaryCta: { label: "Join a program", href: "/services" },
+  secondaryCta: { label: "Get in touch", href: "/contact" },
 } as const;
 
-/** @placeholder — address, phone and email are invented. Replace before launch. */
+/**
+ * TODO: `addressLines` carries only the city, which is all that is confirmed.
+ * Add a street address, and real opening hours, once there is a premises to
+ * publish. `email` and `phone` are the confirmed published details.
+ */
 export const contact = {
-  addressLines: ["KG 7 Ave, Kacyiru", "Kigali, Rwanda"],
-  email: "hello@forgehubrwanda.com",
-  phone: "+250 000 000 000",
-  hours: [
-    { days: "Mon – Fri", time: "07:00 – 22:00" },
-    { days: "Saturday", time: "09:00 – 18:00" },
-    { days: "Sunday", time: "Members only" },
-  ],
+  addressLines: ["Kigali, Rwanda"],
+  email: "info@forgehubrwanda.com",
+  phone: "+250 791 774 313",
+  hours: [{ days: "Kigali", time: "Address and hours coming soon" }],
 } as const;
 
-export type FooterColumn = { title: string; links: NavItem[] };
+export type MenuColumn = { title: string; links: NavItem[] };
 
-export const footerColumns: FooterColumn[] = [
+/**
+ * Grouped links the full-screen menu reveals in the corner of each of its
+ * items on hover. Named for the one place that uses them: the footer used to
+ * render these as four columns and no longer does — it carries `footerLinks`
+ * below instead, which is a single row.
+ *
+ * Only the three titles `SiteHeader` maps onto a menu item are kept. A fourth
+ * "More" column existed purely to fill out the old footer, and went with it.
+ */
+export const menuColumns: MenuColumn[] = [
   {
-    title: "The building",
+    title: "Company",
     links: [
-      { label: "Open floor", href: "#spaces" },
-      { label: "Team studios", href: "#spaces" },
-      { label: "Maker lab", href: "#spaces" },
-      { label: "Event hall", href: "#spaces" },
+      { label: "About", href: "/about" },
+      { label: "Our story", href: "/about#story" },
+      { label: "Team", href: "/team" },
+      { label: "Community", href: "/#community" },
+    ],
+  },
+  {
+    title: "What we do",
+    links: [
+      { label: "Services", href: "/services" },
+      { label: "Portfolio", href: "/portfolio" },
+      { label: "Software development", href: "/services#build" },
+      { label: "Training & education", href: "/services#train" },
+      { label: "Programs", href: "/#programs" },
     ],
   },
   {
     title: "Join",
     links: [
-      { label: "Membership", href: "#membership" },
-      { label: "Day pass", href: "#membership" },
-      { label: "Book a tour", href: "#tour" },
-      { label: "Hire the hall", href: "#contact" },
-    ],
-  },
-  {
-    title: "Programs",
-    links: [
-      { label: "Forge Fellowship", href: "#programs" },
-      { label: "Hardware Bootcamp", href: "#programs" },
-      { label: "Founder Residency", href: "#programs" },
-      { label: "Schools Outreach", href: "#programs" },
-    ],
-  },
-  {
-    title: "More",
-    links: [
-      { label: "About", href: "#about" },
-      { label: "Events", href: "#events" },
-      { label: "Community", href: "#community" },
-      { label: "Contact", href: "#contact" },
+      { label: "Ways in", href: "/#membership" },
+      { label: "Join a program", href: "/services" },
+      { label: "Start a project", href: "/contact" },
+      { label: "Partner with us", href: "/contact" },
     ],
   },
 ];
 
-/** @placeholder — social handles are invented. */
-export const socials: NavItem[] = [
-  { label: "LinkedIn", href: "#" },
-  { label: "Instagram", href: "#" },
-  { label: "X", href: "#" },
-  { label: "YouTube", href: "#" },
+/**
+ * The compact footer's single row of links.
+ *
+ * Deliberately short. The footer is a sign-off, not a second navigation: every
+ * page here is one tap away in the menu, which is on screen at all times, so a
+ * seventeen-link sitemap at the foot of the page was repeating what the header
+ * already does. What is left is the five real pages plus the one homepage band
+ * that has no page of its own.
+ */
+export const footerLinks: NavItem[] = [
+  { label: "About", href: "/about" },
+  { label: "Services", href: "/services" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Team", href: "/team" },
+  { label: "Programs", href: "/#programs" },
+  { label: "Contact", href: "/contact" },
 ];
+
+/**
+ * TODO: add the real social profile URLs. Empty until then, so that nothing on
+ * the site links out to a placeholder.
+ */
+export const socials: NavItem[] = [];
+
+/* ========================================================================== */
+/*  About page                                                                */
+/* ========================================================================== */
+
+export const aboutPage = {
+  eyebrow: "Who we are",
+  title: "About",
+  lede: "ForgeHub Rwanda is a Kigali-based software studio and training hub — turning young African talent into world-class engineers, and technology into jobs.",
+  story: {
+    eyebrow: "Our story",
+    title: "Founded in Kigali, in 2026",
+    body: [
+      "ForgeHub Rwanda was founded in 2026 in Kigali by Jimmy Shimwa and Fadhiri Ihirwe Ndegeya, two software engineers trained at African Leadership University.",
+      "Our curriculum put Africa’s grand challenges in front of us and asked us to pick one as our opportunity. We chose technology — and job creation as the specific problem we set out to solve.",
+    ],
+  },
+  pillars: [
+    {
+      name: "Our mission",
+      body: "To build a community and a platform where young African dreamers, software engineers, and the people who support them can grow into the talent that transforms the continent.",
+    },
+    {
+      name: "Our vision",
+      body: "An Africa where technology is a reliable engine for job creation — and where the engineers who build that future were trained right here.",
+    },
+  ],
+  cta: { label: "Meet the team", href: "/team" },
+} as const;
+
+/* ========================================================================== */
+/*  Services page                                                             */
+/* ========================================================================== */
+
+export type Service = {
+  /** Doubles as the in-page anchor the footer links to. */
+  id: string;
+  index: string;
+  name: string;
+  blurb: string;
+  detail: string;
+  meta: string;
+};
+
+/**
+ * TODO: the specific service list under "Software development" (web apps,
+ * mobile apps, custom platforms) and the specific tracks and curricula under
+ * "Training & education" are not confirmed. Both `meta` lines say so rather
+ * than listing anything unagreed.
+ */
+export const services: Service[] = [
+  {
+    id: "build",
+    index: "01",
+    name: "Software development",
+    blurb: "We design and build software products for clients.",
+    detail:
+      "Tell us what you are building and we will tell you plainly whether we are the right team for it, what it would take, and how we would approach it.",
+    meta: "Full service list — coming soon",
+  },
+  {
+    id: "train",
+    index: "02",
+    name: "Training & education",
+    blurb: "Software training for individuals and organizations.",
+    detail:
+      "Delivered online across Africa and in person in Kigali — for people starting out, and for teams that need to level up on what they already run.",
+    meta: "Tracks and curricula — coming soon",
+  },
+];
+
+export const servicesPage = {
+  eyebrow: "What we do",
+  title: "Services",
+  lede: "Two things, done well: we build software for clients, and we train the engineers who will build the rest.",
+  heading: {
+    eyebrow: "Our work",
+    title: "Two things, done well",
+    lede: "Everything ForgeHub does sits under one of these two headings. If it does not, we are probably not the right people for it.",
+  },
+  cta: { label: "Work with us", href: "/contact" },
+} as const;
+
+/* ========================================================================== */
+/*  Portfolio                                                                 */
+/* ========================================================================== */
+
+/**
+ * An image belonging to a project.
+ *
+ * `width` and `height` are the file's real pixel dimensions, not the size it
+ * is displayed at: `next/image` needs them to reserve the right space before
+ * the file has loaded, which is what stops the page jumping as images arrive.
+ */
+export type ProjectImage = {
+  /** Path under `public/`, beginning with a slash. */
+  src: string;
+  /**
+   * What the image shows, for anyone who cannot see it. Never the project's
+   * name — that is already the heading beside it — but what is actually in the
+   * frame. An empty string is correct only for an image that adds nothing to
+   * the words around it.
+   */
+  alt: string;
+  width: number;
+  height: number;
+};
+
+/** One part of a project's write-up. */
+export type ProjectSection = { heading: string; body: string };
+
+export type Project = {
+  /**
+   * Stable id. Doubles as the in-page anchor and as the slug a per-project
+   * detail route would use later, so changing one breaks any link already
+   * shared.
+   */
+  slug: string;
+  name: string;
+  /** One line on what the thing is. */
+  blurb: string;
+  /** What we did and what it changed. The card is a taster, not a case study. */
+  detail: string;
+  /** Who it was for. `In-house` for our own products. */
+  client: string;
+  /** Year delivered, or the year work started on anything still running. */
+  year: string;
+  /** Which of the two services it sits under, plus anything more specific. */
+  disciplines: string[];
+  /** Short status line — `Live`, `In build`, `Write-up in preparation`. */
+  status: string;
+  /**
+   * The live product, if there is one to link to AND the client is happy to be
+   * linked from here. Left undefined otherwise: a card without it simply has
+   * no link rather than pointing at a placeholder.
+   */
+  href?: string;
+
+  /**
+   * The lead image on the project's own page. Left undefined until there is a
+   * real one: the page then draws a labelled slot in its place rather than a
+   * stand-in that could be mistaken for the work.
+   */
+  cover?: ProjectImage;
+
+  /** Further images, shown beneath the write-up. Empty until they are real. */
+  gallery?: ProjectImage[];
+
+  /**
+   * The write-up, section by section, shown only on the project's own page.
+   * The index deliberately does not use it — that page is meant to be
+   * scannable, and the depth is what the detail page is for.
+   */
+  story?: ProjectSection[];
+};
+
+export const portfolioSection = {
+  eyebrow: "Selected work",
+  title: "What we have built",
+  lede: "Software we designed, built and shipped — for clients, and for ourselves.",
+  action: { label: "See the full portfolio", href: "/portfolio" },
+} as const;
+
+/**
+ * TODO: only the first entry is a real project. The two after it are empty
+ * slots carrying the shape a real entry needs, with copy that says plainly the
+ * write-up is still coming rather than inventing a client, a year or a result.
+ * Replace them one at a time as each client confirms they are happy to be
+ * named — and delete any slot still empty when there are three real projects,
+ * rather than leaving a placeholder on a page that no longer needs one.
+ */
+export const projects: Project[] = [
+  {
+    slug: "forgehub-rwanda-website",
+    name: "forgehubrwanda.com",
+    blurb: "Our own site — designed, built and shipped in-house.",
+    detail:
+      "One typeface, no photography, and motion on every surface — a scroll-driven hero, a morphing gradient field, and imigongo geometry drawn in SVG.",
+    client: "In-house",
+    year: "2026",
+    disciplines: ["Software development", "Design"],
+    status: "Live",
+    // TODO: add `href` once the site is live on its own domain.
+    // TODO: no screenshots yet. Add a `cover` and `gallery` here and the
+    // project's page picks them up — until then it draws labelled slots.
+    story: [
+      {
+        heading: "What it had to do",
+        body: "Introduce a studio and a training hub as one thing rather than two, before either had a body of public work to point at. That ruled out the usual opening — a wall of client logos — and made the site itself the first thing it had to be able to stand on.",
+      },
+      {
+        heading: "How it is built",
+        body: "Next.js with the App Router, statically rendered. One typeface across every weight, no photography anywhere, and colour carried almost entirely by an animated gradient field rather than by surfaces or text. The imigongo geometry that runs through the pages is drawn as SVG paths, so it stays sharp at any size and re-colours with the theme.",
+      },
+      {
+        heading: "The motion",
+        body: "Every moving part is driven from the real scroll position rather than a timer: a display line that shrinks into the header, a gallery that pins the page and pans the work sideways, a sticky index that marks which option you are reading. Each one degrades to a plain, complete layout on a narrow screen, for a visitor who has asked for less motion, or where the script never runs.",
+      },
+    ],
+  },
+  {
+    slug: "client-build-slot",
+    name: "A client build",
+    blurb: "A commissioned product. Naming it is the client's call, not ours.",
+    detail:
+      "What they needed, what we built, and what changed once it shipped — published the moment they are happy for it to be.",
+    client: "Client to be named",
+    year: "To be confirmed",
+    disciplines: ["Software development"],
+    status: "Write-up in preparation",
+    story: [
+      {
+        heading: "Still to be written",
+        body: "This page is the shape a client project takes here: what they needed, what we built, the decisions worth explaining, and what changed once it shipped. It goes up when the client is happy for it to.",
+      },
+    ],
+  },
+  {
+    slug: "training-engagement-slot",
+    name: "A training engagement",
+    blurb: "Software training delivered for a team, rather than an individual.",
+    detail:
+      "Who we trained, what they needed to be able to build, and where they had got to by the end of it.",
+    client: "Organization to be named",
+    year: "To be confirmed",
+    disciplines: ["Training & education"],
+    status: "Write-up in preparation",
+    story: [
+      {
+        heading: "Still to be written",
+        body: "The same, for the other half of what we do: who we trained, what they needed to be able to build, how the programme was run, and where they had got to by the end of it.",
+      },
+    ],
+  },
+];
+
+/**
+ * The card that closes the gallery. Not a project — it is the invitation the
+ * track ends on, so the sideways scroll arrives somewhere rather than simply
+ * running out.
+ */
+export const portfolioEnd = {
+  eyebrow: "Next",
+  title: "Your project could take this slot",
+  body: "Tell us what you are building. We will tell you plainly whether we are the right team for it, and what it would take.",
+  cta: { label: "Work with us", href: "/contact" },
+} as const;
+
+/**
+ * Copy for a project's own page. Deliberately short: almost everything on that
+ * page comes from the project itself, and anything written here would have to
+ * be true of all of them.
+ */
+export const projectPage = {
+  /** Above the write-up. */
+  storyEyebrow: "The work",
+  /** Above the images, when there are any. */
+  galleryEyebrow: "Stills",
+  /** Leads the link on to the next project. */
+  nextEyebrow: "Next project",
+  backLabel: "All work",
+  /** Shown in an image slot that has no image yet. */
+  imagePending: "Image to come",
+} as const;
+
+export const portfolioPage = {
+  eyebrow: "Our work",
+  title: "Portfolio",
+  lede: "The software we have built, for clients and for ourselves. This page grows as each project is cleared to be named.",
+  heading: {
+    eyebrow: "Selected work",
+    title: "Built in Kigali, shipped wherever it is needed",
+    lede: "Two things sit behind every entry here: software we designed and built, and engineers we trained to do the same.",
+  },
+} as const;
+
+/* ========================================================================== */
+/*  Team page                                                                 */
+/* ========================================================================== */
+
+export type TeamMember = {
+  name: string;
+  role: string;
+  /**
+   * The member's portrait. Optional, and currently absent for all four: no
+   * photography has been shot yet. Every slot renders at the same 3:4 ratio
+   * either way, so dropping the real files in shifts nothing on the page.
+   *
+   * When the photos arrive, put them in `public/team/` and fill this in. The
+   * `alt` is what the person LOOKS like in the frame, never their name — the
+   * name is already the heading beside it, and repeating it makes a screen
+   * reader say it twice. An empty string is right if the portrait is a plain
+   * head-and-shoulders that the name and role already cover.
+   */
+  photo?: ProjectImage;
+};
+
+/** TODO: confirm the exact titles for Benjamin Inema and Ishimwe Valentin. */
+export const teamMembers: TeamMember[] = [
+  { name: "Jimmy Shimwa", role: "Founder" },
+  { name: "Fadhiri Ihirwe Ndegeya", role: "Co-Founder" },
+  { name: "Benjamin Inema", role: "Founding team" },
+  { name: "Ishimwe Valentin", role: "Founding team" },
+];
+
+export const teamPage = {
+  eyebrow: "The people",
+  title: "Team",
+  lede: "All ALU-trained software engineers who chose technology as Africa’s opportunity, and job creation as the challenge worth solving.",
+  heading: {
+    eyebrow: "Founding team",
+    title: "The engineers behind ForgeHub",
+    lede: "All ALU-trained software engineers who chose technology as Africa’s opportunity, and job creation as the challenge worth solving.",
+  },
+  cta: { label: "Work with us", href: "/contact" },
+  /** Stands in the empty portrait frames until the photographs are taken. */
+  photoPending: "Portrait to come",
+} as const;
+
+/* ========================================================================== */
+/*  Contact page                                                              */
+/* ========================================================================== */
+
+export const contactPage = {
+  eyebrow: "Say hello",
+  title: "Contact",
+  lede: "Join a program, bring us a project, or simply introduce yourself. We read everything that comes in.",
+  heading: {
+    eyebrow: "Send a message",
+    title: "Tell us what you’re building",
+    lede: "Three fields, no forms to fill twice. Or write to us directly at the address opposite.",
+  },
+  /**
+   * The form posts via `mailto:`, so it opens the sender's own mail app with
+   * the message ready to send. Stated plainly rather than letting anyone be
+   * surprised by it. TODO: replace with a server-side handler once there is
+   * somewhere to send it.
+   */
+  note: "Submitting opens your own email app with the message ready to send — there is no server behind this form yet.",
+  submit: "Send message",
+} as const;
+
+/* ========================================================================== */
+/*  Error and recovery pages                                                  */
+/* ========================================================================== */
+
+/**
+ * Shown for any URL that matches no route, and for a project slug that does
+ * not exist — `portfolio/[slug]` calls `notFound()` for those. Until now both
+ * cases fell through to Next's stock 404, which carries none of the site's
+ * type, colour or navigation.
+ *
+ * The three links are the places someone who mistyped a URL was most likely
+ * heading, so the page is a way onwards rather than a dead end.
+ */
+export const notFoundPage = {
+  code: "404",
+  eyebrow: "Not found",
+  title: "That page is not here",
+  body: "The link may be out of date, or the address mistyped. Nothing is broken on our end — the page simply does not exist.",
+  links: [
+    { label: "Back to home", href: "/" },
+    { label: "See our work", href: "/portfolio" },
+    { label: "Get in touch", href: "/contact" },
+  ],
+} as const;
+
+/**
+ * The runtime error boundary. Deliberately says less than the 404: we do not
+ * know what went wrong, so it promises nothing beyond a way onwards.
+ */
+export const errorPage = {
+  eyebrow: "Something went wrong",
+  title: "That did not load",
+  body: "An unexpected error stopped this page from rendering. Trying again will often clear it — if it does not, the link below always will.",
+  retry: "Try again",
+  home: "Back to home",
+} as const;
