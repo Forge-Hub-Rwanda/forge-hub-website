@@ -6,6 +6,7 @@ import {
   HERO_RELEASE_ID,
   HERO_SCROLL_TRAVEL,
 } from "@/lib/motion";
+import { SplitWords } from "@/components/split-text";
 import { hero } from "@/lib/site";
 
 /**
@@ -124,7 +125,10 @@ export function HeroDisplay() {
              nav spacer is calculated from this size, so change both together. */
           className="font-display text-oblique text-text text-[8.6vw] text-nowrap lg:text-[9.2vw]"
         >
-          {hero.display}
+          {/* Each word springs up out of its own slot on load — see
+              `SplitWords`. Words rather than letters, so the kerning inside
+              each word survives at this size. */}
+          <SplitWords text={hero.display} mode="load" />
         </h1>
       </div>
     </div>

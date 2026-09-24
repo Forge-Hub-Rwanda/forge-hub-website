@@ -11,8 +11,10 @@ export function Events() {
     <Section id="events" className="bg-text text-text-invert">
       {/* This band is inverted, so the shared heading's tokens are overridden
           locally rather than adding a variant to SectionHeading. */}
+      {/* `drift`: the title slides in from the left and the lede from the
+          right as the band comes up the screen, meeting in the middle. */}
       <div className="[&_.bg-text]:bg-text-invert [&_h2]:text-text-invert [&_p]:text-text-invert/70">
-        <SectionHeading {...eventsSection} />
+        <SectionHeading {...eventsSection} drift />
       </div>
 
       <ul className="border-text-invert/20 border-t">

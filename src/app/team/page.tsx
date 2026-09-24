@@ -7,6 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { RollText } from "@/components/split-text";
 import { TeamShowcase } from "@/components/team-showcase";
 import { teamPage } from "@/lib/site";
 
@@ -31,7 +32,7 @@ export default function Team() {
             id="imigongo-team-corner"
             motif="lozenge"
             opacity={0.13}
-            className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
           />
         </div>
 
@@ -46,7 +47,7 @@ export default function Team() {
 
           <Reveal delay={220}>
             <a href={teamPage.cta.href} className="btn relative z-1 mt-16">
-              {teamPage.cta.label}
+              <RollText>{teamPage.cta.label}</RollText>
             </a>
           </Reveal>
         </Section>

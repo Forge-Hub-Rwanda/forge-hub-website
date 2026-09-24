@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ImigongoCorner } from "@/components/imigongo";
 import { Logo } from "@/components/logo";
+import { Odometer } from "@/components/odometer";
+import { RollText } from "@/components/split-text";
 import { SiteFooter } from "@/components/site-footer";
 import { notFoundPage } from "@/lib/site";
 
@@ -27,7 +29,7 @@ export default function NotFound() {
           id="imigongo-404-corner"
           motif="lozenge"
           opacity={0.13}
-          className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+          className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
         />
 
         <Link
@@ -44,11 +46,14 @@ export default function NotFound() {
           {/* The code is set as display type rather than as the heading: it is
               the loudest thing on the page, but "404" is not what the page is
               about, so the sentence below it carries the `h1`. */}
+          {/* Rolls up to "404" like a counter on arrival — the one playful
+              moment on a page that is otherwise all way-finding. `immediate`,
+              because this must not wait on an observer to show anything. */}
           <p
             aria-hidden
             className="font-display text-oblique text-text mt-6 text-[clamp(4rem,14vw,10rem)] leading-none"
           >
-            {notFoundPage.code}
+            <Odometer value={notFoundPage.code} immediate />
           </p>
 
           <h1 className="font-display text-heading text-text mt-6 max-w-[18ch] text-[clamp(2rem,5vw,4rem)]">
@@ -69,7 +74,7 @@ export default function NotFound() {
                 href={link.href}
                 className={index === 0 ? "btn btn-strong" : "btn"}
               >
-                {link.label}
+                <RollText>{link.label}</RollText>
               </Link>
             ))}
           </nav>

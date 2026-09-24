@@ -1,6 +1,7 @@
 import { ImigongoWatermark } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
+import { RollText } from "@/components/split-text";
 import { programs, programsSection } from "@/lib/site";
 
 /**
@@ -60,12 +61,15 @@ export function Programs({ tone = "plain" }: { tone?: "plain" | "band" }) {
             delay={index * 70}
             className="border-line border-b"
           >
+            {/* `fill-rise`: the inverted fill sweeps up the row behind a row
+                of imigongo teeth rather than switching on — see globals.css. */}
             <a
               href={programsSection.cta.href}
-              className="group hover:bg-text grid gap-4 px-2 py-8 transition-colors duration-300 lg:grid-cols-12 lg:items-baseline lg:gap-8 lg:px-6 lg:py-10"
+              data-cursor="Join"
+              className="group fill-rise grid gap-4 px-2 py-8 lg:grid-cols-12 lg:items-baseline lg:gap-8 lg:px-6 lg:py-10"
             >
               <h3 className="font-display text-text group-hover:text-text-invert text-[clamp(1.5rem,2.6vw,2.25rem)] font-extrabold tracking-[-0.03em] transition-colors lg:col-span-4">
-                {program.name}
+                <RollText>{program.name}</RollText>
               </h3>
 
               <p className="text-text-muted group-hover:text-text-invert/70 leading-snug transition-colors lg:col-span-4">

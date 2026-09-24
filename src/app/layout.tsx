@@ -1,7 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { ViewTransition } from "react";
+import { CursorLabel } from "@/components/cursor-label";
+import { ForgeLoader } from "@/components/forge-loader";
+import { ScrollProgress } from "@/components/scroll-progress";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ThemeScript } from "@/components/theme-script";
+import { loaderScriptSource } from "@/lib/loader";
 import "./globals.css";
 
 /**
@@ -14,7 +19,11 @@ import "./globals.css";
  */
 const satoshi = localFont({
   src: [
-    { path: "./fonts/Satoshi-Variable.woff2", weight: "300 900", style: "normal" },
+    {
+      path: "./fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
     {
       path: "./fonts/Satoshi-VariableItalic.woff2",
       weight: "300 900",
@@ -91,13 +100,32 @@ export default function RootLayout({
             cannot do anything. The page still honours the visitor's OS setting
             through the media query in `globals.css` — what is missing is only
             the ability to contradict it. */}
+        {/* The motion pass adds two more things that wait on a script: split
+            words that rise when revealed, and odometer columns that roll to
+            their digit. Without scripting both are parked on their finished
+            state here, exactly as the reveals are. */}
         <noscript>
-          <style>{`.reveal{opacity:1!important;transform:none!important}[data-theme-toggle]{display:none!important}`}</style>
+          <style>{`.reveal{opacity:1!important;transform:none!important}[data-theme-toggle]{display:none!important}.split-inner{transform:none!important;animation:none!important}.odo-col{transform:translate3d(0,calc(var(--to,0)*-1em),0)!important}`}</style>
         </noscript>
+
+        {/* Decides before first paint whether this is the session's first
+            page view, and so whether the loader plays. See src/lib/loader.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: loaderScriptSource }} />
+        <ForgeLoader />
 
         {/* Renders nothing; starts Lenis for every page. */}
         <SmoothScroll />
-        {children}
+        <ScrollProgress />
+        <CursorLabel />
+
+        {/* Client-side navigations (Next `Link`s) wipe the page in with the
+            same sawtooth edge the browser's cross-document transition uses for
+            plain anchors — see "Page transitions" in globals.css. `update`
+            fires because this boundary persists while the page inside it is
+            swapped. */}
+        <ViewTransition update="page-wipe" default="none">
+          {children}
+        </ViewTransition>
       </body>
     </html>
   );

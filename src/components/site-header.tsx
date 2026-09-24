@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/logo";
+import { RollText } from "@/components/split-text";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getLenis } from "@/lib/lenis";
 import {
@@ -393,7 +394,7 @@ export function SiteHeader() {
                       href={item.href}
                       className="group text-text relative block py-1 text-[1.05rem] font-medium"
                     >
-                      {item.label}
+                      <RollText>{item.label}</RollText>
                       {/* An imigongo zigzag draws in from the left on hover,
                           and on keyboard focus, which is the same cue for
                           anyone not using a mouse. See `imigongo-underline`. */}
@@ -465,6 +466,9 @@ export function SiteHeader() {
             </Link>
           </div>
 
+          {/* Every block below carries `menu-stagger` and its place in the
+              order as `--i`: opening the menu raises them one after another
+              on a slight tilt, lusion.co's menu entrance. See globals.css. */}
           <nav
             aria-label="All pages"
             className="flex flex-1 flex-col justify-center py-10"
@@ -472,26 +476,31 @@ export function SiteHeader() {
             <Link
               href="/"
               onClick={goHome}
-              className="font-display text-heading text-text hover:text-accent mb-10 inline-block w-fit text-[clamp(2rem,6vw,3.5rem)] transition-colors sm:mb-16"
+              className="menu-stagger font-display text-heading text-text hover:text-accent mb-10 inline-block w-fit text-[clamp(2rem,6vw,3.5rem)] transition-colors sm:mb-16"
+              style={{ "--i": 0 } as React.CSSProperties}
             >
-              Home
+              <RollText>Home</RollText>
             </Link>
 
             <ul className="border-line border-t">
-              {navItems.map((item) => {
+              {navItems.map((item, index) => {
                 const subLinks = subLinksByLabel[item.label] ?? [];
                 return (
                   <li
                     key={item.href}
-                    className="group border-line relative border-b"
+                    className="menu-stagger group border-line relative border-b"
+                    style={{ "--i": index + 1 } as React.CSSProperties}
                   >
+                    {/* The inverted fill sweeps up behind imigongo teeth
+                        (`fill-rise`) rather than switching on, and the label
+                        rolls with it. */}
                     <a
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
-                      className="group-hover:bg-text group-hover:text-text-invert group-focus-within:bg-text group-focus-within:text-text-invert flex flex-col gap-1 px-2 py-5 transition-colors sm:flex-row sm:items-baseline sm:gap-8 sm:px-4"
+                      className="fill-rise group-hover:text-text-invert group-focus-within:text-text-invert flex flex-col gap-1 px-2 py-5 transition-colors sm:flex-row sm:items-baseline sm:gap-8 sm:px-4"
                     >
                       <span className="font-display text-heading w-full text-[clamp(2rem,6vw,3.5rem)] sm:w-1/2">
-                        {item.label}
+                        <RollText>{item.label}</RollText>
                       </span>
                       {item.blurb ? (
                         <span className="text-text-muted group-hover:text-text-invert/70 group-focus-within:text-text-invert/70 text-sm sm:text-base">
@@ -527,14 +536,17 @@ export function SiteHeader() {
               })}
             </ul>
 
-            <div className="mt-10 flex flex-col gap-6 px-2 sm:px-4">
+            <div
+              className="menu-stagger mt-10 flex flex-col gap-6 px-2 sm:px-4"
+              style={{ "--i": navItems.length + 1 } as React.CSSProperties}
+            >
               <div className="flex flex-col gap-4 sm:flex-row">
                 <a
                   href={menuPrimaryHref}
                   onClick={() => setMenuOpen(false)}
                   className="btn btn-strong"
                 >
-                  {hero.primaryCta.label}
+                  <RollText>{hero.primaryCta.label}</RollText>
                 </a>
                 {/* Plain `btn`: with both at `btn-strong` the pair carried no
                     hierarchy, which is the same problem the page CTAs had. */}
@@ -543,7 +555,7 @@ export function SiteHeader() {
                   onClick={() => setMenuOpen(false)}
                   className="btn"
                 >
-                  {hero.secondaryCta.label}
+                  <RollText>{hero.secondaryCta.label}</RollText>
                 </a>
               </div>
 

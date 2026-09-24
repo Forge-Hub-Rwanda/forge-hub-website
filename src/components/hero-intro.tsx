@@ -1,5 +1,7 @@
 import { HERO_RELEASE_ID } from "@/lib/motion";
+import { Magnetic } from "@/components/magnetic";
 import { RevealOnScroll } from "@/components/reveal-on-scroll";
+import { RollText, SplitWords } from "@/components/split-text";
 import { hero } from "@/lib/site";
 
 /**
@@ -18,13 +20,16 @@ export function HeroIntro() {
       tabIndex={-1}
       className="relative z-20 px-6 pt-2 pb-20 lg:px-[3.6vw] lg:pt-4 lg:pb-28"
     >
-      {/* The sticky display line above releases as this headline reaches it. */}
+      {/* The sticky display line above releases as this headline reaches it.
+          The words rise on their own rather than the heading carrying `rise`,
+          which also keeps the element HeroDisplay measures free of any
+          transform while it plays. */}
       <h2
         id={HERO_RELEASE_ID}
-        className="rise font-display text-heading text-text max-w-[19ch] text-[clamp(2.25rem,5.4vw,4.75rem)]"
+        className="font-display text-heading text-text max-w-[19ch] text-[clamp(2.25rem,5.4vw,4.75rem)]"
         style={{ "--delay": "140ms" } as React.CSSProperties}
       >
-        {hero.headline}
+        <SplitWords text={hero.headline} mode="load" />
       </h2>
 
       {/* Everything under the sub-headline stays hidden until the first
@@ -47,28 +52,30 @@ export function HeroIntro() {
           {/* `btn-strong` is the only thing separating the page's main action
             from the one beside it — without it both CTAs are the same pill and
             nothing tells a visitor which one we actually want them to take. */}
-          <a
-            href={hero.primaryCta.href}
-            className="group btn btn-strong bg-surface gap-3"
-          >
-            {hero.primaryCta.label}
-            <svg
-              aria-hidden
-              viewBox="0 0 24 24"
-              className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
+          <Magnetic>
+            <a
+              href={hero.primaryCta.href}
+              className="group btn btn-strong bg-surface gap-3"
             >
-              <path
-                d="M4 12h15m0 0-6-6m6 6-6 6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </a>
+              <RollText>{hero.primaryCta.label}</RollText>
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
+              >
+                <path
+                  d="M4 12h15m0 0-6-6m6 6-6 6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+          </Magnetic>
           <a href={hero.secondaryCta.href} className="btn bg-surface">
-            {hero.secondaryCta.label}
+            <RollText>{hero.secondaryCta.label}</RollText>
           </a>
         </div>
       </RevealOnScroll>

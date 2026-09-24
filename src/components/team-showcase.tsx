@@ -7,7 +7,12 @@ import {
   ImigongoMark,
   ImigongoWatermark,
 } from "@/components/imigongo";
+import { Odometer } from "@/components/odometer";
+import { RollLetters } from "@/components/split-text";
 import { teamMembers, teamPage } from "@/lib/site";
+
+/** Three digits, as lusion.co numbers its people. */
+const pad3 = (value: number) => String(value).padStart(3, "0");
 
 /**
  * The founding team, as an offset row of portraits.
@@ -205,11 +210,19 @@ export function TeamShowcase() {
               <article
                 data-tm-card
                 data-depth={depth}
+                data-cursor="Hello"
                 tabIndex={0}
-                className="tm-card"
+                className="tm-card roll-host"
                 style={{ "--delay": `${index * 130}ms` } as React.CSSProperties}
               >
                 <div className="tm-frame">
+                  {/* lusion.co's `[[ 001 ]]` team index, rolling to its number
+                      once the card is on screen. Over the frame's top-left
+                      corner, so it takes no room of its own. */}
+                  <p className="tm-tag text-label" aria-hidden>
+                    <Odometer value={`[[ ${pad3(index + 1)} ]]`} />
+                  </p>
+
                   <div className="tm-media">
                     {member.photo ? (
                       <Image
@@ -241,7 +254,7 @@ export function TeamShowcase() {
 
                   <div className="tm-meta">
                     <h3 className="font-display text-2xl leading-[1.1] font-extrabold tracking-[-0.02em]">
-                      {member.name}
+                      <RollLetters text={member.name} />
                     </h3>
                     <p className="text-label mt-3 border-t border-white/25 pt-3 text-white/70">
                       {member.role}

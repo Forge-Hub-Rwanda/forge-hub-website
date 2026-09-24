@@ -6,6 +6,8 @@ import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { Magnetic } from "@/components/magnetic";
+import { RollText } from "@/components/split-text";
 import { contact, contactPage } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -59,7 +61,7 @@ export default function Contact() {
             id="imigongo-contact-corner"
             motif="lozenge"
             opacity={0.13}
-            className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
           />
         </div>
 
@@ -88,13 +90,16 @@ export default function Contact() {
                 encType="text/plain"
                 className="flex flex-col gap-8"
               >
+                {/* `field`: a label rolls up while its input has focus, so the
+                    one being typed into is marked without anything moving
+                    around it. */}
                 {FIELDS.map((field) => (
-                  <div key={field.id}>
+                  <div key={field.id} className="field">
                     <label
                       htmlFor={field.id}
                       className="text-label text-text-muted"
                     >
-                      {field.label}
+                      <RollText>{field.label}</RollText>
                     </label>
                     <input
                       id={field.id}
@@ -108,12 +113,12 @@ export default function Contact() {
                   </div>
                 ))}
 
-                <div>
+                <div className="field">
                   <label
                     htmlFor="message"
                     className="text-label text-text-muted"
                   >
-                    Message
+                    <RollText>Message</RollText>
                   </label>
                   <textarea
                     id="message"
@@ -126,9 +131,15 @@ export default function Contact() {
                 </div>
 
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8">
-                  <button type="submit" className="btn btn-strong w-fit">
-                    {contactPage.submit}
-                  </button>
+                  <Magnetic className="w-fit">
+                    <button
+                      type="submit"
+                      data-cursor="Send"
+                      className="btn btn-strong w-fit"
+                    >
+                      <RollText>{contactPage.submit}</RollText>
+                    </button>
+                  </Magnetic>
                   <p className="text-text-muted max-w-[42ch] text-sm leading-snug">
                     {contactPage.note}
                   </p>

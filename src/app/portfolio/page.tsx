@@ -9,6 +9,7 @@ import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { RollLetters } from "@/components/split-text";
 import { portfolioPage, projects } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -51,7 +52,7 @@ export default function PortfolioPage() {
             id="imigongo-portfolio-corner"
             motif="lozenge"
             opacity={0.13}
-            className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
           />
         </div>
 
@@ -69,9 +70,13 @@ export default function PortfolioPage() {
                     this project", so making any one of them the only target
                     would be arbitrary and would leave the rest dead to a
                     pointer. */}
+                {/* The fill sweeps up the row behind imigongo teeth, the
+                    name ripples letter by letter, and the pointer is marked
+                    "View" — three cues, one gesture. */}
                 <Link
                   href={`/portfolio/${project.slug}`}
-                  className="group hover:bg-text grid items-center gap-6 px-2 py-8 transition-colors duration-300 lg:grid-cols-12 lg:gap-8 lg:px-6 lg:py-10"
+                  data-cursor="View"
+                  className="group fill-rise grid items-center gap-6 px-2 py-8 lg:grid-cols-12 lg:gap-8 lg:px-6 lg:py-10"
                 >
                   <p className="font-display text-label text-text-muted group-hover:text-text-invert/70 transition-colors lg:col-span-1">
                     {pad(index + 1)}
@@ -90,7 +95,7 @@ export default function PortfolioPage() {
 
                   <div className="lg:col-span-5">
                     <h2 className="font-display text-text group-hover:text-text-invert text-[clamp(1.5rem,2.6vw,2.25rem)] font-extrabold tracking-[-0.03em] transition-colors">
-                      {project.name}
+                      <RollLetters text={project.name} />
                     </h2>
                     <p className="text-text-muted group-hover:text-text-invert/70 mt-2 leading-snug transition-colors">
                       {project.blurb}

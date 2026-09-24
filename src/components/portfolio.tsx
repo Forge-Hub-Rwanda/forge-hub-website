@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ImigongoRule } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
+import { RollLetters, RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
 import { portfolioEnd, type Project } from "@/lib/site";
 
@@ -98,6 +99,22 @@ const easeInOut = (t: number) =>
 /** Two digits, so a card's number never changes width. */
 const pad = (value: number) => String(value).padStart(2, "0");
 
+/**
+ * The band's tint per card, for projects that do not name their own — and the
+ * closing card's, which is always the warm coral the page's blobs end on. See
+ * `.pf[data-pinned]` in globals.css: it is only ever a tint of the band behind
+ * the cards, never a colour any text sits on.
+ */
+const TINT_CYCLE = ["amber", "sky", "teal", "lime"] as const;
+const CLOSING_TINT = "coral";
+
+const tintOf = (project: Project | undefined, index: number) =>
+  `var(--color-blob-${
+    project
+      ? (project.accent ?? TINT_CYCLE[index % TINT_CYCLE.length])
+      : CLOSING_TINT
+  })`;
+
 type PortfolioProps = {
   projects: Project[];
   eyebrow: string;
@@ -118,6 +135,7 @@ export function Portfolio({
 }: PortfolioProps) {
   const [pinned, setPinned] = useState(false);
 
+  const sectionRef = useRef<HTMLElement>(null);
   const pinRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
@@ -154,15 +172,19 @@ export function Portfolio({
   }, []);
 
   useEffect(() => {
+    const section = sectionRef.current;
     const pin = pinRef.current;
     const view = viewRef.current;
     const track = trackRef.current;
-    if (!pinned || !pin || !view || !track) return;
+    if (!pinned || !section || !pin || !view || !track) return;
 
     let frame = 0;
     /** Where the row is drawn this frame, and where the scroll wants it. */
     let current = 0;
     let target = 0;
+    /** Which card the band is tinted for, so the property is written only on
+        a change of card rather than on every frame. */
+    let tinted = -1;
 
     const draw = () => {
       const { travel, steps, top } = metrics.current;
@@ -196,6 +218,18 @@ export function Portfolio({
       if (Math.abs(target - current) < 0.05) current = target;
 
       pin.style.setProperty("--x", `${current}px`);
+
+      // The colour takeover. Progress across the run picks the card nearest
+      // the middle — the closing card included, as the last of them — and
+      // the band's tint follows it. The transition lives in the stylesheet.
+      const card = Math.min(
+        Math.round(progress * projects.length),
+        projects.length,
+      );
+      if (card !== tinted) {
+        tinted = card;
+        section.style.setProperty("--pf-tint", tintOf(projects[card], card));
+      }
     };
 
     const loop = () => {
@@ -267,8 +301,9 @@ export function Portfolio({
       if (frame) cancelAnimationFrame(frame);
       pin.style.removeProperty("--pin-height");
       pin.style.removeProperty("--x");
+      section.style.removeProperty("--pf-tint");
     };
-  }, [pinned]);
+  }, [pinned, projects]);
 
   /**
    * Tabbing through the row would otherwise focus cards the visitor cannot
@@ -303,7 +338,12 @@ export function Portfolio({
   };
 
   return (
-    <section id={id} data-pinned={pinned} className="pf bg-surface-2 relative">
+    <section
+      ref={sectionRef}
+      id={id}
+      data-pinned={pinned}
+      className="pf bg-surface-2 relative"
+    >
       {/* Ordinary flow, so it scrolls away before the pin begins. The reader
           meets the heading once, on the way in, and then the screen belongs to
           the work — rather than the title holding a place on screen for the
@@ -319,7 +359,7 @@ export function Portfolio({
         <div className="mt-6 grid gap-6 lg:grid-cols-12 lg:items-end lg:gap-10">
           <Reveal delay={80} className="lg:col-span-7">
             <h2 className="font-display text-heading text-text text-[clamp(2rem,4.6vw,4rem)]">
-              {title}
+              <SplitWords text={title} />
             </h2>
           </Reveal>
 
@@ -410,9 +450,11 @@ export function Portfolio({
  */
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
+    // `roll-host`: the title's letters ripple when the card is hovered, even
+    // though the card itself is not a link.
     <article
       id={project.slug}
-      className="bg-surface flex h-full w-full scroll-mt-24 flex-col p-8 lg:p-10"
+      className="roll-host bg-surface flex h-full w-full scroll-mt-24 flex-col p-8 lg:p-10"
     >
       <div className="text-label text-text-muted flex items-center gap-4">
         <span className="font-display tabular-nums">{pad(index + 1)}</span>
@@ -421,7 +463,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       </div>
 
       <h3 className="font-display text-text mt-8 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em]">
-        {project.name}
+        <RollLetters text={project.name} />
       </h3>
 
       <p className="text-text mt-4 text-lg leading-snug font-semibold">
@@ -479,7 +521,7 @@ function ClosingCard() {
       </p>
 
       <a href={portfolioEnd.cta.href} className="btn-invert mt-auto w-fit">
-        {portfolioEnd.cta.label}
+        <RollText>{portfolioEnd.cta.label}</RollText>
       </a>
     </div>
   );

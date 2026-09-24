@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ImigongoMark, ImigongoRule } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
+import { RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
 import { membershipSection, plans } from "@/lib/site";
 
@@ -220,7 +221,7 @@ export function Membership() {
               id="membership-title"
               className="mb-title font-display text-heading text-text mt-6 text-[clamp(2rem,4.6vw,4rem)]"
             >
-              {membershipSection.title}
+              <SplitWords text={membershipSection.title} />
             </h2>
           </Reveal>
 
@@ -258,8 +259,11 @@ export function Membership() {
                         field is named for a price and still carries a TODO to
                         become one, so reading it here would one day render
                         "from RWF 450,000" as a step number. */}
-                    <span className="font-display text-label tabular-nums">
-                      {pad(index + 1)}
+                    {/* `mb-num` draws lusion.co's `[[ 01 ]]` brackets round
+                        the active entry's number, and the number rolls as the
+                        entry takes over — both in globals.css. */}
+                    <span className="mb-num font-display text-label tabular-nums">
+                      <RollText>{pad(index + 1)}</RollText>
                     </span>
                     <span className="font-display text-2xl font-extrabold tracking-[-0.02em]">
                       {plan.name}
@@ -376,7 +380,7 @@ export function Membership() {
                     plan.featured ? "btn-invert" : "btn"
                   }`}
                 >
-                  {plan.cta.label}
+                  <RollText>{plan.cta.label}</RollText>
                 </a>
               </Reveal>
             </li>

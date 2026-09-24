@@ -1,4 +1,5 @@
 import { ImigongoRule } from "@/components/imigongo";
+import { SplitLetters } from "@/components/split-text";
 import { HERO_DISPLAY_ID } from "@/lib/motion";
 
 /**
@@ -15,6 +16,10 @@ import { HERO_DISPLAY_ID } from "@/lib/motion";
  * titles here are single words, and a shrinking one-word line reads as a
  * glitch rather than as the poster line receding. It keeps the same `rise`
  * entrance and the same type treatment, so the two still feel like one site.
+ *
+ * The title rises letter by letter on a tilt — one word, so there is nothing
+ * else to split it by, and at this size the kerning the split costs is not
+ * visible.
  */
 export function PageHeroLine({ title }: { title: string }) {
   return (
@@ -23,7 +28,7 @@ export function PageHeroLine({ title }: { title: string }) {
         id={HERO_DISPLAY_ID}
         className="font-display text-oblique text-text text-[9.1vw] text-nowrap lg:text-[9.7vw]"
       >
-        {title}
+        <SplitLetters text={title} />
       </h1>
     </div>
   );

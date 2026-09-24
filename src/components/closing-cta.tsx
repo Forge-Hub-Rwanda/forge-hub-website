@@ -1,6 +1,9 @@
 import { Blob } from "@/components/blob";
 import { ImigongoRule, ImigongoWatermark } from "@/components/imigongo";
+import { ImigongoTunnel } from "@/components/imigongo-tunnel";
+import { Magnetic } from "@/components/magnetic";
 import { Reveal } from "@/components/reveal";
+import { RollLetters, RollText } from "@/components/split-text";
 import { closing } from "@/lib/site";
 
 /**
@@ -31,6 +34,10 @@ export function ClosingCta() {
         opacity={0.05}
       />
 
+      {/* The fly-through: concentric lozenges the scroll carries the page
+          through on its way to the headline. Behind the blob and the copy. */}
+      <ImigongoTunnel />
+
       <Blob
         id="closing-blob"
         className="top-[8%] right-[6vw] h-[60%] w-[46vw] opacity-90 sm:w-[26vw] lg:w-[20vw]"
@@ -53,8 +60,10 @@ export function ClosingCta() {
           {/* Wraps, unlike the hero: even shortened, the size that would fit
               this on one line would stop it reading as display type. The 16ch
               measure breaks it across two roughly even lines. */}
-          <h2 className="font-display text-oblique text-text mt-6 max-w-[16ch] text-[clamp(2.25rem,6.4vw,5.5rem)] text-balance">
-            {closing.title}
+          {/* `roll-host`: pointing at the invitation ripples it letter by
+              letter, as lusion.co's "Let's work together!" does. */}
+          <h2 className="roll-host font-display text-oblique text-text mt-6 max-w-[16ch] text-[clamp(2.25rem,6.4vw,5.5rem)] text-balance">
+            <RollLetters text={closing.title} />
           </h2>
         </Reveal>
 
@@ -66,11 +75,13 @@ export function ClosingCta() {
 
         <Reveal delay={260}>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <a href={closing.primaryCta.href} className="btn btn-strong">
-              {closing.primaryCta.label}
-            </a>
+            <Magnetic>
+              <a href={closing.primaryCta.href} className="btn btn-strong">
+                <RollText>{closing.primaryCta.label}</RollText>
+              </a>
+            </Magnetic>
             <a href={closing.secondaryCta.href} className="btn">
-              {closing.secondaryCta.label}
+              <RollText>{closing.secondaryCta.label}</RollText>
             </a>
           </div>
         </Reveal>

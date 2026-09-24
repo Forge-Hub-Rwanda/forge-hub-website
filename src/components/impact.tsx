@@ -1,5 +1,7 @@
 import { ImigongoRule, ImigongoWatermark } from "@/components/imigongo";
+import { Odometer } from "@/components/odometer";
 import { Reveal } from "@/components/reveal";
+import { RollText, SplitWords } from "@/components/split-text";
 import { Section } from "@/components/section-heading";
 import { impact, impactSection } from "@/lib/site";
 
@@ -34,7 +36,7 @@ export function Impact() {
 
           <Reveal delay={80}>
             <h2 className="font-display text-heading text-text mt-6 text-[clamp(2rem,4vw,3.5rem)]">
-              {impactSection.title}
+              <SplitWords text={impactSection.title} />
             </h2>
           </Reveal>
 
@@ -53,7 +55,7 @@ export function Impact() {
 
           <Reveal delay={240}>
             <a href={impactSection.cta.href} className="btn mt-10">
-              {impactSection.cta.label}
+              <RollText>{impactSection.cta.label}</RollText>
             </a>
           </Reveal>
         </div>
@@ -73,8 +75,11 @@ export function Impact() {
               <dt className="text-label text-text-muted order-2 mt-4">
                 {figure.label}
               </dt>
+              {/* Rolls into place digit by digit once it is on screen, like
+                  the counter on lusion.co's loader. The value is still in the
+                  document once, as text — see `Odometer`. */}
               <dd className="font-display text-text order-1 text-[clamp(2rem,3.4vw,3rem)] leading-none font-extrabold tracking-[-0.04em]">
-                {figure.value}
+                <Odometer value={figure.value} />
               </dd>
             </Reveal>
           ))}

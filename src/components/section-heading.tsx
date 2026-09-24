@@ -1,9 +1,19 @@
 import { ImigongoRule } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
+import { Scrub } from "@/components/scrub";
+import { SplitWords } from "@/components/split-text";
 
 /**
  * Standard section opener: small uppercase eyebrow, oversized upright title,
  * optional lede. Shared so every band on the page keeps the same rhythm.
+ *
+ * The title's words rise on a tilt as it is revealed, on every page — the one
+ * entrance lusion.co gives all of its headings, so it is given to all of these.
+ *
+ * `drift` adds the split drift on top: the title slides in from the left and
+ * the lede from the right, scrubbed against the scroll, so the two halves of
+ * the heading meet in the middle. Wide windows only; everywhere else the
+ * heading simply reveals.
  */
 type SectionHeadingProps = {
   eyebrow: string;
@@ -11,6 +21,7 @@ type SectionHeadingProps = {
   lede?: string;
   /** Optional link rendered opposite the title on wide screens. */
   action?: { label: string; href: string };
+  drift?: boolean;
 };
 
 export function SectionHeading({
@@ -18,9 +29,15 @@ export function SectionHeading({
   title,
   lede,
   action,
+  drift = false,
 }: SectionHeadingProps) {
   return (
-    <div className="mb-14 lg:mb-20">
+    <Scrub
+      className="mb-14 lg:mb-20"
+      query={drift ? "(min-width: 64rem)" : "not all"}
+      from={1}
+      to={0.45}
+    >
       <Reveal>
         <p className="text-label text-text-muted flex items-center gap-4">
           <ImigongoRule />
@@ -33,14 +50,16 @@ export function SectionHeading({
           line. Explicit column spans keep both at a fixed share. */}
       <div className="mt-6 grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-10">
         <Reveal delay={80} className="lg:col-span-7">
-          <h2 className="font-display text-heading text-text text-[clamp(2rem,4.6vw,4rem)]">
-            {title}
+          <h2 className="drift-l font-display text-heading text-text text-[clamp(2rem,4.6vw,4rem)]">
+            <SplitWords text={title} />
           </h2>
         </Reveal>
 
         {lede ? (
           <Reveal delay={160} className="lg:col-span-5">
-            <p className="text-text-muted text-lg leading-snug">{lede}</p>
+            <p className="drift-r text-text-muted text-lg leading-snug">
+              {lede}
+            </p>
           </Reveal>
         ) : null}
       </div>
@@ -67,7 +86,7 @@ export function SectionHeading({
           </a>
         </Reveal>
       ) : null}
-    </div>
+    </Scrub>
   );
 }
 

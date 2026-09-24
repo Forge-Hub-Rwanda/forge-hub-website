@@ -566,6 +566,12 @@ export type Project = {
   /** Short status line — `Live`, `In build`, `Write-up in preparation`. */
   status: string;
   /**
+   * Which of the blob colours the homepage gallery tints its band with while
+   * this card is centred. Optional; unset entries take the next colour in a
+   * fixed cycle, so a new project never needs one to look right.
+   */
+  accent?: "amber" | "coral" | "lime" | "sky" | "teal";
+  /**
    * The live product, if there is one to link to AND the client is happy to be
    * linked from here. Left undefined otherwise: a card without it simply has
    * no link rather than pointing at a placeholder.

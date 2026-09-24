@@ -6,6 +6,7 @@ import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Programs } from "@/components/programs";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
+import { RollText } from "@/components/split-text";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { services, servicesPage } from "@/lib/site";
@@ -31,7 +32,7 @@ export default function Services() {
             id="imigongo-services-corner"
             motif="lozenge"
             opacity={0.13}
-            className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
           />
         </div>
 
@@ -49,8 +50,12 @@ export default function Services() {
                 delay={index * 70}
                 className="border-line border-b"
               >
+                {/* `data-cursor-motif`: a slowly turning lozenge trails the
+                    pointer across the row. A motif rather than a word, because
+                    the row is not a link and a label would promise a click. */}
                 <div
                   id={service.id}
+                  data-cursor-motif
                   className="grid scroll-mt-24 gap-4 px-2 py-8 lg:grid-cols-12 lg:gap-8 lg:px-6 lg:py-12"
                 >
                   <p className="font-display text-text-muted text-label lg:col-span-1">
@@ -80,7 +85,7 @@ export default function Services() {
 
           <Reveal delay={200}>
             <a href={servicesPage.cta.href} className="btn mt-12">
-              {servicesPage.cta.label}
+              <RollText>{servicesPage.cta.label}</RollText>
             </a>
           </Reveal>
         </Section>

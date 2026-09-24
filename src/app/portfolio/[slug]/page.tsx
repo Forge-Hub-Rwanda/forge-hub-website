@@ -6,7 +6,9 @@ import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner, ImigongoRule } from "@/components/imigongo";
 import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
+import { Scrub } from "@/components/scrub";
 import { Section } from "@/components/section-heading";
+import { RollLetters, SplitWords } from "@/components/split-text";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { projectPage, projects } from "@/lib/site";
@@ -82,10 +84,10 @@ export default async function ProjectDetailPage(
               // wider than a phone. Breaking inside it is better than letting it
               // run off the side, where `body { overflow-x: clip }` would silently
               // cut the end off rather than scroll to it.
-              className="rise font-display text-heading text-text mt-8 max-w-[18ch] text-[clamp(2.5rem,7.5vw,6.5rem)] [overflow-wrap:anywhere]"
+              className="font-display text-heading text-text mt-8 max-w-[18ch] text-[clamp(2.5rem,7.5vw,6.5rem)] [overflow-wrap:anywhere]"
               style={{ "--delay": "160ms" } as React.CSSProperties}
             >
-              {project.name}
+              <SplitWords text={project.name} mode="load" />
             </h1>
           </div>
 
@@ -130,14 +132,23 @@ export default async function ProjectDetailPage(
             id={`imigongo-${project.slug}`}
             motif="lozenge"
             opacity={0.13}
-            className="right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
+            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
           />
         </div>
 
-        {/* The one image on the page that is worth loading eagerly. */}
+        {/* The one image on the page that is worth loading eagerly.
+
+            It grows out of an inset card to its full width as it comes up the
+            screen — lusion.co's showreel expanding from its thumbnail. The
+            scale is on the inner wrapper, so the section's own box, and
+            everything below it, never moves. */}
         <Section className="border-line border-t">
           <Reveal>
-            <ProjectImage image={project.cover} ratio="16 / 9" priority />
+            <Scrub query="(min-width: 48rem)" from={1} to={0.35}>
+              <div className="reel-grow">
+                <ProjectImage image={project.cover} ratio="16 / 9" priority />
+              </div>
+            </Scrub>
           </Reveal>
 
           {project.href ? (
@@ -231,8 +242,10 @@ export default async function ProjectDetailPage(
                 href={`/portfolio/${next.slug}`}
                 className="group text-text mt-8 flex flex-wrap items-baseline gap-x-8 gap-y-3"
               >
-                <span className="font-display text-[clamp(2rem,5vw,4rem)] leading-none font-extrabold tracking-[-0.035em] group-hover:underline">
-                  {next.name}
+                {/* Ripples letter by letter on hover rather than underlining:
+                    at this size an underline cut through the descenders. */}
+                <span className="font-display text-[clamp(2rem,5vw,4rem)] leading-none font-extrabold tracking-[-0.035em]">
+                  <RollLetters text={next.name} />
                 </span>
                 <span className="bg-text text-text-invert flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-full transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1">
                   <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4">
