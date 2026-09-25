@@ -1,7 +1,7 @@
-import { ImigongoWatermark } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
 import { RollText } from "@/components/split-text";
+import { WheelSticks } from "@/components/wheel-sticks";
 import { programs, programsSection } from "@/lib/site";
 
 /**
@@ -40,14 +40,10 @@ export function Programs({ tone = "plain" }: { tone?: "plain" | "band" }) {
              large enough to read as parquet, faint enough that it is texture
              you notice on second glance rather than a layer the rows have to
              sit on top of. */
-          <ImigongoWatermark
-            id="imigongo-programs"
-            motif="herringbone"
-            tone="accent"
-            angle={-8}
-            scale={3.5}
-            opacity={0.05}
-          />
+          /* The same field, drawn as separate planks where the homepage's
+             imigongo wheel runs, so the wheel can push them aside as it
+             passes; the plain watermark everywhere else. */
+          <WheelSticks id="imigongo-programs" />
         ) : undefined
       }
     >

@@ -4,6 +4,8 @@ import { ImigongoTunnel } from "@/components/imigongo-tunnel";
 import { Magnetic } from "@/components/magnetic";
 import { Reveal } from "@/components/reveal";
 import { RollLetters, RollText } from "@/components/split-text";
+import { WheelArt } from "@/components/wheel-art";
+import { WheelNudge } from "@/components/wheel-nudge";
 import { closing } from "@/lib/site";
 
 /**
@@ -16,8 +18,23 @@ import { closing } from "@/lib/site";
  * a wide screen rather than 160, and the gaps between eyebrow, title, body and
  * buttons pulled in with it — take roughly a quarter off it without turning a
  * closing statement into a strip.
+ *
+ * `wheel` is the homepage's placement, where the imigongo wheel ends its run:
+ * the lozenge tunnel gives way to the slot the wheel shrinks into, and the
+ * watermark ripples as the wheel arrives. Every other page keeps the tunnel.
  */
-export function ClosingCta() {
+export function ClosingCta({ wheel = false }: { wheel?: boolean }) {
+  const watermark = (
+    <ImigongoWatermark
+      id="imigongo-closing"
+      motif="nested"
+      tone="accent"
+      angle={-8}
+      scale={1.6}
+      opacity={0.05}
+    />
+  );
+
   return (
     <section
       id="tour"
@@ -25,18 +42,24 @@ export function ClosingCta() {
     >
       {/* The only oxblood pattern on the page: a closing nod to the logo tile
           before the footer, kept at watermark strength like the rest. */}
-      <ImigongoWatermark
-        id="imigongo-closing"
-        motif="nested"
-        tone="accent"
-        angle={-8}
-        scale={1.6}
-        opacity={0.05}
-      />
+      {wheel ? <WheelNudge>{watermark}</WheelNudge> : watermark}
 
-      {/* The fly-through: concentric lozenges the scroll carries the page
-          through on its way to the headline. Behind the blob and the copy. */}
-      <ImigongoTunnel />
+      {wheel ? (
+        /* Where the wheel comes to rest: a square slot between the headline
+           and the blob. It holds a static copy of the wheel, which is what a
+           phone or a reduced-motion visitor sees, and which steps aside for
+           the live wheel landing on it. */
+        <div
+          data-wheel-dock
+          className="pointer-events-none absolute top-1/2 right-[28vw] hidden aspect-square w-[18vw] -translate-y-1/2 sm:block lg:w-[14vw]"
+        >
+          <WheelArt />
+        </div>
+      ) : (
+        /* The fly-through: concentric lozenges the scroll carries the page
+           through on its way to the headline. Behind the blob and the copy. */
+        <ImigongoTunnel />
+      )}
 
       <Blob
         id="closing-blob"
@@ -48,7 +71,8 @@ export function ClosingCta() {
           page width the line, the paragraph and the two buttons end up as
           three separate things stranded across a very wide row. Pulling the
           container in gathers them back into one block. */}
-      <div className="relative mx-auto max-w-[88rem]">
+      {/* `wheel-over` keeps the copy above the wheel as it docks. */}
+      <div className="wheel-over relative mx-auto max-w-[88rem]">
         <Reveal>
           <p className="text-label text-text-muted flex items-center gap-4">
             <ImigongoRule />

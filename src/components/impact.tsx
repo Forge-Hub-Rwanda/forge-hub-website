@@ -3,6 +3,7 @@ import { Odometer } from "@/components/odometer";
 import { Reveal } from "@/components/reveal";
 import { RollText, SplitWords } from "@/components/split-text";
 import { Section } from "@/components/section-heading";
+import { WheelNudge } from "@/components/wheel-nudge";
 import { impact, impactSection } from "@/lib/site";
 
 /**
@@ -17,12 +18,15 @@ export function Impact() {
     <Section
       className="bg-surface-2"
       watermark={
-        <ImigongoWatermark
-          id="imigongo-impact"
-          motif="lozenge"
-          angle={12}
-          opacity={0.05}
-        />
+        /* Ripples as the homepage's imigongo wheel passes over it. */
+        <WheelNudge>
+          <ImigongoWatermark
+            id="imigongo-impact"
+            motif="lozenge"
+            angle={12}
+            opacity={0.05}
+          />
+        </WheelNudge>
       }
     >
       <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">

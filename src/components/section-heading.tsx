@@ -122,7 +122,12 @@ export function Section({
       className={`relative px-6 py-24 lg:px-[3.6vw] lg:py-36 ${className ?? ""}`}
     >
       {watermark}
-      <div className="relative mx-auto max-w-[110rem]">{children}</div>
+      {/* `wheel-over` lifts the content above the homepage's imigongo wheel,
+          which passes between it and the band's background. It does nothing
+          on any page without the wheel — see globals.css. */}
+      <div className="wheel-over relative mx-auto max-w-[110rem]">
+        {children}
+      </div>
     </section>
   );
 }

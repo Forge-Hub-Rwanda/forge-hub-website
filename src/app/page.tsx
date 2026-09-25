@@ -5,6 +5,7 @@ import { Community } from "@/components/community";
 import { Events } from "@/components/events";
 import { HeroDisplay } from "@/components/hero-display";
 import { HeroIntro } from "@/components/hero-intro";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { Impact } from "@/components/impact";
 import { Manifesto } from "@/components/manifesto";
 import { Membership } from "@/components/membership";
@@ -58,8 +59,14 @@ export default function Home() {
         <Programs tone="band" />
 
         <Events />
-        <ClosingCta />
+        {/* `wheel`: the tunnel gives way to the slot the wheel docks in. */}
+        <ClosingCta wheel />
       </main>
+
+      {/* The imigongo wheel (experiment). After `main` on purpose: fixed at
+          z-index 1, coming later in the document is what puts it above every
+          band's background while `.wheel-over` keeps the content above it. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

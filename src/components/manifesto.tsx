@@ -3,6 +3,7 @@ import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
 import { Section } from "@/components/section-heading";
 import { RollText, SplitWords } from "@/components/split-text";
+import { WheelNudge } from "@/components/wheel-nudge";
 import { manifesto } from "@/lib/site";
 
 /**
@@ -19,7 +20,14 @@ export function Manifesto() {
       id="about"
       className="border-line border-t"
       watermark={
-        <ImigongoWatermark id="imigongo-manifesto" motif="spiral" scale={1.4} />
+        /* Ripples as the homepage's imigongo wheel passes over it. */
+        <WheelNudge>
+          <ImigongoWatermark
+            id="imigongo-manifesto"
+            motif="spiral"
+            scale={1.4}
+          />
+        </WheelNudge>
       }
     >
       <Reveal>

@@ -5,6 +5,7 @@ import { ImigongoRule } from "@/components/imigongo";
 import { Reveal } from "@/components/reveal";
 import { RollLetters, RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
+import { setGallery } from "@/lib/wheel";
 import { portfolioEnd, type Project } from "@/lib/site";
 
 /**
@@ -185,6 +186,8 @@ export function Portfolio({
     /** Which card the band is tinted for, so the property is written only on
         a change of card rather than on every frame. */
     let tinted = -1;
+    /** The travel last handed to the wheel. */
+    let published = NaN;
 
     const draw = () => {
       const { travel, steps, top } = metrics.current;
@@ -218,6 +221,14 @@ export function Portfolio({
       if (Math.abs(target - current) < 0.05) current = target;
 
       pin.style.setProperty("--x", `${current}px`);
+
+      // Tell the homepage's imigongo wheel how far the cards have come, so it
+      // turns by exactly that much at its rim — the gear moving the row. Only
+      // on a change, so a settled row never wakes it.
+      if (current !== published) {
+        published = current;
+        setGallery({ travel: -current });
+      }
 
       // The colour takeover. Progress across the run picks the card nearest
       // the middle — the closing card included, as the last of them — and
@@ -262,6 +273,10 @@ export function Portfolio({
         "--pin-height",
         `${window.innerHeight + travel * DRAG}px`,
       );
+
+      // The pinned range, for the wheel: scroll inside it turns the wheel
+      // through the cards' travel instead of through the scroll itself.
+      setGallery({ top: metrics.current.top, length: travel * DRAG });
     };
 
     // Card widths are in vw and the strip is the viewport, so a resize changes
@@ -302,6 +317,7 @@ export function Portfolio({
       pin.style.removeProperty("--pin-height");
       pin.style.removeProperty("--x");
       section.style.removeProperty("--pf-tint");
+      setGallery({ top: 0, length: 0, travel: 0 });
     };
   }, [pinned, projects]);
 
@@ -348,7 +364,7 @@ export function Portfolio({
           meets the heading once, on the way in, and then the screen belongs to
           the work — rather than the title holding a place on screen for the
           whole time the cards are moving. */}
-      <div className="px-6 pt-24 pb-14 lg:px-[3.6vw] lg:pt-36 lg:pb-20">
+      <div className="wheel-over px-6 pt-24 pb-14 lg:px-[3.6vw] lg:pt-36 lg:pb-20">
         <Reveal>
           <p className="text-label text-text-muted flex items-center gap-4">
             <ImigongoRule />
@@ -399,7 +415,9 @@ export function Portfolio({
       {/* The pinned range. Its height is the one screen the stage holds plus
           the distance the row has to travel — written by the component, because
           only it can measure how far that is. */}
-      <div ref={pinRef} className="pf-pin">
+      {/* `wheel-over`: the cards pass in front of the homepage's imigongo
+          wheel, which turns behind them as if it were moving them. */}
+      <div ref={pinRef} className="pf-pin wheel-over">
         <div className="pf-stage">
           {/* The strip the row is seen through. The clip that makes it a strip
               lives in the pinned rules rather than here, for two reasons: the

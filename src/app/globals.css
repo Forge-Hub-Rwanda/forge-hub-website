@@ -1478,6 +1478,73 @@ html.lenis {
   }
 }
 
+/* ---- The imigongo wheel (experiment) --------------------------------------
+   A half-wheel fixed to the right edge of the window, turning with the scroll
+   — see ImigongoWheel, and WHEEL-CHANGES.md for everything this touches.
+
+   THE LAYERING is the whole trick. The wheel is fixed at z-index 1 and comes
+   after the page content, so in the root stacking context it paints above
+   every section's background and watermark (z-auto) — and `.wheel-over` lifts
+   the content itself to 2, above it. Both rules exist only while <html> carries
+   `data-wheel`, which the wheel sets once it is actually running, so with the
+   wheel off the page stacks exactly as it always did.
+
+   Lifting content with `z-index` alone is safe around the sticky index and the
+   pinned gallery: it is transforms and overflow on an ancestor that stop an
+   element sticking, never a stacking order. */
+:root {
+  /* Watermark strength, shared by the live wheel and the static docked copy
+     so the hand-over between them is invisible. */
+  --wheel-ink: 0.12;
+}
+
+:root[data-wheel] .wheel-over {
+  position: relative;
+  z-index: 2;
+}
+
+.wheel-live {
+  display: none;
+}
+
+/* Diameter 86vh: the wheel leaves 7vh clear above and below itself. White
+   with `difference` reads as faint dark lines on a light band and faint light
+   lines on a dark one — there is no single colour that would do both. */
+@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+  :root[data-wheel] .wheel-live {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    display: block;
+    width: 86vh;
+    height: 86vh;
+    color: #fff;
+    opacity: var(--wheel-ink);
+    mix-blend-mode: difference;
+    pointer-events: none;
+    transform-origin: 50% 50%;
+    will-change: transform;
+  }
+}
+
+/* The docked copy, in the page's own ink at the same strength. It stands in
+   wherever the live wheel does not run, and steps aside while it does. */
+[data-wheel-dock] > svg {
+  color: var(--color-text);
+  opacity: var(--wheel-ink);
+}
+
+:root[data-wheel] [data-wheel-dock] > svg {
+  visibility: hidden;
+}
+
+/* Each programs-band plank turns about its own middle. */
+.wheel-stick {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 /* ---- Hero corners: a slow counter-turn ------------------------------------
    The imigongo patch in each hero's corner turns a few degrees as the first
    screen scrolls away. A native scroll-driven animation — Lenis moves the real
