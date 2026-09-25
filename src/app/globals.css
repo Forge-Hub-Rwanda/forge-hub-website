@@ -1478,14 +1478,6 @@ html.lenis {
   }
 }
 
-/* ---- Hero: WebGL field ----------------------------------------------------
-   The canvas takes over from the SVG blob only once it has drawn a frame; the
-   attribute flips on that frame, so there is never a moment with neither. */
-[data-hero-field="svg"] > .hero-canvas,
-[data-hero-field="webgl"] > svg.blob {
-  visibility: hidden;
-}
-
 /* ---- Hero corners: a slow counter-turn ------------------------------------
    The imigongo patch in each hero's corner turns a few degrees as the first
    screen scrolls away. A native scroll-driven animation — Lenis moves the real

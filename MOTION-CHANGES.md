@@ -35,7 +35,6 @@ Everything added to `src/app/globals.css` sits in one block, which starts at the
 | `src/components/scroll-progress.tsx` | Imigongo zigzag progress line along the top edge of the window.                                                        |
 | `src/components/forge-loader.tsx`    | First-visit loader: counter 000→100, the bar folds into the logo tile, and the tile flies into the header.             |
 | `src/lib/loader.ts`                  | Inline gate that decides before first paint whether the loader plays (once per browser session).                       |
-| `src/components/hero-shader.tsx`     | WebGL liquid blob in the homepage hero, with the SVG blob as fallback.                                                 |
 | `src/components/imigongo-tunnel.tsx` | CSS-3D tunnel of lozenge rings behind the closing call to action.                                                      |
 | `src/lib/pointer.ts`                 | Detects a real mouse per event. Windows touch laptops report `hover: none` even with a mouse.                          |
 | `src/types/react-canary.d.ts`        | Type reference for React's `<ViewTransition>`.                                                                         |
@@ -58,9 +57,7 @@ Everything added to `src/app/globals.css` sits in one block, which starts at the
 
 ### Homepage
 
-- **`src/app/page.tsx`**
-  - `Blob` is replaced by `HeroShader`, which still renders the same `Blob` underneath.
-  - The hero corner gets `corner-spin`.
+- **`src/app/page.tsx`**: the hero corner gets `corner-spin`. The hero blob itself is the original SVG `Blob`, unchanged. A WebGL version was tried and then removed at your request; it is in the history as commit `1bae365` if it is ever wanted again.
 - **`src/components/hero-display.tsx`**: "Forge the future" words rise on load.
 - **`src/components/hero-intro.tsx`**
   - The headline words rise on a tilt. `rise` was removed from the `h2`.
@@ -112,7 +109,6 @@ Everything added to `src/app/globals.css` sits in one block, which starts at the
 | Effect               | Quickest off-switch                                                                                  |
 | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | Loader               | Remove `<ForgeLoader />` and its `<script>` from `layout.tsx`.                                       |
-| WebGL hero           | In `src/app/page.tsx`, swap `HeroShader` back to `Blob` (same `className`).                          |
 | Cursor pill          | Remove `<CursorLabel />` from `layout.tsx`.                                                          |
 | Scroll progress line | Remove `<ScrollProgress />` from `layout.tsx`.                                                       |
 | Page wipe            | Delete the "Page transitions" block in `globals.css` and unwrap `<ViewTransition>` in `layout.tsx`.  |
@@ -124,11 +120,11 @@ Everything added to `src/app/globals.css` sits in one block, which starts at the
 
 ## Accessibility and performance guarantees
 
-- **Reduced motion.** Every effect lands on its finished state. Words are already risen, figures already on their digits, and there is no loader, shader, cursor, drift or page wipe.
+- **Reduced motion.** Every effect lands on its finished state. Words are already risen, figures already on their digits, and there is no loader, cursor, drift or page wipe.
 - **No JavaScript.** Content still shows (see the `<noscript>` style). The loader can never appear, because the gate script is what switches it on.
 - **Screen readers.** Split and rolled text is rendered once as real text (visually hidden), and the animated copy is `aria-hidden`.
-- **Phones and narrow windows.** Scrubbed effects only run from 48rem or 64rem upward. Cursor, magnetic and shader only wake on a real mouse or pen, which a phone never sends.
-- **Offscreen work.** Scroll-scrubbed effects, the shader and the blob pause when they are off screen. The shader also pauses when the tab is hidden.
+- **Phones and narrow windows.** Scrubbed effects only run from 48rem or 64rem upward. The cursor pill and magnetic buttons only respond to a real mouse or pen, which a phone never sends.
+- **Offscreen work.** Scroll-scrubbed effects and the blob pause when they are off screen.
 
 ## Deliberately not done
 

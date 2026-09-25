@@ -14,17 +14,3 @@
 /** True for a pointer event that came from a mouse or a pen. */
 export const isFinePointer = (event: PointerEvent) =>
   event.pointerType === "mouse" || event.pointerType === "pen";
-
-/**
- * Runs `callback` once, on the first mouse or pen movement. Returns a cleanup
- * that removes the listener if it has not fired yet.
- */
-export function onFirstFinePointer(callback: (event: PointerEvent) => void) {
-  const listener = (event: PointerEvent) => {
-    if (!isFinePointer(event)) return;
-    window.removeEventListener("pointermove", listener);
-    callback(event);
-  };
-  window.addEventListener("pointermove", listener, { passive: true });
-  return () => window.removeEventListener("pointermove", listener);
-}

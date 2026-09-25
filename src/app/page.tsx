@@ -1,10 +1,10 @@
+import { Blob } from "@/components/blob";
 import { ImigongoCorner } from "@/components/imigongo";
 import { ClosingCta } from "@/components/closing-cta";
 import { Community } from "@/components/community";
 import { Events } from "@/components/events";
 import { HeroDisplay } from "@/components/hero-display";
 import { HeroIntro } from "@/components/hero-intro";
-import { HeroShader } from "@/components/hero-shader";
 import { Impact } from "@/components/impact";
 import { Manifesto } from "@/components/manifesto";
 import { Membership } from "@/components/membership";
@@ -25,10 +25,7 @@ export default function Home() {
           the display line, the nav and the intro copy at once, and it bounds
           the sticky display line so the line releases at the hero's end. */}
         <div className="relative">
-          {/* The site's one WebGL moment. It renders the ordinary SVG blob and
-              only swaps in the shader where the device can afford it — see
-              HeroShader for the conditions. */}
-          <HeroShader className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
           <HeroDisplay />
           <SiteHeader />
           <HeroIntro />
