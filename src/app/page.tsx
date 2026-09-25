@@ -1,5 +1,4 @@
 import { Blob } from "@/components/blob";
-import { ImigongoCorner } from "@/components/imigongo";
 import { ClosingCta } from "@/components/closing-cta";
 import { Community } from "@/components/community";
 import { Events } from "@/components/events";
@@ -30,16 +29,6 @@ export default function Home() {
           <HeroDisplay />
           <SiteHeader />
           <HeroIntro />
-
-          {/* Anchored in the hero's bottom-right corner and dissolving away from
-            it. Sits at z-0, below the display line and the intro copy, both of
-            which are z-20. */}
-          <ImigongoCorner
-            id="imigongo-hero-corner"
-            motif="lozenge"
-            opacity={0.13}
-            className="corner-spin right-0 bottom-0 z-0 h-[58vh] w-[82vw] sm:w-[62vw] lg:h-[68vh] lg:w-[46vw]"
-          />
         </div>
 
         <Manifesto />

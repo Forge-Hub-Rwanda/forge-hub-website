@@ -38,7 +38,9 @@ It never covers text: content stays in front of it, and section backgrounds sit 
 
 ## Changed files
 
-- **`src/app/page.tsx`**: mounts `<ImigongoWheel />` after `<main>`, and passes `wheel` to `ClosingCta`.
+- **`src/app/page.tsx`**:
+  - mounts `<ImigongoWheel />` after `<main>`, and passes `wheel` to `ClosingCta`;
+  - the lozenge pattern in the hero's bottom-right corner (`ImigongoCorner`) is removed from the homepage at your request. The other pages keep theirs, and the corner's slow spin stays because they still use it. To bring it back, restore it from `cb30a3b`.
 - **`src/components/closing-cta.tsx`**: a new optional `wheel` prop. On the homepage:
   - the lozenge tunnel is replaced by the dock slot, which holds a static copy of the wheel;
   - the watermark gets the ripple;
