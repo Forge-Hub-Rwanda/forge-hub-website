@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ImigongoRule } from "@/components/imigongo";
 import { Magnetic } from "@/components/magnetic";
-import { RollText } from "@/components/split-text";
 import { accountPage } from "@/lib/site";
 
 /**
@@ -13,8 +12,9 @@ import { accountPage } from "@/lib/site";
  * Every part carries a `menu-*` class and an `--i` step, so it enters with
  * the menu's rule, rise and fade.
  *
- * Fields follow the contact form — square-cornered, rule-bordered, a label
- * that rolls while its input has focus — so the site keeps one input pattern.
+ * Fields follow the contact form — square-cornered and rule-bordered — so the
+ * site keeps one input pattern. Unlike the rest of the site, nothing here
+ * rolls on hover: the tabs, labels and button keep a single, still label.
  *
  * There is no auth backend yet, so submitting stops here and the note under
  * the button says so plainly rather than pretending anything happened.
@@ -125,7 +125,7 @@ export function AccountForms() {
                 active ? "text-text" : "text-text-muted hover:text-text"
               }`}
             >
-              <RollText>{accountPage[key].tab}</RollText>
+              {accountPage[key].tab}
               {/* The same imigongo zigzag the nav links draw on hover, held on
                   for the tab that is open. */}
               <span
@@ -185,7 +185,7 @@ export function AccountForms() {
               style={{ "--i": 5 + index } as React.CSSProperties}
             >
               <label htmlFor={field.id} className="text-label text-text-muted">
-                <RollText>{field.label}</RollText>
+                {field.label}
               </label>
               <input
                 id={field.id}
@@ -210,7 +210,7 @@ export function AccountForms() {
                 data-cursor={copy.submit}
                 className="btn btn-strong w-fit"
               >
-                <RollText>{copy.submit}</RollText>
+                {copy.submit}
               </button>
             </Magnetic>
             <p
