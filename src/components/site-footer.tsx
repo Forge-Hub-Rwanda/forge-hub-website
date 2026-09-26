@@ -21,6 +21,7 @@ export function SiteFooter() {
   return (
     <footer
       id="contact"
+      data-panel="footer"
       className="bg-text text-text-invert relative px-6 pt-14 pb-8 lg:px-[3.6vw] lg:pt-16 lg:pb-10"
     >
       {/* Edge banding along the top, the way a real panel is framed. Light on

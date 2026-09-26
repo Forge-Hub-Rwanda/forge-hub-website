@@ -18,7 +18,7 @@ export function HeroIntro() {
     <div
       id="hero-intro"
       tabIndex={-1}
-      className="relative z-20 px-6 pt-2 pb-20 lg:px-[3.6vw] lg:pt-4 lg:pb-28"
+      className="relative z-20 px-6 pt-2 pb-20 lg:px-[3.6vw] lg:pt-4 lg:pb-28 lg:landscape:pt-2 lg:landscape:pl-[calc(3.6vw+8px)]"
     >
       {/* The sticky display line above releases as this headline reaches it.
           The words rise on their own rather than the heading carrying `rise`,
@@ -26,7 +26,7 @@ export function HeroIntro() {
           transform while it plays. */}
       <h2
         id={HERO_RELEASE_ID}
-        className="font-display text-heading text-text max-w-[19ch] text-[clamp(2.25rem,5.4vw,4.75rem)]"
+        className="font-display text-heading text-text max-w-[19ch] text-[clamp(2.25rem,5.4vw,4.75rem)] lg:landscape:ml-5"
         style={{ "--delay": "140ms" } as React.CSSProperties}
       >
         <SplitWords text={hero.headline} mode="load" />

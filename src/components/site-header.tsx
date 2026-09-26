@@ -3,19 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ImigongoBand, ImigongoRule } from "@/components/imigongo";
 import { Logo } from "@/components/logo";
 import { RollText } from "@/components/split-text";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getLenis } from "@/lib/lenis";
 import {
   HERO_DISPLAY_ID,
-  LOCALE_FADE_TRAVEL,
   LOGO_SCROLL_TRAVEL,
   NAV_TUCK_TRAVEL,
 } from "@/lib/motion";
-import { hero, menuColumns, navItems, socials } from "@/lib/site";
-
-const LOCALES = ["EN", "RW"] as const;
+import {
+  hero,
+  menuColumns,
+  navItems,
+  site,
+  socials,
+  type NavItem,
+} from "@/lib/site";
 
 /**
  * The hero's primary CTA is an in-page anchor (`#programs`), which is correct
@@ -43,7 +48,8 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [pinned, setPinned] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [locale, setLocale] = useState<(typeof LOCALES)[number]>("EN");
+  // Which row's related links are unfolded in the menu, below lg.
+  const [expanded, setExpanded] = useState<string | null>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
   const tuckRef = useRef<HTMLDivElement>(null);
   const pinSentinelRef = useRef<HTMLDivElement>(null);
@@ -80,7 +86,7 @@ export function SiteHeader() {
     };
   }, []);
 
-  // The nav links and language toggle slide right and fade as the display line
+  // The nav links slide right and fade as the display line
   // comes down onto them, leaving the logo — and the hamburger, so the site
   // stays navigable — alone at the top. Driven by the measured overlap rather
   // than a scroll threshold, so it stays correct at any viewport size, and it
@@ -127,41 +133,6 @@ export function SiteHeader() {
       if (frame) cancelAnimationFrame(frame);
     };
   }, [pinned]);
-
-  // The language toggle sits beside the hamburger but, unlike it, fades out
-  // over the first stretch of scroll: it belongs to the hero, not to the rest
-  // of the page. Two instances are rendered — one for the pinned corner below
-  // lg, one in the desktop nav row — and only ever one is visible, so the
-  // effect drives whichever are present rather than holding a single ref.
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let frame = 0;
-
-    const update = () => {
-      frame = 0;
-      const progress = Math.min(window.scrollY / LOCALE_FADE_TRAVEL, 1);
-      for (const node of document.querySelectorAll<HTMLElement>(
-        "[data-locale-toggle]",
-      )) {
-        node.style.setProperty("--locale-fade", String(1 - progress));
-        // Once invisible it should not be tabbable either.
-        if (progress > 0.9) node.setAttribute("inert", "");
-        else node.removeAttribute("inert");
-      }
-    };
-
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
 
   // Through the hero the nav travels with the page, sitting between the oblique
   // display line and the sub-headline; it pins to the top once its resting
@@ -296,13 +267,19 @@ export function SiteHeader() {
     else window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
   };
 
+  // Every open starts with the rows folded, whatever was left open last time.
+  const openMenu = () => {
+    setExpanded(null);
+    setMenuOpen(true);
+  };
+
   const primaryNav = navItems.filter((item) => item.primary);
 
   // Small hover-reveal links per menu item, grouped in `site.ts` so the flyout
   // doesn't need its own content to maintain.
   const linksByColumn = (title: string) =>
     menuColumns.find((column) => column.title === title)?.links ?? [];
-  const subLinksByLabel: Record<string, ReturnType<typeof linksByColumn>> = {
+  const subLinksByLabel: Record<string, NavItem[]> = {
     About: linksByColumn("Company"),
     Services: linksByColumn("What we do"),
     Team: linksByColumn("Company"),
@@ -333,20 +310,18 @@ export function SiteHeader() {
       </Link>
 
       {/* --- Corner controls, below lg only ---------------------------------
-          Phones and tablets have no nav row, so the hamburger and the language
-          toggle live pinned in the corner. From lg they move into the nav row,
-          sitting after the links — see below. */}
+          Phones and tablets have no nav row, so the hamburger and the other
+          controls live pinned in the corner. From lg they move into the nav
+          row, sitting after the links — see below. */}
       <div className="fixed top-0 right-0 z-60 flex items-center gap-4 px-6 py-4 lg:hidden">
-        {/* Unlike the locale toggle it is kept at every width: one 32px circle
-            leaves the cluster narrow enough to clear the centred logo tile even
-            on the smallest phone, once EN/RW has dropped out below sm. */}
+        {/* Kept at every width: one 32px circle leaves the cluster narrow
+            enough to clear the centred logo tile even on the smallest phone. */}
         <ThemeToggle className="flex" />
-        <LocaleToggle
-          locale={locale}
-          onChange={setLocale}
-          className="hidden sm:flex"
-        />
-        <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
+        {/* Drops out below sm for the same reason: the smallest phones only
+            have room for one circle beside the centred logo. The menu carries
+            its own copy, so it is still reachable there. */}
+        <AccountLink className="hidden sm:flex" />
+        <MenuButton open={menuOpen} onOpen={openMenu} />
       </div>
 
       {/* Drops the desktop nav row to the vertical middle of the first screen,
@@ -413,18 +388,13 @@ export function SiteHeader() {
               wrapper, so the hamburger holds its place as the links slide away
               and stays reachable once the row pins to the top.
 
-              The theme toggle sits here too and, unlike the locale toggle
-              beside it, carries no fade: the locale belongs to the hero, but
-              the theme is a setting for the whole site and should be reachable
-              from anywhere on the page without opening the menu first. */}
+              The theme toggle and the account link sit here too and carry no
+              fade: both are for the whole site and should be reachable from
+              anywhere on the page without opening the menu first. */}
           <div className="flex items-center gap-6">
             <ThemeToggle className="flex" />
-            <LocaleToggle
-              locale={locale}
-              onChange={setLocale}
-              className="flex"
-            />
-            <MenuButton open={menuOpen} onOpen={() => setMenuOpen(true)} />
+            <AccountLink className="flex" />
+            <MenuButton open={menuOpen} onOpen={openMenu} />
           </div>
         </div>
       </div>
@@ -433,153 +403,196 @@ export function SiteHeader() {
       <div aria-hidden hidden={!pinned} className="h-0 lg:h-[4.5rem]" />
 
       {/* --- Full-screen menu ---------------------------------------------
-          Always mounted (not `hidden`) so the open/close transform can
-          animate — `inert` takes it out of the tab order and off the a11y
-          tree while closed instead. It starts translated fully above the
-          viewport and drops into place, reversing on close. */}
+          Always mounted (not `hidden`) so the curtains can animate — `inert`
+          takes it out of the tab order and off the a11y tree while closed,
+          and `globals.css` hides it outright once the close has played.
+
+          Two layouts from one tree. Below lg it is a single column: the rows
+          at the top, the calls to action at the foot where a thumb reaches,
+          and each row's related links folded under a chevron. From lg the
+          rows take the left two-thirds and the calls to action a side column,
+          and the related links swap in for the blurb on hover.
+
+          Every size in the list is capped by the viewport's height as well as
+          its width, so the whole menu fits on one screen on a short laptop or
+          a phone with its browser bars showing — the side column and the foot
+          are where anything added later (an account, a sign-in) goes. */}
       <div
         id="site-menu"
         data-open={menuOpen}
         inert={!menuOpen}
         aria-hidden={!menuOpen}
-        className="bg-surface fixed inset-0 z-70 -translate-y-full overflow-y-auto opacity-0 transition-[transform,opacity] duration-500 ease-[var(--ease-out-expo)] data-[open=true]:translate-y-0 data-[open=true]:opacity-100"
+        className="fixed inset-0 z-70"
       >
-        <div className="mx-auto flex min-h-full max-w-[110rem] flex-col px-6 py-5 lg:px-10">
-          <div className="flex items-center justify-end">
-            {/* Doubles as the "back to home" exit: it closes the drawer and
-                the `href` carries the page back to the hero. */}
-            <Link
-              href="/"
-              onClick={goHome}
-              className="text-text flex h-11 w-11 items-center justify-center transition-opacity hover:opacity-70"
-            >
-              <span className="sr-only">Close menu and return to home</span>
-              <svg aria-hidden viewBox="0 0 24 24" className="h-7 w-7">
-                <path
-                  d="M5 5l14 14M19 5L5 19"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </Link>
-          </div>
+        <div aria-hidden className="menu-veil" />
 
-          {/* Every block below carries `menu-stagger` and its place in the
-              order as `--i`: opening the menu raises them one after another
-              on a slight tilt, lusion.co's menu entrance. See globals.css. */}
-          <nav
-            aria-label="All pages"
-            className="flex flex-1 flex-col justify-center py-10"
-          >
-            <Link
-              href="/"
-              onClick={goHome}
-              className="menu-stagger font-display text-heading text-text hover:text-accent mb-10 inline-block w-fit text-[clamp(2rem,6vw,3.5rem)] transition-colors sm:mb-16"
-              style={{ "--i": 0 } as React.CSSProperties}
-            >
-              <RollText>Home</RollText>
-            </Link>
+        <div data-lenis-prevent className="menu-panel">
+          <div className="mx-auto flex min-h-full max-w-[110rem] flex-col px-6 lg:px-10">
+            {/* --- Top bar --- */}
+            <div className="flex h-16 shrink-0 items-center justify-between lg:h-20">
+              <p
+                className="menu-fade text-label text-text-muted flex items-center gap-3"
+                style={{ "--i": 0 } as React.CSSProperties}
+              >
+                <ImigongoRule className="text-accent" />
+                Menu
+              </p>
 
-            <ul className="border-line border-t">
-              {navItems.map((item, index) => {
-                const subLinks = subLinksByLabel[item.label] ?? [];
-                return (
-                  <li
-                    key={item.href}
-                    className="menu-stagger group border-line relative border-b"
-                    style={{ "--i": index + 1 } as React.CSSProperties}
-                  >
-                    {/* The inverted fill sweeps up behind imigongo teeth
-                        (`fill-rise`) rather than switching on, and the label
-                        rolls with it. */}
-                    <a
-                      href={item.href}
-                      onClick={() => setMenuOpen(false)}
-                      className="fill-rise group-hover:text-text-invert group-focus-within:text-text-invert flex flex-col gap-1 px-2 py-5 transition-colors sm:flex-row sm:items-baseline sm:gap-8 sm:px-4"
-                    >
-                      <span className="font-display text-heading w-full text-[clamp(2rem,6vw,3.5rem)] sm:w-1/2">
-                        <RollText>{item.label}</RollText>
-                      </span>
-                      {item.blurb ? (
-                        <span className="text-text-muted group-hover:text-text-invert/70 group-focus-within:text-text-invert/70 text-sm sm:text-base">
-                          {item.blurb}
-                        </span>
-                      ) : null}
-                    </a>
-
-                    {/* Small related links, tucked into the item's bottom-right
-                        corner and revealed on hover — and on focus, which is
-                        the same reveal for anyone using a keyboard. Without the
-                        `group-focus-within` pair these stay at `opacity: 0`
-                        while still being real tab stops, so tabbing through the
-                        menu lands on links nobody can see. The row above
-                        inverts on focus too, so the revealed labels are white
-                        on the dark fill rather than white on white. */}
-                    {subLinks.length > 0 ? (
-                      <div className="pointer-events-none absolute right-2 bottom-1.5 flex translate-y-1.5 flex-wrap justify-end gap-x-4 gap-y-1 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 sm:right-4">
-                        {subLinks.map((sub) => (
-                          <a
-                            key={`${item.href}-${sub.label}`}
-                            href={sub.href}
-                            onClick={() => setMenuOpen(false)}
-                            className="text-label text-text-invert/70 hover:text-text-invert pointer-events-auto"
-                          >
-                            {sub.label}
-                          </a>
-                        ))}
-                      </div>
-                    ) : null}
-                  </li>
-                );
-              })}
-            </ul>
-
-            <div
-              className="menu-stagger mt-10 flex flex-col gap-6 px-2 sm:px-4"
-              style={{ "--i": navItems.length + 1 } as React.CSSProperties}
-            >
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <a
-                  href={menuPrimaryHref}
-                  onClick={() => setMenuOpen(false)}
-                  className="btn btn-strong"
-                >
-                  <RollText>{hero.primaryCta.label}</RollText>
-                </a>
-                {/* Plain `btn`: with both at `btn-strong` the pair carried no
-                    hierarchy, which is the same problem the page CTAs had. */}
-                <a
-                  href={hero.secondaryCta.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="btn"
-                >
-                  <RollText>{hero.secondaryCta.label}</RollText>
-                </a>
-              </div>
-
-              {/* A third instance. The menu overlay sits above the corner
-                  cluster, so without a copy here the theme could not be
-                  changed while the menu is open. */}
-              <div className="flex flex-wrap items-center gap-x-8 gap-y-5">
+              <div className="flex items-center gap-4 lg:gap-6">
+                {/* A third instance. The menu overlay sits above the corner
+                    cluster, so without a copy here the theme could not be
+                    changed while the menu is open. */}
                 <ThemeToggle className="flex" />
+                <AccountLink
+                  className="flex"
+                  onNavigate={() => setMenuOpen(false)}
+                />
 
-                <ul className="flex flex-wrap gap-6">
-                  {socials.map((social) => (
-                    <li key={social.label}>
-                      <a
-                        href={social.href}
-                        className="text-text-muted hover:text-text text-label transition-colors"
-                      >
-                        {social.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
+                {/* Doubles as the "back to home" exit: it closes the drawer
+                    and the `href` carries the page back to the hero. It sits
+                    exactly where the hamburger was, so open and close are
+                    one spot. */}
+                <Link
+                  href="/"
+                  onClick={goHome}
+                  className="text-text -mr-1.5 flex h-11 w-11 items-center justify-center transition-[opacity,transform] duration-500 ease-[var(--ease-out-expo)] hover:rotate-90 hover:opacity-70"
+                >
+                  <span className="sr-only">Close menu and return to home</span>
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-7 w-7">
+                    <path
+                      d="M5 5l14 14M19 5L5 19"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </Link>
               </div>
             </div>
-          </nav>
+
+            <div className="flex flex-1 flex-col justify-between gap-6 pb-6 lg:grid lg:grid-cols-12 lg:content-center lg:gap-x-16 lg:pb-8">
+              {/* --- The rows --- */}
+              <nav
+                aria-label="All pages"
+                className="flex flex-col lg:col-span-8 lg:justify-center"
+              >
+                <div className="relative">
+                  <span
+                    aria-hidden
+                    className="menu-line bg-line absolute inset-x-0 top-0 h-px"
+                    style={{ "--i": 0 } as React.CSSProperties}
+                  />
+                  <ul>
+                    <MenuRow
+                      order={0}
+                      label="Home"
+                      href="/"
+                      onNavigate={goHome}
+                      home
+                    />
+                    {navItems.map((item, index) => (
+                      <MenuRow
+                        key={item.href}
+                        order={index + 1}
+                        label={item.label}
+                        href={item.href}
+                        blurb={item.blurb}
+                        subLinks={subLinksByLabel[item.label]}
+                        expanded={expanded === item.label}
+                        onToggle={() =>
+                          setExpanded((current) =>
+                            current === item.label ? null : item.label,
+                          )
+                        }
+                        onNavigate={() => setMenuOpen(false)}
+                      />
+                    ))}
+                  </ul>
+                </div>
+              </nav>
+
+              {/* --- Side column from lg, the foot below it ---
+                  From lg the grid's one row is centred rather than stretched,
+                  so this column takes the rows' own height: the tagline
+                  starts level with the first rule, the buttons end level with
+                  the last. */}
+              <div className="flex flex-col gap-6 lg:col-span-4 lg:justify-between">
+                {/* The brand's three words, one to a line. Desktop only: on a
+                    phone the height is worth more to the rows. */}
+                <p className="font-display text-heading hidden text-[clamp(2rem,min(3vw,6svh),3.25rem)] lg:block">
+                  {site.tagline.map((word, index) => (
+                    <span key={word} className="menu-slot">
+                      <span
+                        className={`menu-rise ${
+                          index === site.tagline.length - 1
+                            ? "text-accent"
+                            : "text-text-muted"
+                        }`}
+                        style={
+                          {
+                            "--i": navItems.length + 1 + index,
+                          } as React.CSSProperties
+                        }
+                      >
+                        {word}.
+                      </span>
+                    </span>
+                  ))}
+                </p>
+
+                <div
+                  className="menu-fade flex flex-col gap-5"
+                  style={{ "--i": navItems.length + 2 } as React.CSSProperties}
+                >
+                  <div className="grid gap-3 sm:flex sm:flex-wrap lg:grid">
+                    <a
+                      href={menuPrimaryHref}
+                      onClick={() => setMenuOpen(false)}
+                      className="btn btn-strong"
+                    >
+                      <RollText>{hero.primaryCta.label}</RollText>
+                    </a>
+                    {/* Plain `btn`: with both at `btn-strong` the pair carried
+                        no hierarchy, which is the same problem the page CTAs
+                        had. */}
+                    <a
+                      href={hero.secondaryCta.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="btn"
+                    >
+                      <RollText>{hero.secondaryCta.label}</RollText>
+                    </a>
+                  </div>
+
+                  {socials.length > 0 ? (
+                    <ul className="flex flex-wrap gap-x-6 gap-y-3">
+                      {socials.map((social) => (
+                        <li key={social.label}>
+                          <a
+                            href={social.href}
+                            className="text-text-muted hover:text-text text-label transition-colors"
+                          >
+                            {social.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+
+            {/* The same sawtooth banding that tops the footer, closing the
+                panel off. Drawn in last, like the rules above it. */}
+            <div
+              aria-hidden
+              className="menu-line text-text shrink-0"
+              style={{ "--i": navItems.length + 3 } as React.CSSProperties}
+            >
+              <ImigongoBand id="menu-band" opacity={0.18} />
+            </div>
+          </div>
         </div>
       </div>
     </>
@@ -587,50 +600,241 @@ export function SiteHeader() {
 }
 
 /**
- * The EN/RW switch. Rendered once for the corner and once for the desktop nav
- * row; `data-locale-toggle` is how the scroll effect finds whichever is live.
+ * One row of the full-screen menu: an index, the label, its blurb, and — for
+ * the rows that have them — the related links.
+ *
+ * The related links are rendered twice on purpose, and only one copy is ever
+ * displayed. From lg they sit inside the row's hover group and swap in for the
+ * blurb. Below lg, where there is no hover, they fold out under the row from a
+ * chevron — kept outside the group, so tapping it does not invert the row the
+ * way focusing a link inside the group would.
  */
-function LocaleToggle({
-  locale,
-  onChange,
-  className,
+function MenuRow({
+  order,
+  label,
+  href,
+  blurb,
+  subLinks = [],
+  expanded = false,
+  onToggle,
+  onNavigate,
+  home = false,
 }: {
-  locale: (typeof LOCALES)[number];
-  onChange: (locale: (typeof LOCALES)[number]) => void;
+  /** Place in the entrance order, and the index printed on the row. */
+  order: number;
+  label: string;
+  href: string;
+  blurb?: string;
+  subLinks?: NavItem[];
+  expanded?: boolean;
+  onToggle?: () => void;
+  onNavigate: (event: React.MouseEvent<HTMLAnchorElement>) => void;
+  /** Home goes through `Link`, so `goHome` can scroll instead of navigating. */
+  home?: boolean;
+}) {
+  const style = { "--i": order } as React.CSSProperties;
+  const hasSubLinks = subLinks.length > 0;
+  const subId = `menu-sub-${label.toLowerCase()}`;
+
+  // The inverted fill sweeps up behind imigongo teeth (`fill-rise`) rather
+  // than switching on, and the label rolls with it.
+  const rowClass =
+    "fill-rise group-hover:text-text-invert group-focus-within:text-text-invert flex items-center gap-4 px-2 py-[clamp(0.5rem,1.5svh,1rem)] transition-colors sm:gap-6 sm:px-4";
+
+  const content = (
+    <>
+      <span
+        className="menu-fade text-label text-text-muted group-hover:text-text-invert/60 group-focus-within:text-text-invert/60 w-6 shrink-0 tabular-nums transition-colors"
+        style={style}
+      >
+        {String(order).padStart(2, "0")}
+      </span>
+
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8">
+        <span className="menu-slot font-display text-heading text-[clamp(1.375rem,min(7.5vw,4.6svh),2.25rem)] lg:text-[clamp(2rem,min(3.3vw,6svh),3.25rem)]">
+          <span className="menu-rise" style={style}>
+            <RollText>{label}</RollText>
+          </span>
+        </span>
+
+        {blurb ? (
+          <span className="menu-fade" style={style}>
+            {/* From lg, on a row with related links, the blurb lifts away
+                as they come up into its place. */}
+            <span
+              className={`text-text-muted group-hover:text-text-invert/70 group-focus-within:text-text-invert/70 block text-[0.8rem] transition-[color,opacity,transform] duration-500 ease-[var(--ease-out-expo)] sm:text-sm lg:text-base ${
+                hasSubLinks
+                  ? "lg:group-focus-within:-translate-y-2 lg:group-focus-within:opacity-0 lg:group-hover:-translate-y-2 lg:group-hover:opacity-0"
+                  : ""
+              }`}
+            >
+              {blurb}
+            </span>
+          </span>
+        ) : null}
+      </span>
+
+      {/* Slides in at the row's end on hover, desktop only. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="hidden h-6 w-6 shrink-0 -translate-x-3 opacity-0 transition-[opacity,transform] duration-500 ease-[var(--ease-out-expo)] group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100 lg:block"
+      >
+        <path
+          d="M4 12h15m-6-6 6 6-6 6"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </>
+  );
+
+  return (
+    <li className="relative">
+      <div className="flex items-stretch">
+        <div className="group relative min-w-0 flex-1">
+          {home ? (
+            <Link href={href} onClick={onNavigate} className={rowClass}>
+              {content}
+            </Link>
+          ) : (
+            <a href={href} onClick={onNavigate} className={rowClass}>
+              {content}
+            </a>
+          )}
+
+          {/* The desktop copy of the related links, over the blurb's spot and
+              revealed on hover — and on focus, which is the same reveal for
+              anyone using a keyboard. Without the `group-focus-within` pair
+              these would stay at `opacity: 0` while still being tab stops.
+              `right-16` clears the arrow. */}
+          {hasSubLinks ? (
+            <div className="pointer-events-none absolute inset-y-0 right-16 hidden max-w-[min(34rem,58%)] translate-y-2 flex-wrap content-center items-center justify-end gap-x-5 gap-y-1 opacity-0 transition-[opacity,transform] duration-500 ease-[var(--ease-out-expo)] group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:opacity-100 lg:flex">
+              {subLinks.map((sub) => (
+                <a
+                  key={`${href}-${sub.label}`}
+                  href={sub.href}
+                  onClick={onNavigate}
+                  className="text-label text-text-invert/70 hover:text-text-invert pointer-events-auto"
+                >
+                  {sub.label}
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Below lg: the chevron that folds the related links out. Rows
+            without any get a spacer instead, so every blurb lines up. */}
+        {hasSubLinks ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={expanded}
+            aria-controls={subId}
+            className="menu-fade text-text-muted hover:text-text flex w-11 shrink-0 items-center justify-center transition-colors lg:hidden"
+            style={style}
+          >
+            <span className="sr-only">More in {label}</span>
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className={`h-5 w-5 transition-transform duration-500 ease-[var(--ease-out-expo)] ${
+                expanded ? "rotate-180" : ""
+              }`}
+            >
+              <path
+                d="m6 9 6 6 6-6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        ) : (
+          <span aria-hidden className="w-11 shrink-0 lg:hidden" />
+        )}
+      </div>
+
+      {/* The folding copy. `lg:hidden` is on a wrapper because `.menu-sub`
+          sets its own `display`, and an unlayered rule outranks the utility. */}
+      {hasSubLinks ? (
+        <div className="lg:hidden">
+          <div id={subId} data-expanded={expanded} className="menu-sub">
+            <div>
+              <ul className="flex flex-wrap gap-x-5 pr-2 pb-3 pl-12 sm:pl-16">
+                {subLinks.map((sub, index) => (
+                  <li
+                    key={`${href}-${sub.label}`}
+                    style={{ "--j": index } as React.CSSProperties}
+                  >
+                    <a
+                      href={sub.href}
+                      onClick={onNavigate}
+                      className="text-label text-text-muted hover:text-text block py-2 transition-colors"
+                    >
+                      {sub.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <span
+        aria-hidden
+        className="menu-line bg-line absolute inset-x-0 bottom-0 h-px"
+        style={style}
+      />
+    </li>
+  );
+}
+
+/**
+ * The person icon that leads to the admin sign-in page. The same 32px circle
+ * as the theme toggle beside it, but filled solid black so it reads as the one
+ * call to action in the cluster, and flipping to white with a black icon on
+ * hover. Black in both themes: `border-line-strong` turns light on a dark
+ * page, so the circle keeps a visible edge there.
+ */
+function AccountLink({
+  className,
+  onNavigate,
+}: {
   className?: string;
+  onNavigate?: () => void;
 }) {
   return (
-    <div
-      data-locale-toggle
-      role="group"
-      aria-label="Language"
-      className={`items-center gap-1.5 ${className ?? ""}`}
-      style={
-        {
-          "--locale-fade": 1,
-          opacity: "var(--locale-fade)",
-        } as React.CSSProperties
-      }
+    <Link
+      href="/login"
+      onClick={onNavigate}
+      data-chrome-ink
+      className={`border-line-strong bg-ink-900 text-paper hover:border-ink-900 hover:bg-paper hover:text-ink-900 h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+        className ?? ""
+      }`}
     >
-      {LOCALES.map((code) => {
-        const active = locale === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => onChange(code)}
-            aria-pressed={active}
-            className={`flex h-8 w-8 items-center justify-center rounded-full border text-[0.68rem] font-bold transition-colors ${
-              active
-                ? "border-text bg-text text-text-invert"
-                : "border-line-mid text-text-muted hover:border-text hover:bg-text hover:text-text-invert"
-            }`}
-          >
-            {code}
-          </button>
-        );
-      })}
-    </div>
+      <span className="sr-only">Sign in or create an account</span>
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-4 w-4"
+      >
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21a8 8 0 0 1 16 0" />
+      </svg>
+    </Link>
   );
 }
 

@@ -25,7 +25,7 @@ export default function Home() {
           the display line, the nav and the intro copy at once, and it bounds
           the sticky display line so the line releases at the hero's end. */}
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] h-[57vh] w-[55vw] [--blob-pace:1.5] [--color-blob-amber:var(--color-brand-500)] [--color-blob-coral:#b8483e] sm:h-[64vh] sm:w-[32vw] lg:left-[11vw] lg:h-[68vh] lg:w-[25.5vw]" />
           <HeroDisplay />
           <SiteHeader />
           <HeroIntro />

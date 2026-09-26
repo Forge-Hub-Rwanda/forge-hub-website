@@ -123,7 +123,7 @@ export function HeroDisplay() {
              Verified by comparing scrollWidth against clientWidth, since the
              nowrap text overflows its box without changing the box. SiteHeader's
              nav spacer is calculated from this size, so change both together. */
-          className="font-display text-oblique text-text text-[8.6vw] text-nowrap lg:text-[9.2vw]"
+          className="font-display text-oblique text-text text-[8.6vw] text-nowrap lg:text-[9.2vw] lg:landscape:relative lg:landscape:top-4"
         >
           {/* Each word springs up out of its own slot on load — see
               `SplitWords`. Words rather than letters, so the kerning inside

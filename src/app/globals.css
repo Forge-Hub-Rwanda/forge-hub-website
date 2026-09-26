@@ -235,6 +235,46 @@
 }
 
 /* ==========================================================================
+   The footer, in dark mode
+   --------------------------------------------------------------------------
+   The footer paints itself with `bg-text`/`text-invert` — in light mode that
+   is a near-black panel on the white page, which is the look it is meant to
+   have. Dark mode inverts those same roles, so left alone the footer would
+   flip to a near-white panel with near-black text: a bright footer at the
+   foot of an otherwise dark page.
+
+   It should stay dark in dark mode too — just a shade lighter than the
+   page's own near-black surface, so it still reads as its own panel rather
+   than fusing with the page. Only `--color-text-invert` needs restating:
+   every child in the footer paints through it (`text-text-invert` and its
+   `/60`/`/70` opacity utilities, `border-text-invert/20`), so overriding it
+   once here recolours the address, the nav links and the legal rail
+   together. `background-color` is set directly rather than through a token,
+   because `--color-text` (behind the `bg-text` utility) is the ordinary body
+   text colour everywhere else on the page and cannot be repointed just for
+   this one panel.
+
+   Same two-selector split as the dark theme block above, for the same
+   reason.
+
+   Scoped to a dedicated `data-panel="footer"` attribute rather than
+   `[data-tone="oxblood"]`'s sibling `data-tone`: the header watches every
+   `[data-tone]` element to decide when it is sitting on a colour band and
+   should switch its own chrome to an on-colour style. The footer isn't that
+   — reusing the attribute would silently pull it into that mechanism. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-panel="footer"] {
+    background-color: #242220;
+    --color-text-invert: #efece7;
+  }
+}
+
+:root[data-theme="dark"] [data-panel="footer"] {
+  background-color: #242220;
+  --color-text-invert: #efece7;
+}
+
+/* ==========================================================================
    Site chrome over the colour band
    --------------------------------------------------------------------------
    The logo tile, the menu button and the theme toggle are fixed to the top of
@@ -877,20 +917,22 @@ html[data-theme="dark"] [data-when-theme="light"] {
   }
 }
 
+/* `--blob-pace` stretches all four durations together, so a caller can slow a
+   blob down without breaking the mutually-prime ratio between them. */
 @utility blob {
-  animation: blob-drift 71s ease-in-out infinite;
+  animation: blob-drift calc(71s * var(--blob-pace, 1)) ease-in-out infinite;
 }
 
 @utility blob-shape {
-  animation: blob-morph 29s ease-in-out infinite;
+  animation: blob-morph calc(29s * var(--blob-pace, 1)) ease-in-out infinite;
 }
 
 @utility blob-stop-a {
-  animation: blob-stop-a 23s ease-in-out infinite;
+  animation: blob-stop-a calc(23s * var(--blob-pace, 1)) ease-in-out infinite;
 }
 
 @utility blob-stop-b {
-  animation: blob-stop-b 23s ease-in-out infinite;
+  animation: blob-stop-b calc(23s * var(--blob-pace, 1)) ease-in-out infinite;
 }
 
 /* Off-screen blobs stop animating. `data-animate` is set by the component's
@@ -1567,26 +1609,157 @@ html.lenis {
   }
 }
 
-/* ---- Menu: staggered, tilted entrance --------------------------------------
-   Each block of the menu rises into place on a slight tilt, one after another,
-   as lusion.co's menu panels do. Leaving is fast and all at once: nobody waits
-   for a menu to finish closing. */
-.menu-stagger {
-  opacity: 0;
-  transform: translate3d(0, 2.5rem, 0) rotate(2deg);
-  transform-origin: 0 100%;
-  transition:
-    transform 0.3s var(--ease-roll),
-    opacity 0.2s;
+/* ---- Menu: double curtain, drawn rules, rising labels ----------------------
+   Opening, an oxblood veil drops over the page and the menu's own surface
+   follows it a beat later, so the band shows as a sliver at the curtain's
+   leading edge. Then, row by row, each rule draws in from the left, its label
+   rises through a slot on a slight tilt, and the meta beside it fades up.
+
+   Closing is the curtain in reverse and fast, the surface lifting first and
+   the veil just behind it. The content drops out at once: nobody waits for a
+   menu to finish closing.
+
+   Both curtains are clip-paths rather than translates, so nothing inside
+   moves while they travel, and a clipped-away layer takes no clicks. The
+   overlay also goes `visibility: hidden` once its close has finished, so a
+   closed menu cannot be reached at all, even before `inert` is honoured.
+
+   `/login` is built from the same parts (`#account-screen`), so the open
+   rules below name both. It skips the visibility rule: it is a page, not a
+   drawer, and has nothing underneath to hide. */
+#site-menu {
+  visibility: hidden;
+  transition: visibility 0s linear 0.7s;
 }
 
-#site-menu[data-open="true"] .menu-stagger {
+#site-menu[data-open="true"] {
+  visibility: visible;
+  transition: none;
+}
+
+.menu-veil,
+.menu-panel {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 0 100% 0);
+}
+
+.menu-veil {
+  background-color: var(--color-band);
+  transition: clip-path 0.5s var(--ease-roll) 0.12s;
+}
+
+.menu-panel {
+  background-color: var(--color-surface);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: clip-path 0.45s var(--ease-roll);
+}
+
+:is(#site-menu, #account-screen)[data-open="true"] .menu-veil {
+  clip-path: inset(0);
+  transition: clip-path 0.7s var(--ease-out-expo);
+}
+
+:is(#site-menu, #account-screen)[data-open="true"] .menu-panel {
+  clip-path: inset(0);
+  transition: clip-path 0.85s var(--ease-out-expo) 0.14s;
+}
+
+/* A row's rule, drawn in from the left. */
+.menu-line {
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.25s var(--ease-roll);
+}
+
+:is(#site-menu, #account-screen)[data-open="true"] .menu-line {
+  transform: none;
+  transition: transform 1.1s var(--ease-out-expo);
+  transition-delay: calc(260ms + var(--i, 0) * 65ms);
+}
+
+/* The label's slot, and the label rising through it. Padded past the glyphs
+   the way the roll's clip is, so ascenders are not shaved off on the way. */
+.menu-slot {
+  display: block;
+  overflow: clip;
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+
+.menu-rise {
+  display: inline-block;
+  transform: translate3d(0, 115%, 0) rotate(5deg);
+  transform-origin: 0 100%;
+  transition: transform 0.25s var(--ease-roll);
+}
+
+:is(#site-menu, #account-screen)[data-open="true"] .menu-rise {
+  transform: none;
+  transition: transform 0.95s var(--ease-out-expo);
+  transition-delay: calc(300ms + var(--i, 0) * 65ms);
+}
+
+/* Everything secondary: indices, blurbs, the calls to action. */
+.menu-fade {
+  opacity: 0;
+  transform: translate3d(0, 0.6rem, 0);
+  transition:
+    opacity 0.15s,
+    transform 0.25s var(--ease-roll);
+}
+
+:is(#site-menu, #account-screen)[data-open="true"] .menu-fade {
   opacity: 1;
   transform: none;
   transition:
-    transform 0.8s var(--ease-out-expo),
-    opacity 0.5s var(--ease-out-expo);
-  transition-delay: calc(120ms + var(--i, 0) * 55ms);
+    opacity 0.7s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo);
+  transition-delay: calc(420ms + var(--i, 0) * 65ms);
+}
+
+/* ---- Menu: related links, folded under a row below lg ----------------------
+   Phones and tablets have no hover, so the links that reveal in a row's
+   corner on desktop open under it instead, from a chevron beside the row.
+   A grid row eased from 0fr to 1fr, which animates to the content's real
+   height with no measuring. Folded, the links are `visibility: hidden` as
+   well, which keeps them out of the tab order until they can be seen. */
+.menu-sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.45s var(--ease-out-expo),
+    visibility 0s linear 0.45s;
+}
+
+.menu-sub[data-expanded="true"] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.6s var(--ease-out-expo);
+}
+
+.menu-sub > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.menu-sub li {
+  opacity: 0;
+  transform: translate3d(0, -0.4rem, 0);
+  transition:
+    opacity 0.15s,
+    transform 0.2s;
+}
+
+.menu-sub[data-expanded="true"] li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s var(--ease-out-expo),
+    transform 0.6s var(--ease-out-expo);
+  transition-delay: calc(90ms + var(--j, 0) * 45ms);
 }
 
 /* ---- Scroll progress ------------------------------------------------------- */
@@ -1944,12 +2117,16 @@ html.lenis {
      word parked a line below its slot is a word nobody can read. */
   .split-inner,
   .roll,
-  .menu-stagger,
+  .menu-line,
+  .menu-rise,
+  .menu-fade,
+  .menu-sub li,
   .magnetic {
     transform: none !important;
   }
 
-  .menu-stagger {
+  .menu-fade,
+  .menu-sub li {
     opacity: 1 !important;
   }
 

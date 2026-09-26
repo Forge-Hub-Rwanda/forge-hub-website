@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { startThemeRuntime, toggleTheme } from "@/lib/theme";
 
 /**
- * The theme switch: one circle, sized and styled exactly like the EN/RW
- * buttons beside it. The icon shows what a click will DO rather than where you
+ * The theme switch: one circle, sized exactly like the account link beside
+ * it. The icon shows what a click will DO rather than where you
  * are — a sun while the page is dark, a moon while it is light.
  *
  * Nothing here is driven by React state. Both icons and both labels are always

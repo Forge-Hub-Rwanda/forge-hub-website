@@ -38,9 +38,3 @@ export const HERO_DISPLAY_ID = "hero-display-line";
  * tucked away. The two sit flush at rest, so this is measured from first touch.
  */
 export const NAV_TUCK_TRAVEL = 96;
-
-/**
- * Scroll distance, in px, over which the language toggle fades out. Longer
- * than the nav tuck so it reads as a slow fade rather than a snap.
- */
-export const LOCALE_FADE_TRAVEL = 320;
