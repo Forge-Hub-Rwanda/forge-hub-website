@@ -772,13 +772,7 @@ export const contactPage = {
     title: "Tell us what you’re building",
     lede: "Three fields, no forms to fill twice. Or write to us directly at the address opposite.",
   },
-  /**
-   * The form posts via `mailto:`, so it opens the sender's own mail app with
-   * the message ready to send. Stated plainly rather than letting anyone be
-   * surprised by it. TODO: replace with a server-side handler once there is
-   * somewhere to send it.
-   */
-  note: "Submitting opens your own email app with the message ready to send — there is no server behind this form yet.",
+  note: "Your message goes straight to our team. We read everything that comes in.",
   submit: "Send message",
 } as const;
 
