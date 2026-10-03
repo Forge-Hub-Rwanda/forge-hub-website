@@ -784,20 +784,13 @@ export const contactPage = {
 export const accountPage = {
   eyebrow: "Admin",
   title: "Account",
-  lede: "Sign in to manage the site, or create an account for a new member of the team.",
+  lede: "Sign in to manage the site.",
   signIn: {
     tab: "Sign in",
     heading: "Welcome back",
-    lede: "Use the email and password you registered with.",
+    lede: "Use the email and password you were given as an admin.",
     submit: "Sign in",
   },
-  signUp: {
-    tab: "Create account",
-    heading: "Join the team",
-    lede: "New accounts are reviewed by an existing admin before they can sign in.",
-    submit: "Create account",
-  },
-  note: "Accounts are not switched on yet — nothing you enter here is sent anywhere.",
 } as const;
 
 /* ========================================================================== */
