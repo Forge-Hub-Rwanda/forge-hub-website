@@ -46,7 +46,7 @@ function toneClass(tone: ImigongoTone) {
  * splits the tile diagonally, so a tiled field reads as continuous rather than
  * as a grid of stamps.
  */
-const TILES: Record<ImigongoMotif, Tile> = {
+export const TILES: Record<ImigongoMotif, Tile> = {
   // A continuous chevron band. Endpoints sit on the tile's left and right
   // edges at the same height, so rows join seamlessly in both directions.
   zigzag: {

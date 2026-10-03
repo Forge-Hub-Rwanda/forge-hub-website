@@ -38,18 +38,22 @@
 
 ## 1. What has been decided for the backend
 
-| Topic            | Decision                                                                                                                                                  |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Shape            | A **separate backend**: a **Node.js + Express** API, in its own project/repo, separate from this Next.js frontend.                                        |
-| Database         | **Supabase** is the intended choice (Postgres + Supabase Auth + Supabase Storage). Not yet set up.                                                        |
-| Hosting          | **Vercel** for both the frontend and the Express API.                                                                                                     |
-| Language         | **English only.** No Kinyarwanda or French content or i18n is needed for now.                                                                             |
-| Login / sign-up  | Backend features. The UI already exists at `/login`. It gets wired up once the backend exists.                                                            |
-| Scope            | Everything on the site that implies data, submissions or accounts gets a backend (full list in section 4).                                                |
-| Highest priority | The **admin area**: the team must be able to edit site content (programs, events, portfolio, team, copy) without editing code.                            |
-| Payments         | **Not needed yet**, but plan for them in the data model (section 5.5).                                                                                    |
-| Email            | Needed: notifications to the team and confirmations to users.                                                                                             |
-| New pages        | Dashboard, admin and any other new pages must share the site's identity: same tokens, type, components and patterns. They may be adapted, never replaced. |
+| Topic            | Decision                                                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Shape            | A **separate backend**: a **Node.js + Express** API, in its own project/repo, separate from this Next.js frontend.                                                       |
+| Database         | **Supabase** is the intended choice (Postgres + Supabase Auth + Supabase Storage). Not yet set up.                                                                       |
+| Hosting          | **Vercel** for both the frontend and the Express API.                                                                                                                    |
+| Language         | **English only.** No Kinyarwanda or French content or i18n is needed for now.                                                                                            |
+| Login / sign-up  | Backend features. The UI already exists at `/login`. It gets wired up once the backend exists.                                                                           |
+| Who has accounts | **ForgeHub team only, for now.** `/login` is the team/admin door. Sign-ups create a _pending_ account that an existing admin approves.                                   |
+| Member dashboard | **Postponed.** No learner/client accounts yet, so no `/dashboard`. It comes back when member accounts are switched on.                                                   |
+| Programs         | Each program gets its **own detail page** (`/programs/[slug]`), and applying starts from there (`/programs/[slug]/apply`).                                               |
+| Newsletter       | The sign-up form goes in the **footer**, so it is on every page.                                                                                                         |
+| Scope            | Everything on the site that implies data, submissions or accounts gets a backend (full list in section 4).                                                               |
+| Highest priority | The **admin area**: the team must be able to edit site content (programs, events, portfolio, team, copy) without editing code.                                           |
+| Payments         | **Not needed yet**, but plan for them in the data model (section 5.5).                                                                                                   |
+| Email            | Needed: notifications to the team and confirmations to users.                                                                                                            |
+| New pages        | Admin and any other new pages must share the site's identity: same tokens, type, components and patterns. They may be adapted, never replaced. Full list in section 6.2. |
 
 ---
 
@@ -250,8 +254,8 @@ with the animated copy `aria-hidden`. Placeholders use full-strength
 | 4   | **Program applications / join**                | Programs rows link to `/services`. Hero CTA "Explore our programs" → `#programs`. Closing CTA "Join a program" → `/services`. Membership "Learner" → `/services` | No application form exists. Programs are placeholders ("Dates to come", "Details soon").                                                                                                                | Programs + cohorts (dates, format, capacity, status), an application form, application status tracking, admin review, emails.                                                                                                               |
 | 5   | **Start a project / partner**                  | Membership "Builder" → `/contact` ("Start a project"), "Partner" → `/contact` ("Talk to us")                                                                     | Goes to the generic contact form.                                                                                                                                                                       | Enquiry types on the contact endpoint (`general`, `project`, `partner`, `training_for_org`) so admins can filter.                                                                                                                           |
 | 6   | **Events + sign-ups**                          | Events band on `/` (`events.tsx`), `events` in `site.ts`                                                                                                         | One honest holding row ("TBA"). Rows link to `/contact`. `SiteEvent` has no machine-readable date (TODO: add an ISO date and restore `<time dateTime>`).                                                | Events CRUD with real ISO datetimes, location/online, capacity, sign-up/RSVP, confirmation and reminder emails, and a list of attendees for admins.                                                                                         |
-| 7   | **Newsletter**                                 | Doesn't exist yet                                                                                                                                                | —                                                                                                                                                                                                       | Subscribe (double opt-in), unsubscribe link, and a subscriber list for admins. Frontend needs a small form (probably in the footer or closing CTA; confirm placement).                                                                      |
-| 8   | **Member dashboard**                           | Doesn't exist yet                                                                                                                                                | —                                                                                                                                                                                                       | For signed-in members: profile, my applications and their status, my event sign-ups, and later my payments/invoices.                                                                                                                        |
+| 7   | **Newsletter**                                 | Doesn't exist yet                                                                                                                                                | —                                                                                                                                                                                                       | Subscribe (double opt-in), unsubscribe link, and a subscriber list for admins. Frontend: a small email form in the **footer** (`site-footer.tsx`), plus confirm/unsubscribe pages.                                                          |
+| 8   | **Member dashboard**                           | Doesn't exist yet                                                                                                                                                | —                                                                                                                                                                                                       | **Postponed** (team-only accounts for now). Later, for signed-in members: profile, my applications, my event sign-ups, payments.                                                                                                            |
 | 9   | **Portfolio**                                  | `projects` in `site.ts`, `/portfolio`, `/portfolio/[slug]`, homepage gallery shows `projects.slice(0,3)`                                                         | 1 real project + 2 honest placeholder slots. Images are expected in `public/`, and none exist yet.                                                                                                      | Projects CRUD, image upload to Supabase Storage (store real width/height), ordering, draft/published.                                                                                                                                       |
 | 10  | **Team**                                       | `teamMembers` in `site.ts`, `/team`                                                                                                                              | 4 members, no photos (3:4 slots).                                                                                                                                                                       | Team CRUD, photo upload, ordering.                                                                                                                                                                                                          |
 | 11  | **Testimonials / impact / partners / socials** | `testimonials`, `impact`, `partners`, `socials` in `site.ts`                                                                                                     | Placeholders or empty on purpose.                                                                                                                                                                       | Simple CRUD. Testimonials need a `permission_confirmed` flag. The frontend already hides empty lists.                                                                                                                                       |
@@ -284,7 +288,7 @@ with the animated copy `aria-hidden`. Placeholders use full-strength
   auth. In either case, read `02-guides/authentication.md` and `16-proxy.md` for
   the Next.js side.
 - **Roles (proposal):** `admin` (everything, approves users), `editor` (content
-  only), `member` (dashboard). Account `status`: `pending` → `active` |
+  only). A `member` role is postponed along with the dashboard. Account `status`: `pending` → `active` |
   `rejected` | `disabled`. New sign-ups start as `pending` (this matches the
   existing copy on `/login`).
 - **Public content:** the frontend fetches it on the server and keeps pages
@@ -358,7 +362,7 @@ POST /v1/events/:slug/register
 POST /v1/newsletter/subscribe      GET /v1/newsletter/confirm?token=   POST /v1/newsletter/unsubscribe
 ```
 
-Member (signed in, `status=active`):
+Member (signed in, `status=active`) — **postponed** with the dashboard:
 
 ```
 GET  /v1/me                   PATCH /v1/me
@@ -421,7 +425,9 @@ Add `.env.example` files to both repos.
 
 ---
 
-## 6. Frontend changes the backend will need (for later, not now)
+## 6. Frontend work the backend will need (for later, not now)
+
+### 6.1 Changes to existing code
 
 1. `src/lib/api.ts`: a small typed fetch wrapper reading `NEXT_PUBLIC_API_URL`,
    returning the `site.ts` shapes, tagged for revalidation.
@@ -436,12 +442,56 @@ Add `.env.example` files to both repos.
 5. `contact/page.tsx`: replace the `mailto:` action with a POST (a Server Action
    or client fetch to Express). Add enquiry type, captcha and inline field
    errors. Replace `contactPage.note`.
-6. New routes: `/dashboard/*`, `/admin/*`, `/programs/[slug]/apply` (or a
-   similar apply flow), `/events/[slug]`, newsletter confirm/unsubscribe pages,
-   `/reset-password`. Guard private routes in `proxy.ts`.
+6. New routes: see section 6.2. Guard `/admin/*` in `proxy.ts`.
 7. `Events`: render real dates with `<time dateTime>` once events have ISO
-   dates.
-8. Update the README when this lands.
+   dates, and link rows to `/events/[slug]` instead of `/contact`.
+8. `Programs` band: link rows to `/programs/[slug]` instead of `/services`.
+9. `site-footer.tsx`: add the newsletter form (email field + `btn-invert`,
+   since the footer is an inverted panel).
+10. Header `AccountLink`: go to `/admin` when signed in, `/login` otherwise.
+11. Update the README when this lands.
+
+### 6.2 New frontend pages to build
+
+Every page below follows the design rules in section 7. "Template A" and
+"Template B" refer to section 7.2.
+
+**A. Public pages (Template A, which copies `src/app/contact/page.tsx`)**
+
+| Route                     | Purpose                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| `/programs` (optional)    | Index of all programs. Otherwise the band and `/services` link straight to details |
+| `/programs/[slug]`        | Program detail, upcoming cohorts, Apply button                                     |
+| `/programs/[slug]/apply`  | Application form (public, no account needed)                                       |
+| `/events/[slug]`          | Event detail + sign-up form                                                        |
+| `/newsletter/confirm`     | Double opt-in result                                                               |
+| `/newsletter/unsubscribe` | Unsubscribe result                                                                 |
+
+**B. Team account screens (reuse the `/login` full-screen pattern in
+`account-screen.tsx` / `account-forms.tsx`)**
+
+| Route             | Purpose                                                                |
+| ----------------- | ---------------------------------------------------------------------- |
+| `/login` (exists) | Wire up sign-in and sign-up (sign-up creates a _pending_ team account) |
+| `/reset-password` | Forgot password + set a new one                                        |
+| `/verify-email`   | Email verification result                                              |
+| `/pending`        | "Your account is waiting for an admin to approve it"                   |
+
+**C. Admin area (Template B: one shared `src/components/app-shell.tsx`,
+`noindex`, guarded in `proxy.ts`)**
+
+- `/admin`: overview (pending approvals, new messages, new applications,
+  upcoming events).
+- Content editors, each with a list view and a create/edit form:
+  `/admin/programs` (+ cohorts), `/admin/events` (+ registrations),
+  `/admin/projects` (+ image upload), `/admin/team`, `/admin/testimonials`,
+  `/admin/stats`, `/admin/partners`, `/admin/socials`, `/admin/plans`,
+  `/admin/content` (site copy).
+- Operations: `/admin/users` (approve/reject, roles), `/admin/applications`,
+  `/admin/messages`, `/admin/subscribers` (CSV export), `/admin/audit`.
+- `/admin/account`: the signed-in team member's own profile and password.
+
+**D. Postponed:** the member dashboard (`/dashboard/*`) and any payment pages.
 
 ---
 
@@ -598,18 +648,21 @@ states in the same plain voice. Tabs follow `account-forms.tsx`
 1. **Backend foundations:** repo, Express + TS skeleton, Supabase project,
    migrations for `profiles` and content tables, RLS, error format, CORS, deploy
    to Vercel, `.env.example`.
-2. **Auth:** sign-up (pending) → admin approval → sign-in / sign-out / reset.
-   Wire `/login`. Add `proxy.ts` guards.
-3. **Admin shell + content CRUD:** programs, events, projects (+ media), team.
-   Add revalidation back to the frontend.
+2. **Team auth:** sign-up (pending) → admin approval → sign-in / sign-out /
+   reset. Wire `/login` and build `/reset-password`, `/verify-email`,
+   `/pending`. Add `proxy.ts` guards on `/admin`.
+3. **Admin shell + content CRUD:** `AppShell`, `/admin`, `/admin/users`, then
+   programs (+ cohorts), events, projects (+ media), team. Add revalidation back
+   to the frontend.
 4. **Frontend reads from the API:** band by band, keeping the shapes identical.
-5. **Public submissions:** contact form, program applications, event sign-ups,
-   newsletter, and their emails.
-6. **Member dashboard:** profile, my applications, my registrations.
-7. **Remaining content:** testimonials, stats, partners, socials, `site_content`
-   copy editing, audit log.
-8. **Later:** payments (5.5), in-app notifications, analytics and error
-   reporting.
+   Add `/programs/[slug]` and `/events/[slug]`.
+5. **Public submissions:** contact form, `/programs/[slug]/apply`, event
+   sign-ups, footer newsletter + confirm/unsubscribe pages, and their emails.
+   Matching admin inboxes: applications, messages, subscribers.
+6. **Remaining content:** testimonials, stats, partners, socials, plans,
+   `site_content` copy editing, audit log, `/admin/account`.
+7. **Later:** member dashboard, payments (5.5), in-app notifications, analytics
+   and error reporting.
 
 ---
 
@@ -617,11 +670,8 @@ states in the same plain voice. Tabs follow `account-forms.tsx`
 
 - Auth: Supabase client on the frontend with a bearer token to Express, or
   Express-managed cookie sessions?
-- Who are "members"? Learners only, or also clients and partners? Can anyone
-  sign up, or only by invitation or approval? (The current copy says an admin
-  reviews new accounts, and frames `/login` as a team/admin door.)
 - What fields does a program application need?
-- Where should the newsletter sign-up sit (footer, closing CTA, both)?
+- Is a `/programs` index page wanted, or only the detail pages?
 - Which email provider, and which sending domain (e.g. `mail.forgehubrwanda.com`)?
 - Backend repo name, and does the API live on a subdomain (`api.forgehubrwanda.com`)?
 - Does the Imigongo wheel experiment ship to `main`? (It affects the homepage only.)

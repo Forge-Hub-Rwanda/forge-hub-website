@@ -2,20 +2,36 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImigongoMark, ImigongoRule } from "@/components/imigongo";
+import { LionArt, LionEye } from "@/components/lion-art";
 import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
+import { isFinePointer } from "@/lib/pointer";
 import { membershipSection, plans } from "@/lib/site";
 
 /**
  * Three ways in, read against a standing index.
  *
- * The left column carries the section's heading and a numbered index of the
- * three ways in, and stays where it is while the right column's panels scroll
+ * The left column carries the section's heading and an index of the three
+ * ways in, and stays where it is while the right column's panels scroll
  * past. The entry for whichever panel is crossing the middle of the window goes
  * solid and takes the rule with it, so the column answers "which one am I
  * reading" without a counter, a progress bar or a word of instruction.
+ *
+ * Behind the column an imigongo lion, in side profile, comes out of the
+ * left edge of the window — the counterpart to the homepage wheel on the right, in
+ * the same ink at the same strength. It is sticky with the index, so the two
+ * hold still together while the panels pass; see `.mb-lion` in globals.css.
+ * Its foot is held to the foot of the window, so the mane runs down and fades
+ * out there, as in the photograph, instead of stopping halfway down the page.
+ *
+ * Moving a mouse across it lights the lion's dark imigongo in oxblood, in a
+ * soft pool round the pointer: a second copy of the drawing, holding only its
+ * solid shapes, sits exactly over the first and is shown through a radial
+ * mask centred on the pointer. See the effect below. And while the page is
+ * scrolling, its eye lights up in oxblood, going dark again a moment after the
+ * scrolling stops.
  *
  * It costs the page no extra scrolling, and that is the point rather than an
  * accident. There is no pinned range, no transform driven by scroll position
@@ -64,6 +80,15 @@ const READING_LINE = "-45% 0px -45% 0px";
 /** Render order, so a tie can be settled by document position. */
 const ORDER = plans.map((plan) => plan.slug);
 
+/** Share of the remaining distance the oxblood pool covers each frame. */
+const LION_EASE = 0.18;
+
+/** How far outside the drawing the pointer can be and still light its edge. */
+const LION_REACH = 60;
+
+/** How long after the last scroll the lion's eye stays lit, in ms. */
+const EYE_HOLD = 280;
+
 /** Two digits, so the index never changes width as it counts. */
 const pad = (value: number) => String(value).padStart(2, "0");
 
@@ -75,6 +100,88 @@ export function Membership() {
    */
   const [active, setActive] = useState(ORDER[0]);
   const rootRef = useRef<HTMLDivElement>(null);
+  const lionRef = useRef<HTMLDivElement>(null);
+
+  // Light the lion's dark imigongo in oxblood round the pointer. Listened for
+  // on the whole band rather than the drawing, which takes no pointer events
+  // so the links over it keep working. The pool is eased after the pointer in
+  // a rAF loop that stops itself once it has caught up, the same way the
+  // cursor label is, so a still mouse costs nothing — and under reduced motion
+  // it simply sits where the pointer is.
+  useEffect(() => {
+    const lion = lionRef.current;
+    const band = lion?.closest("section");
+    if (!lion || !band) return;
+
+    const reduced = window.matchMedia(REDUCED_QUERY);
+    const target = { x: 0, y: 0 };
+    const at = { x: 0, y: 0 };
+    let frame = 0;
+    let placed = false;
+
+    const paint = () => {
+      frame = 0;
+      const ease = reduced.matches ? 1 : LION_EASE;
+      at.x += (target.x - at.x) * ease;
+      at.y += (target.y - at.y) * ease;
+      lion.style.setProperty("--mx", `${at.x.toFixed(1)}px`);
+      lion.style.setProperty("--my", `${at.y.toFixed(1)}px`);
+      if (Math.abs(target.x - at.x) + Math.abs(target.y - at.y) > 0.5) {
+        frame = requestAnimationFrame(paint);
+      }
+    };
+
+    const onMove = (event: PointerEvent) => {
+      if (!isFinePointer(event)) return;
+      const box = lion.getBoundingClientRect();
+      // Hidden below the breakpoint: nothing to light.
+      if (box.width === 0) return;
+      target.x = event.clientX - box.left;
+      target.y = event.clientY - box.top;
+      const near =
+        target.x > -LION_REACH &&
+        target.y > -LION_REACH &&
+        target.x < box.width + LION_REACH &&
+        target.y < box.height + LION_REACH;
+      lion.dataset.lit = String(near);
+      // The first time in, start the pool under the pointer rather than
+      // sweeping it in from a corner.
+      if (!placed) {
+        at.x = target.x;
+        at.y = target.y;
+        placed = true;
+      }
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+
+    const onLeave = () => {
+      lion.dataset.lit = "false";
+      placed = false;
+    };
+
+    // The eye: lit on any scroll, and dimmed once the scrolling has been
+    // still for EYE_HOLD. Setting an attribute that already holds the value
+    // is a no-op, so doing it on every scroll event costs nothing.
+    let dim = 0;
+    const onScroll = () => {
+      lion.dataset.scrolling = "true";
+      window.clearTimeout(dim);
+      dim = window.setTimeout(() => {
+        lion.dataset.scrolling = "false";
+      }, EYE_HOLD);
+    };
+
+    band.addEventListener("pointermove", onMove, { passive: true });
+    band.addEventListener("pointerleave", onLeave);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.clearTimeout(dim);
+      band.removeEventListener("pointermove", onMove);
+      band.removeEventListener("pointerleave", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
 
   // Decide whether the index tracks at all, and keep deciding: a visitor can
   // resize across either breakpoint, or turn reduced motion on, mid-visit.
@@ -191,7 +298,23 @@ export function Membership() {
   };
 
   return (
-    <Section id="membership" className="bg-surface-2">
+    <Section
+      id="membership"
+      className="bg-surface-2"
+      watermark={
+        <div aria-hidden className="mb-lion">
+          <div>
+            <div ref={lionRef} className="mb-lion-art">
+              <LionArt className="mb-lion-ink" />
+              <div className="mb-lion-ox">
+                <LionArt id="lion-ox" solids />
+              </div>
+              <LionEye className="mb-lion-eye" />
+            </div>
+          </div>
+        </div>
+      }
+    >
       {/* The ref and the attribute sit here rather than on the <section>: this
           is the nearest ancestor the two columns share, and Section owns its
           own element.
@@ -253,18 +376,8 @@ export function Membership() {
                     aria-current={
                       tracked && active === plan.slug ? "location" : undefined
                     }
-                    className="mb-step border-line text-text flex items-baseline gap-5 border-b border-l-2 py-4 pl-5 transition-colors duration-300 ease-[var(--ease-out-expo)]"
+                    className="mb-step border-line text-text flex items-baseline border-b border-l-2 py-4 pl-5 transition-colors duration-300 ease-[var(--ease-out-expo)]"
                   >
-                    {/* Derived from position, never from `plan.price`. That
-                        field is named for a price and still carries a TODO to
-                        become one, so reading it here would one day render
-                        "from RWF 450,000" as a step number. */}
-                    {/* `mb-num` draws lusion.co's `[[ 01 ]]` brackets round
-                        the active entry's number, and the number rolls as the
-                        entry takes over — both in globals.css. */}
-                    <span className="mb-num font-display text-label tabular-nums">
-                      <RollText>{pad(index + 1)}</RollText>
-                    </span>
                     <span className="font-display text-2xl font-extrabold tracking-[-0.02em]">
                       {plan.name}
                     </span>

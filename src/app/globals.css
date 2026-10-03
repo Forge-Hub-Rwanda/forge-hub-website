@@ -662,7 +662,7 @@ html[data-theme="dark"] [data-when-theme="light"] {
 .mb {
   /* One number doing two jobs: how far below the top of the window the index
      parks, and how far above a panel an anchor jump stops. Written once so the
-     two can never drift — while they agree, clicking "02 Builder" lands that
+     two can never drift — while they agree, clicking "Builder" lands that
      panel's top edge exactly level with the index's own top edge. The value
      clears the fixed logo tile and the pinned menu row, and is the clearance
      the pinned gallery already settled on. */
@@ -1222,8 +1222,7 @@ html.lenis {
    covers the few things that roll without being links, like the project
    cards, and `.field` rolls a form label while its input has focus. */
 :is(a, button, .roll-host):is(:hover, :focus-visible) .roll,
-.field:focus-within .roll,
-.mb-step[data-active="true"] .roll {
+.field:focus-within .roll {
   transform: translate3d(0, calc(-1 * var(--roll-gap)), 0);
 }
 
@@ -1377,40 +1376,116 @@ html.lenis {
   transform: translate3d(0, calc(var(--to, 0) * -1em), 0);
 }
 
-/* ---- Membership: bracketed index -------------------------------------------
-   The active entry's number gains lusion.co's `[[ 01 ]]` brackets, sliding in
-   from either side. They are drawn in the padding and the gap that already
-   surround the number, so the row does not move by a pixel. */
-.mb-num {
-  position: relative;
+/* ---- Membership: the lion ------------------------------------------------
+   An imigongo lion, in side profile, behind the standing index — see
+   LionArt. Its mane runs off the left edge of the window, so it reads as
+   coming out of that edge to roar across the band toward the panels: the
+   counterpart to the wheel on the right, in the page's own ink at the wheel's
+   watermark strength.
+
+   It stands with the index rather than scrolling past it. The outer layer
+   fills the band's left side and the lion inside it is sticky: a window-tall
+   box, parked at the top, with the drawing centred in it. `overflow: clip`,
+   NOT `hidden`: `hidden` makes the layer a scroll container, and a sticky
+   element inside one sticks to it instead of to the window — which is to say
+   never.
+
+   42vw wide, because the panels begin at the sixth of twelve columns — about
+   43vw in — and they are opaque: any wider and they would cover its muzzle.
+   The height follows from the drawing's proportions.
+
+   Only where the index itself stands (the same gate as .mb-aside). Stacked on
+   a narrow screen there is no empty side for it to sit in, and it would lie
+   under the panels' copy instead. */
+.mb-lion {
+  display: none;
 }
 
-.mb-num::before,
-.mb-num::after {
-  position: absolute;
-  top: 0;
-  opacity: 0;
-  transition:
-    opacity 0.4s var(--ease-roll),
-    transform 0.5s var(--ease-roll);
-}
+@media (min-width: 64rem) and (min-height: 38rem) {
+  .mb-lion {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    display: block;
+    width: 42vw;
+    overflow: clip;
+    pointer-events: none;
+  }
 
-.mb-num::before {
-  content: "[[";
-  right: calc(100% + 0.3em);
-  transform: translate3d(0.6em, 0, 0);
-}
+  /* Held to the foot of the window, so the neck runs down to the bottom edge
+     and fades out there, as the photograph's mane does, rather than stopping
+     halfway down the screen. */
+  .mb-lion > div {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: flex-end;
+    height: 100vh;
+    color: var(--color-text);
+  }
 
-.mb-num::after {
-  content: "]]";
-  left: calc(100% + 0.3em);
-  transform: translate3d(-0.6em, 0, 0);
-}
+  /* Capped by height as well, so a short laptop window still holds the whole
+     head: the drawing is 560 x 750, taller than it is wide. */
+  .mb-lion-art {
+    position: relative;
+    width: min(100%, 68vh);
+    aspect-ratio: 560 / 750;
+  }
 
-.mb[data-tracked="true"] .mb-step[data-active="true"] .mb-num::before,
-.mb[data-tracked="true"] .mb-step[data-active="true"] .mb-num::after {
-  opacity: 1;
-  transform: none;
+  .mb-lion-art svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .mb-lion-ink {
+    opacity: var(--lion-ink, 0.16);
+  }
+
+  /* The oxblood layer: only the lion's solid shapes, laid exactly over the
+     drawing, and shown through a soft pool centred on the pointer. The
+     accent token is the oxblood in both themes — deep on the light page,
+     lifted on the dark one so it still reads. It fades rather than snapping
+     as the pointer arrives and leaves; the pool itself moves in script. */
+  .mb-lion-ox {
+    position: absolute;
+    inset: 0;
+    color: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-out-expo);
+    -webkit-mask-image: radial-gradient(
+      circle 130px at var(--mx, 50%) var(--my, 50%),
+      #000 30%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      circle 130px at var(--mx, 50%) var(--my, 50%),
+      #000 30%,
+      transparent 100%
+    );
+  }
+
+  .mb-lion-art[data-lit="true"] .mb-lion-ox {
+    opacity: 0.85;
+  }
+
+  /* The eye, lit in oxblood while the page scrolls: on quickly, off slowly,
+     so it flares with the movement and then settles. Stronger than the
+     watermark so the one small shape still catches the eye, but held well
+     short of full strength, with a wide soft glow, so it reads as a warm
+     tint rather than a solid red eye. `--lion-eye` sets how strong. */
+  .mb-lion-art .mb-lion-eye {
+    position: absolute;
+    inset: 0;
+    color: var(--color-accent);
+    opacity: 0;
+    filter: drop-shadow(0 0 10px var(--color-accent));
+    transition: opacity 0.9s var(--ease-out-expo);
+  }
+
+  .mb-lion-art[data-scrolling="true"] .mb-lion-eye {
+    opacity: var(--lion-eye, 0.5);
+    transition-duration: 0.2s;
+  }
 }
 
 /* ---- Team: numbered tag --------------------------------------------------
