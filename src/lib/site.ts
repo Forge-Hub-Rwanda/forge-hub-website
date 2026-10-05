@@ -777,9 +777,9 @@ export const contactPage = {
 } as const;
 
 /**
- * The admin sign-in and sign-up page, reached from the person icon in the nav.
- * TODO: there is no auth backend yet, so both forms stop at the browser and
- * say so. Wire them to a real handler before this is relied on.
+ * The admin sign-in and sign-up page, reached from the person icon in the
+ * nav. Signing up only creates an account — it does not grant admin access;
+ * an existing admin still has to add the new email on Admin → Admins.
  */
 export const accountPage = {
   eyebrow: "Admin",
@@ -790,6 +790,12 @@ export const accountPage = {
     heading: "Welcome back",
     lede: "Use the email and password you were given as an admin.",
     submit: "Sign in",
+  },
+  signUp: {
+    tab: "Create account",
+    heading: "Create an account",
+    lede: "This creates a login only — an existing admin still has to grant you access.",
+    submit: "Create account",
   },
 } as const;
 
