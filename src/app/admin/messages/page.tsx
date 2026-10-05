@@ -1,8 +1,11 @@
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { markMessageRead } from "@/app/admin/messages/actions";
 
 /**
- * Read-only list for now — marking a message read, and the rest of the
- * inbox (search, delete), is a later step. Ordered newest first.
+ * Lists contact messages, newest first. Replying happens over email via a
+ * `mailto:` link rather than inside the app — there's no email-sending
+ * infrastructure here, and this is the lowest-effort option that still gets
+ * a reply out.
  */
 export default async function AdminMessages() {
   const supabase = await createServerSupabaseClient();
@@ -49,11 +52,31 @@ export default async function AdminMessages() {
               <p className="text-text mt-3 whitespace-pre-wrap">
                 {message.message}
               </p>
-              {!message.is_read && (
-                <span className="text-accent mt-3 inline-block text-xs font-semibold">
-                  Unread
-                </span>
-              )}
+              <div className="mt-3 flex flex-wrap items-center gap-4">
+                {!message.is_read && (
+                  <span className="text-accent inline-block text-xs font-semibold">
+                    Unread
+                  </span>
+                )}
+                <a
+                  href={`mailto:${message.email}?subject=${encodeURIComponent(
+                    "Re: your message to ForgeHub",
+                  )}&body=${encodeURIComponent(`Hi ${message.name},\n\n`)}`}
+                  className="text-text-muted hover:text-text text-sm font-medium underline-offset-4 hover:underline"
+                >
+                  Reply
+                </a>
+                {!message.is_read && (
+                  <form action={markMessageRead.bind(null, message.id)}>
+                    <button
+                      type="submit"
+                      className="text-text-muted hover:text-text text-sm font-medium"
+                    >
+                      Mark as read
+                    </button>
+                  </form>
+                )}
+              </div>
             </li>
           ))}
         </ul>
