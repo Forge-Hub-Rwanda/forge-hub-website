@@ -488,7 +488,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         {project.blurb}
       </p>
 
-      <p className="text-text-muted mt-4 leading-relaxed">{project.detail}</p>
+      {project.detail ? (
+        <p className="text-text-muted mt-4 leading-relaxed">{project.detail}</p>
+      ) : null}
 
       {project.href ? (
         <a

@@ -57,10 +57,19 @@ export async function createTeamMember(
     photo_path = uploaded.path;
   }
 
+  // A new member joins the end of the list: one past the current last.
+  const { data: last } = await supabase
+    .from("team_members")
+    .select("position")
+    .order("position", { ascending: false })
+    .limit(1);
+  const position = (last?.[0]?.position ?? -1) + 1;
+
   const { error } = await supabase.from("team_members").insert({
     ...parsed.data,
     photo_url,
     photo_path,
+    position,
   });
 
   if (error) {
