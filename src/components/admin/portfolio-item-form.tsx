@@ -7,6 +7,11 @@ import {
   type PortfolioItemState,
 } from "@/app/admin/portfolio/actions";
 import { Field, FIELD_CLASS } from "@/components/admin/form-field";
+import {
+  DraftNotice,
+  FormError,
+  useFormDraft,
+} from "@/components/admin/form-draft";
 
 const initial: PortfolioItemState = { status: "idle" };
 
@@ -28,13 +33,21 @@ export function PortfolioItemForm({ item }: { item?: PortfolioItem }) {
     : createPortfolioItem;
   const [state, formAction, pending] = useActionState(action, initial);
   const errors = state.errors ?? {};
+  // Unsaved edits survive a reload, a closed tab or a sign-out.
+  const { formRef, restored, discard } = useFormDraft(
+    `portfolio:${item?.id ?? "new"}`,
+    state,
+  );
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       className="mt-6 flex max-w-2xl flex-col gap-5"
       noValidate
     >
+      <DraftNotice restored={restored} onDiscard={discard} />
+
       <Field id="name" label="Name" error={errors.name}>
         <input
           id="name"
@@ -132,11 +145,7 @@ export function PortfolioItemForm({ item }: { item?: PortfolioItem }) {
         >
           {pending ? "Saving…" : item ? "Save changes" : "Create item"}
         </button>
-        {state.status === "error" && state.message && (
-          <p role="alert" className="text-accent text-sm">
-            {state.message}
-          </p>
-        )}
+        {state.status === "error" && <FormError message={state.message} />}
       </div>
     </form>
   );

@@ -7,6 +7,11 @@ import {
   type EventState,
 } from "@/app/admin/events/actions";
 import { Field, FIELD_CLASS } from "@/components/admin/form-field";
+import {
+  DraftNotice,
+  FormError,
+  useFormDraft,
+} from "@/components/admin/form-draft";
 
 const initial: EventState = { status: "idle" };
 
@@ -25,13 +30,21 @@ export function EventForm({ event }: { event?: EventRecord }) {
   const action = event ? updateEvent.bind(null, event.id) : createEvent;
   const [state, formAction, pending] = useActionState(action, initial);
   const errors = state.errors ?? {};
+  // Unsaved edits survive a reload, a closed tab or a sign-out.
+  const { formRef, restored, discard } = useFormDraft(
+    `event:${event?.id ?? "new"}`,
+    state,
+  );
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       className="mt-6 flex max-w-2xl flex-col gap-5"
       noValidate
     >
+      <DraftNotice restored={restored} onDiscard={discard} />
+
       <Field id="name" label="Name" error={errors.name}>
         <input
           id="name"
@@ -130,11 +143,7 @@ export function EventForm({ event }: { event?: EventRecord }) {
         >
           {pending ? "Saving…" : event ? "Save changes" : "Create event"}
         </button>
-        {state.status === "error" && state.message && (
-          <p role="alert" className="text-accent text-sm">
-            {state.message}
-          </p>
-        )}
+        {state.status === "error" && <FormError message={state.message} />}
       </div>
     </form>
   );

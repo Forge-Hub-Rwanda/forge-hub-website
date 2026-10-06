@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 
 /** Same order as the admin nav, so the two never disagree. */
 const SECTIONS = [
@@ -51,7 +51,7 @@ function summary(total: Count, drafts: Count, one: string, many: string) {
 
 async function adminCount(): Promise<Count> {
   try {
-    return await createAdminSupabaseClient()
+    return await createServiceRoleClient()
       .from("admins")
       .select("email", { count: "exact", head: true });
   } catch (error) {

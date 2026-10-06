@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import { signOut } from "@/app/admin/actions";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { DraftJanitor } from "@/components/admin/form-draft";
 import { ImigongoRule } from "@/components/imigongo";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -22,11 +24,14 @@ export default async function AdminLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { isAdmin, user } = await requireAdmin();
   if (!isAdmin) {
-    redirect("/login");
+    // `proxy.ts` sets this so signing back in returns to the same page.
+    const path = (await headers()).get("x-admin-path") ?? "/admin";
+    redirect(`/login?next=${encodeURIComponent(path)}`);
   }
 
   return (
     <div className="bg-surface text-text min-h-screen">
+      <DraftJanitor />
       <header className="border-line bg-surface-2 border-b">
         <div className="mx-auto flex max-w-[90rem] flex-col gap-4 px-6 py-4 lg:flex-row lg:items-center lg:justify-between lg:px-10">
           <div className="flex items-center gap-3">

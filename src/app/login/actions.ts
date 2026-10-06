@@ -57,7 +57,21 @@ export async function signIn(
     };
   }
 
-  redirect("/admin");
+  redirect(safeNext(formData.get("next")));
+}
+
+/**
+ * Where to go after signing in: the admin page the person was on when their
+ * session ended (`/login?next=…`), else the dashboard. Only paths inside
+ * `/admin` are accepted, so the parameter can't send anyone off-site.
+ */
+function safeNext(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") return "/admin";
+  const isAdminPath =
+    value === "/admin" ||
+    value.startsWith("/admin/") ||
+    value.startsWith("/admin?");
+  return isAdminPath && !value.includes("\\") ? value : "/admin";
 }
 
 export type SignUpState = {

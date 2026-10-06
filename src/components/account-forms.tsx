@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { useActionState } from "react";
 import {
   signIn,
@@ -25,7 +25,9 @@ import { accountPage } from "@/lib/site";
  *
  * Sign-in submits to the `signIn` server action, which checks the password
  * against Supabase Auth and the email against the `admins` allowlist, then
- * redirects to `/admin`. Sign-up submits to `signUp`, which only creates a
+ * redirects to the `?next=` admin page if there is one (the page the person
+ * was on when their session ended), else `/admin`. Sign-up submits to
+ * `signUp`, which only creates a
  * Supabase Auth account — it does not add the email to `admins`, so a fresh
  * account still needs an existing admin to grant it access from
  * Admin → Admins before it can sign in and reach `/admin`.
@@ -97,10 +99,21 @@ export function AccountForms() {
   );
 }
 
+/**
+ * The `?next=` page from the URL, read on the client so `/login` can stay a
+ * static page. Empty on the server, which is harmless: the field only matters
+ * once someone submits.
+ */
+const noSubscribe = () => () => {};
+const readNext = () =>
+  new URLSearchParams(window.location.search).get("next") ?? "";
+
 function SignInForm() {
   const [state, action, pending] = useActionState(signIn, signInInitial);
   const copy = accountPage.signIn;
   const errors = state.errors ?? {};
+  // Where to return after signing in; `signIn` only accepts `/admin` paths.
+  const next = useSyncExternalStore(noSubscribe, readNext, () => "");
 
   return (
     <>
@@ -114,6 +127,7 @@ function SignInForm() {
       </p>
 
       <form action={action} noValidate className="mt-6 flex flex-col gap-5">
+        <input type="hidden" name="next" value={next} />
         <div className="field">
           <label htmlFor="email" className="text-label text-text-muted">
             Email
