@@ -11,26 +11,22 @@ import { Section } from "@/components/section-heading";
 import { RollLetters, SplitWords } from "@/components/split-text";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { projectPage, projects } from "@/lib/site";
+import { getProject, getProjects } from "@/lib/content";
+import { projectPage, projectTint } from "@/lib/site";
 
 /**
  * One project, in full.
  *
- * Every route is known at build time, so all of them are prerendered — there
- * is no data source behind this beyond `site.ts`, and nothing here is dynamic.
+ * CMS-backed: the project is read from the cached project list, which every
+ * admin edit expires, so a project added or edited in /admin shows here on the
+ * next load. Each slug is rendered on its first request and cached after that.
  */
-export function generateStaticParams() {
-  return projects.map((project) => ({ slug: project.slug }));
-}
-
-const find = (slug: string) =>
-  projects.find((project) => project.slug === slug);
 
 export async function generateMetadata(
   props: PageProps<"/portfolio/[slug]">,
 ): Promise<Metadata> {
   const { slug } = await props.params;
-  const project = find(slug);
+  const project = await getProject(slug);
   if (!project) return {};
 
   return {
@@ -45,17 +41,21 @@ export default async function ProjectDetailPage(
   // `params` is a promise in this version of Next — see
   // node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/page.md
   const { slug } = await props.params;
-  const project = find(slug);
+  const [project, projects] = await Promise.all([
+    getProject(slug),
+    getProjects(),
+  ]);
 
   // A slug that is not a project is a 404, not an empty page. Reachable by a
   // stale link once a project is renamed or removed.
   if (!project) notFound();
 
-  const index = projects.indexOf(project);
+  const index = projects.findIndex((entry) => entry.slug === project.slug);
   // Wraps, so the end of the work leads back to the start rather than to a
   // dead stop. With one project it points at itself, which is why it is only
-  // rendered when there is more than one.
-  const next = projects[(index + 1) % projects.length];
+  // rendered when there is more than one. A guard on `index` keeps the wrap
+  // safe even if the list and the single fetch ever disagree.
+  const next = projects[(Math.max(index, 0) + 1) % projects.length];
 
   return (
     <>
@@ -144,9 +144,21 @@ export default async function ProjectDetailPage(
             everything below it, never moves. */}
         <Section className="border-line border-t">
           <Reveal>
-            <Scrub query="(min-width: 48rem)" from={1} to={0.35}>
+            <Scrub
+              query="all"
+              liteQuery="(min-width: 48rem)"
+              from={1}
+              to={0.35}
+            >
               <div className="reel-grow">
-                <ProjectImage image={project.cover} ratio="16 / 9" priority />
+                <ProjectImage
+                  image={project.cover}
+                  ratio="16 / 9"
+                  priority
+                  artId={`art-${project.slug}`}
+                  tint={projectTint(project, Math.max(index, 0))}
+                  variant={Math.max(index, 0)}
+                />
               </div>
             </Scrub>
           </Reveal>

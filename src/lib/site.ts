@@ -81,6 +81,13 @@ export const hero = {
     strong: "online across Africa, and in person in Kigali",
     tail: ".",
   },
+  /**
+   * What a phone shows in place of the summary and the paragraph: the two say
+   * the same thing twice, which a wide screen has room for and a phone's first
+   * screen does not. One sentence, so the opening screen keeps some air.
+   */
+  phoneLine:
+    "We build software for clients and train Africa’s next engineers — online, and in Kigali.",
   primaryCta: { label: "Explore our programs", href: "#programs" },
   secondaryCta: { label: "Work with us", href: "/services" },
   scrollCue: "Scroll",
@@ -270,19 +277,8 @@ export const eventsSection = {
   cta: { label: "Get in touch", href: "/contact" },
 } as const;
 
-/**
- * TODO: one honest holding row, deliberately. Do not add entries here until an
- * event has a confirmed name, date, time and location.
- */
-export const events: SiteEvent[] = [
-  {
-    date: { day: "TBA", month: "" },
-    name: "Community meetups and demo days",
-    kind: "Coming soon",
-    time: "Dates to be announced",
-    location: "Kigali and online",
-  },
-];
+// The events themselves are managed from /admin/events and read by
+// `getEvents()` in src/lib/content.ts.
 
 /* ========================================================================== */
 /*  Community                                                                 */
@@ -300,18 +296,9 @@ export const communitySection = {
   lede: "A growing community of young African engineers, dreamers and builders determined to turn technology into Africa’s biggest job creator.",
 } as const;
 
-/**
- * TODO: no member quotes yet. Add them only once they are real, sourced, and
- * the person has given written permission to publish their name and words.
- */
-export const testimonials: Testimonial[] = [
-  {
-    quote:
-      "Our first cohort has not finished yet. When it has, this space belongs to their words rather than ours.",
-    name: "Member stories",
-    role: "Coming soon",
-  },
-];
+// The quotes themselves are managed from /admin/community and read by
+// `getTestimonials()` in src/lib/content.ts. Add one only once the member has
+// given written permission to publish their name and words.
 
 /* ========================================================================== */
 /*  Impact                                                                    */
@@ -542,6 +529,21 @@ export type ProjectImage = {
   height: number;
 };
 
+/**
+ * A project's colour, as a CSS value: its own `accent`, or the next in a fixed
+ * cycle so a new project never needs one to look right. With no project — the
+ * homepage gallery's closing card — it is the warm coral the page's blobs end
+ * on. Shared by the gallery's band tint and the project-image artwork.
+ */
+const TINT_CYCLE = ["amber", "sky", "teal", "lime"] as const;
+
+export const projectTint = (project: Project | undefined, index: number) =>
+  `var(--color-blob-${
+    project
+      ? (project.accent ?? TINT_CYCLE[index % TINT_CYCLE.length])
+      : "coral"
+  })`;
+
 /** One part of a project's write-up. */
 export type ProjectSection = { heading: string; body: string };
 
@@ -603,78 +605,8 @@ export const portfolioSection = {
   action: { label: "See the full portfolio", href: "/portfolio" },
 } as const;
 
-/**
- * TODO: only the first entry is a real project. The two after it are empty
- * slots carrying the shape a real entry needs, with copy that says plainly the
- * write-up is still coming rather than inventing a client, a year or a result.
- * Replace them one at a time as each client confirms they are happy to be
- * named — and delete any slot still empty when there are three real projects,
- * rather than leaving a placeholder on a page that no longer needs one.
- */
-export const projects: Project[] = [
-  {
-    slug: "forgehub-rwanda-website",
-    name: "forgehubrwanda.com",
-    blurb: "Our own site — designed, built and shipped in-house.",
-    detail:
-      "One typeface, no photography, and motion on every surface — a scroll-driven hero, a morphing gradient field, and imigongo geometry drawn in SVG.",
-    client: "In-house",
-    year: "2026",
-    disciplines: ["Software development", "Design"],
-    status: "Live",
-    // TODO: add `href` once the site is live on its own domain.
-    // TODO: no screenshots yet. Add a `cover` and `gallery` here and the
-    // project's page picks them up — until then it draws labelled slots.
-    story: [
-      {
-        heading: "What it had to do",
-        body: "Introduce a studio and a training hub as one thing rather than two, before either had a body of public work to point at. That ruled out the usual opening — a wall of client logos — and made the site itself the first thing it had to be able to stand on.",
-      },
-      {
-        heading: "How it is built",
-        body: "Next.js with the App Router, statically rendered. One typeface across every weight, no photography anywhere, and colour carried almost entirely by an animated gradient field rather than by surfaces or text. The imigongo geometry that runs through the pages is drawn as SVG paths, so it stays sharp at any size and re-colours with the theme.",
-      },
-      {
-        heading: "The motion",
-        body: "Every moving part is driven from the real scroll position rather than a timer: a display line that shrinks into the header, a gallery that pins the page and pans the work sideways, a sticky index that marks which option you are reading. Each one degrades to a plain, complete layout on a narrow screen, for a visitor who has asked for less motion, or where the script never runs.",
-      },
-    ],
-  },
-  {
-    slug: "client-build-slot",
-    name: "A client build",
-    blurb: "A commissioned product. Naming it is the client's call, not ours.",
-    detail:
-      "What they needed, what we built, and what changed once it shipped — published the moment they are happy for it to be.",
-    client: "Client to be named",
-    year: "To be confirmed",
-    disciplines: ["Software development"],
-    status: "Write-up in preparation",
-    story: [
-      {
-        heading: "Still to be written",
-        body: "This page is the shape a client project takes here: what they needed, what we built, the decisions worth explaining, and what changed once it shipped. It goes up when the client is happy for it to.",
-      },
-    ],
-  },
-  {
-    slug: "training-engagement-slot",
-    name: "A training engagement",
-    blurb: "Software training delivered for a team, rather than an individual.",
-    detail:
-      "Who we trained, what they needed to be able to build, and where they had got to by the end of it.",
-    client: "Organization to be named",
-    year: "To be confirmed",
-    disciplines: ["Training & education"],
-    status: "Write-up in preparation",
-    story: [
-      {
-        heading: "Still to be written",
-        body: "The same, for the other half of what we do: who we trained, what they needed to be able to build, how the programme was run, and where they had got to by the end of it.",
-      },
-    ],
-  },
-];
+// The projects themselves are managed from /admin/portfolio and read by
+// `getProjects()` in src/lib/content.ts.
 
 /**
  * The card that closes the gallery. Not a project — it is the invitation the
@@ -737,13 +669,9 @@ export type TeamMember = {
   photo?: ProjectImage;
 };
 
-/** TODO: confirm the exact titles for Benjamin Inema and Ishimwe Valentin. */
-export const teamMembers: TeamMember[] = [
-  { name: "Jimmy Shimwa", role: "Founder" },
-  { name: "Fadhiri Ihirwe Ndegeya", role: "Co-Founder" },
-  { name: "Benjamin Inema", role: "Founding team" },
-  { name: "Ishimwe Valentin", role: "Founding team" },
-];
+// The team itself is managed from /admin/team and read by `getTeam()` in
+// src/lib/content.ts. TODO: confirm the exact titles for Benjamin Inema and
+// Ishimwe Valentin, then update them there.
 
 export const teamPage = {
   eyebrow: "The people",

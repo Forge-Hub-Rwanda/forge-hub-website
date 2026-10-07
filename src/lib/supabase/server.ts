@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 /**
  * Supabase client for server code that acts as "the signed-in admin" — server
@@ -41,8 +42,12 @@ export async function createServerSupabaseClient() {
  * Is the current session an allowed admin? Checked by querying `admins`
  * (RLS lets a signed-in user see only their own row) rather than trusting
  * the session alone, so revoking a row in Supabase takes effect immediately.
+ *
+ * Wrapped in React `cache`, so one render asks Supabase once: the admin layout
+ * and the page inside it both call this, and without it each call was its own
+ * Auth round-trip and `admins` lookup before anything could show.
  */
-export async function requireAdmin() {
+export const requireAdmin = cache(async function requireAdmin() {
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -60,4 +65,4 @@ export async function requireAdmin() {
     .maybeSingle();
 
   return { supabase, user, isAdmin: Boolean(admin) } as const;
-}
+});

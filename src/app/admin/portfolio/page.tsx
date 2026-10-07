@@ -7,7 +7,8 @@ export default async function AdminPortfolio() {
   const { data: items, error } = await supabase
     .from("portfolio_items")
     .select("id, name, is_published, created_at")
-    .order("created_at", { ascending: false });
+    // Oldest first, matching the public site, so a new item joins the end.
+    .order("created_at", { ascending: true });
 
   return (
     <div>

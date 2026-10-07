@@ -12,7 +12,8 @@ import { manifesto } from "@/lib/site";
  *
  * The sentence inks in word by word as it is scrolled through, from the pale
  * rule colour to full ink, so it reads as being written while it is read. On a
- * narrow window or under reduced motion it is simply the finished sentence.
+ * lite phone (see src/lib/motion-tier.ts) or under reduced motion it is simply
+ * the finished sentence.
  */
 export function Manifesto() {
   return (
@@ -42,7 +43,8 @@ export function Manifesto() {
             exactly as before — but the band previously had no heading of any
             kind, which left the whole "why we exist" section missing from the
             document outline and unreachable by heading navigation. */}
-        <Scrub query="(min-width: 48rem)" from={0.85} to={0.3}>
+        {/* Every width; a lite phone keeps the finished sentence. */}
+        <Scrub query="all" liteQuery="(min-width: 48rem)" from={0.85} to={0.3}>
           <h2 className="font-display text-heading text-text mt-10 max-w-[24ch] text-[clamp(1.75rem,3.6vw,3.25rem)]">
             <SplitWords text={manifesto.statement} mode="scrub" />
           </h2>

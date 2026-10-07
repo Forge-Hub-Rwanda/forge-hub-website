@@ -1,18 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Service-role Supabase client — bypasses Row Level Security entirely. Used
- * only for managing the `admins` allowlist itself, since a policy on that
- * table that queries `admins` to check admin-ness would be circular.
- *
- * This client enforces nothing on its own: every call site must call
- * `requireAdmin()` first and check `isAdmin` before using it.
+ * SERVER-ONLY, SECRET. Supabase client that uses the service-role key, which
+ * bypasses Row Level Security and can create auth users. Import it only from
+ * server actions and server components, and only after `requireAdmin()` has
+ * passed. Never import it from a client component, and never prefix the key
+ * with NEXT_PUBLIC_.
  */
-export function createAdminSupabaseClient() {
+export function createServiceRoleClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) {
-    throw new Error("Supabase service role is not configured.");
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY is not set. Add it to .env.local (server only).",
+    );
   }
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },

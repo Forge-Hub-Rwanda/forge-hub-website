@@ -7,7 +7,8 @@ export default async function AdminTeam() {
   const { data: members, error } = await supabase
     .from("team_members")
     .select("id, name, role, photo_url")
-    .order("position", { ascending: true });
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
 
   return (
     <div>

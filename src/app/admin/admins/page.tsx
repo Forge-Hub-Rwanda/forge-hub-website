@@ -1,61 +1,56 @@
 import { redirect } from "next/navigation";
+import { AdminCreateForm } from "@/components/admin-create-form";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/supabase/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
-import { AddAdminForm } from "@/components/admin/add-admin-form";
-import { RemoveAdminButton } from "@/components/admin/remove-admin-button";
 
-/**
- * Lists and manages the `admins` allowlist, replacing manual SQL in the
- * Supabase dashboard. Reads/writes go through the service-role client, since
- * `admins` carries no insert/update/delete RLS policy for anyone — see
- * `0002_admins.sql`.
- */
-export default async function AdminAdmins() {
-  const { isAdmin, user } = await requireAdmin();
+export default async function AdminsPage() {
+  const { isAdmin } = await requireAdmin();
   if (!isAdmin) {
     redirect("/login");
   }
 
-  const admin = createAdminSupabaseClient();
-  const { data: admins, error } = await admin
+  // The admins table only shows a user their own row under RLS, so the full
+  // list is read with the service-role key, after the check above.
+  const { data: admins, error } = await createServiceRoleClient()
     .from("admins")
     .select("email, created_at")
     .order("created_at", { ascending: true });
 
   return (
-    <div>
-      <h1 className="font-display text-heading text-2xl">Admins</h1>
-      <p className="text-text-muted mt-2 max-w-[60ch]">
-        Anyone signed in here can reach every admin page. Only add people you
-        trust with that.
-      </p>
-
-      {error && (
-        <p className="text-text-muted mt-4">
-          Couldn&apos;t load admins: {error.message}
+    <div className="flex flex-col gap-12">
+      <div>
+        <h1 className="font-display text-heading text-2xl">Admins</h1>
+        <p className="text-text-muted mt-3 max-w-[60ch]">
+          Anyone listed here can sign in at the login page and edit the site.
+          Share the email and password with them yourself.
         </p>
-      )}
+      </div>
 
-      {!error && admins && (
-        <ul className="mt-6 flex flex-col gap-3">
-          {admins.map((row) => (
-            <li
-              key={row.email}
-              className="border-line bg-surface-2 flex items-center justify-between gap-4 border p-4"
-            >
-              <span className="text-text">
-                {row.email}
-                {row.email === user?.email && (
-                  <span className="text-text-muted ml-2 text-xs">(you)</span>
-                )}
-              </span>
-              <RemoveAdminButton email={row.email} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <section>
+        <h2 className="text-label text-text-muted mb-4">Add an admin</h2>
+        <AdminCreateForm />
+      </section>
 
-      <AddAdminForm />
+      <section>
+        <h2 className="text-label text-text-muted mb-4">Current admins</h2>
+        {error ? (
+          <p className="text-text text-sm">Could not load the admin list.</p>
+        ) : (
+          <ul className="border-line max-w-md divide-y border">
+            {(admins ?? []).map((admin) => (
+              <li
+                key={admin.email}
+                className="border-line flex items-center justify-between gap-4 px-4 py-3 text-sm"
+              >
+                <span className="text-text">{admin.email}</span>
+                <span className="text-text-muted">
+                  {new Date(admin.created_at).toLocaleDateString("en-GB")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

@@ -12,9 +12,20 @@ import { Portfolio } from "@/components/portfolio";
 import { Programs } from "@/components/programs";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { portfolioSection, projects } from "@/lib/site";
+import { getEvents, getProjects, getTestimonials } from "@/lib/content";
+import { portfolioSection } from "@/lib/site";
 
-export default function Home() {
+// CMS-backed. Served from Next's cache rather than read from Supabase on every
+// visit; the admin actions expire the cache on each edit, so new content still
+// shows on the next load. See `src/lib/content.ts`.
+
+export default async function Home() {
+  const [projects, events, testimonials] = await Promise.all([
+    getProjects(),
+    getEvents(),
+    getTestimonials(),
+  ]);
+
   return (
     <>
       {/* `main` opens before the hero, not after it, so the page's `h1` sits
@@ -33,11 +44,12 @@ export default function Home() {
 
         <Manifesto />
 
-        {/* A curated cut, not the whole list: the homepage shows the three most
-            recent and sends anyone who wants the rest to /portfolio. */}
+        {/* A curated cut, not the whole list: the homepage shows the first
+            three, in admin order, and sends anyone who wants the rest to
+            /portfolio. */}
         <Portfolio projects={projects.slice(0, 3)} {...portfolioSection} />
 
-        <Community />
+        <Community testimonials={testimonials} />
         <Membership />
         <Impact />
 
@@ -47,7 +59,7 @@ export default function Home() {
             someone still reading at that point to act on. */}
         <Programs tone="band" />
 
-        <Events />
+        <Events events={events} />
         {/* `wheel`: the tunnel gives way to the slot the wheel docks in. */}
         <ClosingCta wheel />
       </main>

@@ -2,85 +2,85 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/supabase/server";
-import { createAdminSupabaseClient } from "@/lib/supabase/admin";
 
-export type AdminsState = {
-  status: "idle" | "error";
+export type CreateAdminState = {
+  status: "idle" | "success" | "error";
   message?: string;
+  errors?: Partial<Record<"email" | "password", string>>;
 };
 
 const schema = z.object({
   email: z.email("Please enter a valid email address.").max(254),
+  password: z.string().min(6, "Use at least 6 characters.").max(72),
 });
 
-export async function addAdmin(
-  _prev: AdminsState,
+export async function createAdmin(
+  _prev: CreateAdminState,
   formData: FormData,
-): Promise<AdminsState> {
+): Promise<CreateAdminState> {
+  // Server Functions are reachable on their own, so re-check here rather than
+  // trusting the layout or the proxy.
   const { isAdmin } = await requireAdmin();
   if (!isAdmin) {
-    return { status: "error", message: "Not authorized." };
+    return { status: "error", message: "You are not allowed to do that." };
   }
 
-  const parsed = schema.safeParse({ email: formData.get("email") });
+  const parsed = schema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
   if (!parsed.success) {
-    return { status: "error", message: parsed.error.issues[0]?.message };
+    const errors: NonNullable<CreateAdminState["errors"]> = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof typeof errors;
+      errors[key] ??= issue.message;
+    }
+    return { status: "error", errors };
   }
 
-  const admin = createAdminSupabaseClient();
-  const { error } = await admin
-    .from("admins")
-    .insert({ email: parsed.data.email })
-    .select()
-    .maybeSingle();
+  const email = parsed.data.email.trim().toLowerCase();
+  const service = createServiceRoleClient();
 
-  if (error && error.code !== "23505") {
-    return { status: "error", message: `Couldn't add admin: ${error.message}` };
-  }
+  const { error: createError } = await service.auth.admin.createUser({
+    email,
+    password: parsed.data.password,
+    email_confirm: true,
+  });
 
-  revalidatePath("/admin/admins");
-  return { status: "idle" };
-}
+  // An existing login is fine: it just gets added to the allowlist and keeps
+  // its current password.
+  const alreadyExists =
+    createError?.code === "email_exists" ||
+    /already.*(registered|exists)/i.test(createError?.message ?? "");
 
-export type RemoveAdminState = {
-  status: "idle" | "error";
-  message?: string;
-};
-
-export async function removeAdmin(
-  _prev: RemoveAdminState,
-  formData: FormData,
-): Promise<RemoveAdminState> {
-  const { isAdmin, user } = await requireAdmin();
-  if (!isAdmin || !user?.email) {
-    return { status: "error", message: "Not authorized." };
-  }
-
-  const email = String(formData.get("email") ?? "");
-
-  if (email === user.email) {
-    return { status: "error", message: "You can't remove yourself." };
-  }
-
-  const admin = createAdminSupabaseClient();
-
-  const { count } = await admin
-    .from("admins")
-    .select("email", { count: "exact", head: true });
-
-  if ((count ?? 0) <= 1) {
-    return { status: "error", message: "At least one admin must remain." };
-  }
-
-  const { error } = await admin.from("admins").delete().eq("email", email);
-  if (error) {
+  if (createError && !alreadyExists) {
+    console.error("create admin user failed:", createError.message);
     return {
       status: "error",
-      message: `Couldn't remove admin: ${error.message}`,
+      message: "Could not create that login. Please try again.",
+    };
+  }
+
+  const { error: insertError } = await service
+    .from("admins")
+    .upsert({ email }, { onConflict: "email" });
+
+  if (insertError) {
+    console.error("add to admins failed:", insertError.message);
+    return {
+      status: "error",
+      message: "The login was created but could not be made an admin.",
     };
   }
 
   revalidatePath("/admin/admins");
-  return { status: "idle" };
+  return {
+    status: "success",
+    message: alreadyExists
+      ? `${email} already had a login and is now an admin. Their password is unchanged.`
+      : `${email} can now sign in as an admin.`,
+  };
 }

@@ -1488,6 +1488,100 @@ html.lenis {
   }
 }
 
+/* ---- Membership on a phone: a deck of three cards -------------------------
+   Below lg the index and the lion step aside and the panels stack as a deck:
+   each sticks under the header a little lower than the one before, so the
+   tops of the cards beneath still show, and the next slides up over it. Plain
+   `position: sticky` — no pin, no added height, nothing listening to the
+   scroll — so this much works on any phone, lite or not.
+
+   What moves is behind `data-deck`, set only on a full-motion device: the
+   card being covered sinks back by `--cover` (0 to 1, written by Membership
+   as the next card rises), shrinking from its top edge and dimming under a
+   shade. Both are composited properties, so the scroll repaints nothing. */
+@media (max-width: 63.99rem) {
+  .mb-nav {
+    display: none;
+  }
+
+  .mb-track {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .mb-panel {
+    justify-content: flex-start;
+    padding: 1.75rem 1.5rem 1.6rem;
+    border: 1px solid var(--color-line);
+    border-radius: 1.5rem;
+  }
+
+  .mb-panel .mb-features {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+  }
+
+  .mb-panel .mb-features > li + li {
+    margin-top: 0.6rem;
+  }
+
+  .mb-panel .mb-cta {
+    margin-top: 1.6rem;
+  }
+
+  /* The card's number, set huge in outline and bled off its bottom-right
+     corner. Outline rather than fill so it stays texture, never a second
+     heading competing with the name. */
+  .mb-num {
+    position: absolute;
+    right: -0.08em;
+    bottom: -0.22em;
+    font-family: var(--font-display);
+    font-size: 9.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px currentColor;
+    opacity: 0.18;
+    pointer-events: none;
+  }
+}
+
+/* Stacking needs the window to hold a whole card under the header; a shorter
+   one keeps the cards as a plain rounded stack instead of letting one stick
+   with its call to action out of reach. `--stick` is Membership's correction
+   for a card that is taller than the room anyway: it sticks only once its foot
+   is in view. */
+@media (max-width: 63.99rem) and (min-height: 36rem) {
+  .mb-panel {
+    position: sticky;
+    top: var(--stick, calc(4.75rem + var(--i, 0) * 0.85rem));
+    scroll-margin-top: calc(4.75rem + var(--i, 0) * 0.85rem);
+    min-height: min(32rem, calc(100svh - 7.5rem));
+  }
+
+  .mb[data-deck] .mb-panel {
+    transform-origin: 50% 0;
+    scale: calc(1 - var(--cover, 0) * 0.07);
+    will-change: scale;
+  }
+
+  /* The shade the covered card sinks under. Above the card's own copy, so it
+     dims everything on it evenly, and rounded with it. */
+  .mb[data-deck] .mb-panel::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background-color: #000;
+    opacity: calc(var(--cover, 0) * 0.45);
+    pointer-events: none;
+  }
+}
+
 /* ---- Team: numbered tag --------------------------------------------------
    Sits in the frame's corner under the wipe (z 3), so it is uncovered with the
    portrait rather than floating over the block that is still hiding it. */
@@ -1522,6 +1616,26 @@ html.lenis {
   );
 }
 
+/* Phones: the same drift over a shorter distance, so the halves still meet
+   without either one starting most of the way off a narrow screen. */
+@media (max-width: 63.99rem) {
+  [data-scrub="true"] .drift-l {
+    transform: translate3d(
+      calc((1 - var(--p, 1)) * (1 - var(--p, 1)) * -8vw),
+      0,
+      0
+    );
+  }
+
+  [data-scrub="true"] .drift-r {
+    transform: translate3d(
+      calc((1 - var(--p, 1)) * (1 - var(--p, 1)) * 8vw),
+      0,
+      0
+    );
+  }
+}
+
 /* Deal the deck: the About pillars start stacked and fanned in the middle of
    their grid and are dealt out to their own cells. `--dx` and `--rot` are set
    per card; the resting state is the grid exactly as it was. */
@@ -1541,6 +1655,28 @@ html.lenis {
 [data-scrub="true"] .reel-grow {
   transform: scale(calc(0.78 + 0.22 * var(--p, 1)));
   transform-origin: 50% 0;
+}
+
+/* ---- Portfolio on phones: the lusion.co gallery -------------------------
+   Scoped to `[data-scrub="true"]`, which the portfolio's Scrubs only set below
+   lg on a full-motion device. Elsewhere every one of these is at rest: the
+   cover square and full, the name in place, the strip still. */
+[data-scrub="true"] .cover-unmask {
+  clip-path: inset(
+    calc((1 - var(--p, 1)) * 12%) calc((1 - var(--p, 1)) * 8%) round 0.75rem
+  );
+}
+
+[data-scrub="true"] .cover-unmask .project-art-inner {
+  transform: scale(calc(1.18 - 0.18 * var(--p, 1)));
+}
+
+[data-scrub="true"] .title-slide {
+  transform: translate3d(calc((1 - var(--p, 1)) * 12vw), 0, 0);
+}
+
+[data-scrub="true"] .work-strip-track {
+  transform: translate3d(calc(var(--p, 0) * -40%), 0, 0);
 }
 
 /* ---- Portfolio: colour takeover -------------------------------------------
@@ -1626,8 +1762,11 @@ html.lenis {
 
 /* Diameter 86vh: the wheel leaves 7vh clear above and below itself. White
    with `difference` reads as faint dark lines on a light band and faint light
-   lines on a dark one — there is no single colour that would do both. */
-@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+   lines on a dark one — there is no single colour that would do both.
+
+   No width gate: `data-wheel` is only ever set where the wheel runs, which on
+   a phone means a capable one (see `isCapablePhone` in src/lib/wheel.ts). */
+@media (prefers-reduced-motion: no-preference) {
   :root[data-wheel] .wheel-live {
     position: fixed;
     top: 0;
@@ -1645,6 +1784,18 @@ html.lenis {
   }
 }
 
+/* On a phone the window is tall and narrow, so a wheel sized by its height
+   would cover the whole width. Sized by the width instead: half of it shows,
+   about two fifths of the screen, the same share the desktop wheel takes of a
+   wide window's height. `vw` rather than `vh` also keeps it from resizing as
+   a phone's browser bars slide in and out. */
+@media (max-width: 63.99rem) and (prefers-reduced-motion: no-preference) {
+  :root[data-wheel] .wheel-live {
+    width: 84vw;
+    height: 84vw;
+  }
+}
+
 /* The docked copy, in the page's own ink at the same strength. It stands in
    wherever the live wheel does not run, and steps aside while it does. */
 [data-wheel-dock] > svg {
@@ -1654,6 +1805,16 @@ html.lenis {
 
 :root[data-wheel] [data-wheel-dock] > svg {
   visibility: hidden;
+}
+
+/* ---- The wheel on phones ------------------------------------------------
+   A capable phone runs the live wheel above, exactly as a desktop does. Any
+   other phone gets no wheel at all — not even the still copy in the closing
+   section's dock, which on a wide screen is the reduced-motion stand-in. */
+@media (max-width: 63.99rem) {
+  :root:not([data-wheel]) [data-wheel-dock] {
+    display: none;
+  }
 }
 
 /* Each programs-band plank turns about its own middle. */
@@ -1710,6 +1871,18 @@ html.lenis {
 #site-menu[data-open="true"] {
   visibility: visible;
   transition: none;
+}
+
+/* Under an open menu the page's two most expensive layers — the wheel's
+   full-window `difference` blend and the morphing blobs — are hidden, so they
+   stop being painted while nobody can see them. The delay is the opening
+   curtain's: they go only once the veil (0.7s) and the panel (0.14s + 0.85s)
+   have both landed over them. Closing has no delay, so they are back before
+   the first sliver of page shows. Their animations keep running while hidden,
+   so they reappear exactly where they would have been. */
+:root:has(#site-menu[data-open="true"]) :is(.wheel-live, .blob) {
+  visibility: hidden;
+  transition: visibility 0s linear 1s;
 }
 
 .menu-veil,
@@ -2048,6 +2221,42 @@ html.lenis {
 
 [data-logo-tile] {
   view-transition-name: site-logo;
+}
+
+/* ---- Phone chrome: out of the way while reading ---------------------------
+   Below lg the logo tile and the corner controls are fixed over the page's own
+   text. While the visitor scrolls down they slide up out of view, and any
+   scroll up brings them straight back — see the `data-chrome-away` effect in
+   SiteHeader. `translate` rather than `transform`: the tile's inline transform
+   carries its centring and scale, and the two properties compose. Focus inside
+   either brings it back, so a keyboard never lands on a hidden control. */
+@media (max-width: 63.99rem) {
+  /* `opacity` kept from the tile's own hover fade, which this replaces. */
+  [data-logo-tile],
+  [data-corner-chrome] {
+    transition:
+      translate 0.35s var(--ease-out-expo),
+      opacity 0.15s linear;
+  }
+
+  :root[data-chrome-away] [data-logo-tile]:not(:focus-visible),
+  :root[data-chrome-away] [data-corner-chrome]:not(:focus-within) {
+    translate: 0 -140%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-logo-tile],
+    [data-corner-chrome] {
+      transition: opacity 0.2s linear;
+    }
+
+    :root[data-chrome-away] [data-logo-tile]:not(:focus-visible),
+    :root[data-chrome-away] [data-corner-chrome]:not(:focus-within) {
+      translate: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
 }
 
 ::view-transition-group(site-logo) {

@@ -16,6 +16,8 @@
  *     after the scrolling itself has stopped.
  */
 
+import { getMotionTier } from "@/lib/motion-tier";
+
 export type WheelState = {
   /** Centre, in viewport px. */
   cx: number;
@@ -86,3 +88,29 @@ export function runWheelReactors() {
  */
 export const WHEEL_QUERY =
   "(min-width: 64rem) and (prefers-reduced-motion: no-preference)";
+
+/**
+ * Where the wheel ALSO runs: a phone, but only a capable one. The reactors
+ * (the sticks, the rippling watermarks) stay desktop-only and keep reading
+ * WHEEL_QUERY, so on a phone the wheel is a single transformed layer and
+ * nothing else.
+ */
+export const PHONE_WHEEL_QUERY =
+  "(max-width: 63.99rem) and (prefers-reduced-motion: no-preference)";
+
+/**
+ * Whether this phone is up to a full-page blended layer turning every frame.
+ *
+ * The motion tier has already ruled out data saver and the weakest handsets;
+ * this asks for more on top. Chromium reports `deviceMemory` in powers of two,
+ * capped at 8, so asking for 8 admits flagship and upper-mid Androids and
+ * keeps the 4 GB phones most of the market carries on the still page. Safari
+ * reports no memory at all, and every iPhone that can run a current Safari is
+ * comfortably up to it, so a missing value counts as capable.
+ */
+export function isCapablePhone() {
+  if (getMotionTier() !== "full") return false;
+  const memory = (navigator as Navigator & { deviceMemory?: number })
+    .deviceMemory;
+  return memory === undefined || memory >= 8;
+}

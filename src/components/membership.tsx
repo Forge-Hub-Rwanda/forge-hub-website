@@ -7,6 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
+import { getMotionTier } from "@/lib/motion-tier";
 import { isFinePointer } from "@/lib/pointer";
 import { membershipSection, plans } from "@/lib/site";
 
@@ -50,6 +51,22 @@ import { membershipSection, plans } from "@/lib/site";
  * window, a reduced-motion visitor and a browser that never ran this file all
  * land in the same fallback of three equally solid links, and none of them
  * needed one written for them.
+ *
+ * ## On a phone: a deck of three cards
+ *
+ * Below lg the index and the lion step aside, and the three panels become a
+ * deck: each one sticks just under the header as it arrives, a little lower
+ * than the one before, and the next slides up over it. The card being covered
+ * sinks back - a touch smaller, a touch darker - as the next one rises, so
+ * the stack reads as depth, after lusion.co's stacked project cards.
+ *
+ * It costs no extra scrolling, for the reason given above: `position: sticky`
+ * adds no height, so the page moves at its normal rate and nothing is pinned
+ * or taken over. The stacking itself is plain CSS. Only the sinking is script
+ * - one custom property per covered card, written in a rAF while the band is
+ * in view - and it sits behind `data-deck`, which is set only on a
+ * full-motion device. A lite phone, reduced motion and a browser without
+ * scripting get the same stack, standing still.
  */
 
 /**
@@ -67,6 +84,9 @@ import { membershipSection, plans } from "@/lib/site";
  * taken off, which a 45rem gate would have excluded for no reason.
  */
 const TRACK_QUERY = "(min-width: 64rem) and (min-height: 38rem)";
+
+/** Where the panels stack as a deck. The same breakpoint as the CSS. */
+const DECK_QUERY = "(max-width: 63.99rem)";
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
@@ -94,6 +114,9 @@ const pad = (value: number) => String(value).padStart(2, "0");
 
 export function Membership() {
   const [tracked, setTracked] = useState(false);
+  /** Whether the deck's sinking runs. See "On a phone" above. */
+  const [deck, setDeck] = useState(false);
+  const trackRef = useRef<HTMLUListElement>(null);
   /**
    * The first way in stands until the second takes over — including before any
    * observer has reported, which is the state a visitor arrives to.
@@ -162,8 +185,24 @@ export function Membership() {
     // The eye: lit on any scroll, and dimmed once the scrolling has been
     // still for EYE_HOLD. Setting an attribute that already holds the value
     // is a no-op, so doing it on every scroll event costs nothing.
+    //
+    // Only while the band is near the window: the eye cannot be seen from
+    // anywhere else, so a scroll elsewhere on the page leaves it alone. The
+    // margin wakes it before the band arrives, so it lights exactly as before.
     let dim = 0;
+    let near = typeof IntersectionObserver === "undefined";
+    const watch = near
+      ? null
+      : new IntersectionObserver(
+          ([entry]) => {
+            near = entry.isIntersecting;
+          },
+          { rootMargin: "20% 0px" },
+        );
+    watch?.observe(band);
+
     const onScroll = () => {
+      if (!near) return;
       lion.dataset.scrolling = "true";
       window.clearTimeout(dim);
       dim = window.setTimeout(() => {
@@ -175,6 +214,7 @@ export function Membership() {
     band.addEventListener("pointerleave", onLeave);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      watch?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.clearTimeout(dim);
       band.removeEventListener("pointermove", onMove);
@@ -268,6 +308,112 @@ export function Membership() {
     return () => observer.disconnect();
   }, [tracked]);
 
+  // Decide whether the deck sinks, and keep deciding, as the tracking does: a
+  // phone can rotate, a window can resize, reduced motion can change.
+  useEffect(() => {
+    if (getMotionTier() !== "full") return;
+    const fits = window.matchMedia(DECK_QUERY);
+    const reduced = window.matchMedia(REDUCED_QUERY);
+    const sync = () => setDeck(fits.matches && !reduced.matches);
+
+    sync();
+    fits.addEventListener("change", sync);
+    reduced.addEventListener("change", sync);
+    return () => {
+      fits.removeEventListener("change", sync);
+      reduced.removeEventListener("change", sync);
+    };
+  }, []);
+
+  // Sink each card as the next one rises over it. How far the next card has
+  // come is read from where it actually is - its top edge travelling from the
+  // foot of the window to the line it sticks at - so the effect follows the
+  // finger exactly, backwards as well as forwards.
+  useEffect(() => {
+    const track = trackRef.current;
+    const band = track?.closest("section");
+    if (!deck || !track || !band) return;
+
+    const cards = Array.from(
+      track.querySelectorAll<HTMLElement>("[data-plan]"),
+    );
+    if (cards.length < 2) return;
+
+    // Where each card sticks, in px from the top of the window. Measured on
+    // resize rather than per frame: it only changes when the window does.
+    // A card taller than the room under its sticking line is moved up by
+    // `--stick` until its foot is in view, so its call to action is never
+    // held below the fold while the next card covers it.
+    let stops: number[] = [];
+    const measure = () => {
+      const room = window.innerHeight;
+      stops = cards.map((card) => {
+        card.style.removeProperty("--stick");
+        const line = parseFloat(getComputedStyle(card).top) || 0;
+        const fit = room - card.offsetHeight - 16;
+        if (fit < line) card.style.setProperty("--stick", `${fit}px`);
+        return Math.min(line, fit);
+      });
+    };
+    measure();
+
+    const covers = cards.map(() => -1);
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
+      const viewport = window.innerHeight;
+      // Every read before any write, so a frame costs one layout at most.
+      const tops = cards.map((card) => card.getBoundingClientRect().top);
+      for (let i = 1; i < cards.length; i++) {
+        const travel = Math.max(viewport - stops[i], 1);
+        const progress = Math.min(
+          Math.max((viewport - tops[i]) / travel, 0),
+          1,
+        );
+        const next = Math.round(progress * 1000) / 1000;
+        if (next !== covers[i - 1]) {
+          covers[i - 1] = next;
+          cards[i - 1].style.setProperty("--cover", String(next));
+        }
+      }
+    };
+
+    // Only while the band is near the window, as the lion's eye does.
+    let near = typeof IntersectionObserver === "undefined";
+    const watch = near
+      ? null
+      : new IntersectionObserver(
+          ([entry]) => {
+            near = entry.isIntersecting;
+            if (!frame) frame = requestAnimationFrame(paint);
+          },
+          { rootMargin: "20% 0px" },
+        );
+    watch?.observe(band);
+
+    const onScroll = () => {
+      if (near && !frame) frame = requestAnimationFrame(paint);
+    };
+    const onResize = () => {
+      measure();
+      onScroll();
+    };
+
+    paint();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    return () => {
+      watch?.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (frame) cancelAnimationFrame(frame);
+      for (const card of cards) {
+        card.style.removeProperty("--cover");
+        card.style.removeProperty("--stick");
+      }
+    };
+  }, [deck]);
+
   /**
    * Eases an index click to its panel.
    *
@@ -328,6 +474,7 @@ export function Membership() {
       <div
         ref={rootRef}
         data-tracked={tracked}
+        data-deck={deck || undefined}
         className="mb grid gap-14 lg:grid-cols-12 lg:gap-10"
       >
         {/* ---- The index. THIS ELEMENT IS THE STICKY ONE. ---------------- */}
@@ -389,7 +536,12 @@ export function Membership() {
         </div>
 
         {/* ---- The panels. Ordinary flow; nothing here sticks. ----------- */}
-        <ul className="grid gap-px lg:col-span-7 lg:col-start-6">
+        {/* Below lg, a deck: see "On a phone" above and `.mb-track` in
+            globals.css. */}
+        <ul
+          ref={trackRef}
+          className="mb-track grid gap-px lg:col-span-7 lg:col-start-6"
+        >
           {plans.map((plan, index) => (
             <li
               key={plan.slug}
@@ -397,6 +549,9 @@ export function Membership() {
               data-plan={plan.slug}
               // So a fragment jump can put focus where it put the page.
               tabIndex={-1}
+              // Its place in the deck: how far below the one before it
+              // sticks on a phone.
+              style={{ "--i": index } as React.CSSProperties}
               className={`mb-panel relative flex flex-col justify-center overflow-hidden p-9 lg:p-12 ${
                 plan.featured
                   ? "bg-text text-text-invert"
@@ -412,6 +567,13 @@ export function Membership() {
                 />
               ) : null}
 
+              {/* Phones: the card's number, set huge and in outline and
+                        bled off its corner - the deck's way of saying which
+                        card is on top without a counter. */}
+              <span aria-hidden className="mb-num lg:hidden">
+                {pad(index + 1)}
+              </span>
+
               {/* Reveal wraps the CONTENTS, not the panel. A panel is most of a
                   screen tall, and Reveal's lead-in test only clears for an
                   element that size once a third of the window is already
@@ -420,7 +582,8 @@ export function Membership() {
                   so they behave like every other revealed block on the page.
                   No stagger for the same reason: two panels this tall are never
                   on screen together, so a delay reads as lag, not rhythm. */}
-              <Reveal className="flex flex-col">
+              {/* `relative` lifts the copy over the number above. */}
+              <Reveal className="relative flex flex-col">
                 <p
                   className={`text-label ${
                     plan.featured ? "text-text-invert/60" : "text-text-muted"

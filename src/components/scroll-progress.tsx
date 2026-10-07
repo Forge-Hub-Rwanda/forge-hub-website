@@ -23,24 +23,40 @@ export function ScrollProgress() {
     if (!node) return;
 
     let frame = 0;
+    let written = "";
+    // The scrollable distance, measured when the page or window changes size
+    // rather than on every frame: reading `scrollHeight` mid-scroll makes the
+    // browser resolve whatever layout the frame's other effects have touched.
+    let max = 0;
 
     const update = () => {
       frame = 0;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
       const progress = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
-      node.style.setProperty("--progress", progress.toFixed(4));
+      const value = progress.toFixed(4);
+      if (value === written) return;
+      written = value;
+      node.style.setProperty("--progress", value);
+    };
+
+    const measure = () => {
+      max = document.documentElement.scrollHeight - window.innerHeight;
+      update();
     };
 
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
 
-    update();
+    const sizer = new ResizeObserver(measure);
+    sizer.observe(document.body);
+
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", measure);
     return () => {
+      sizer.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", measure);
       if (frame) cancelAnimationFrame(frame);
     };
   }, []);
