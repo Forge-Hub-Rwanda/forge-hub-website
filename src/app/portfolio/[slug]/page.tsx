@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner, ImigongoRule } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
@@ -30,7 +31,7 @@ export async function generateMetadata(
   if (!project) return {};
 
   return {
-    title: `${project.name} — ForgeHub Rwanda`,
+    title: `${project.name} | ForgeHub Rwanda`,
     description: project.blurb,
   };
 }
@@ -83,8 +84,9 @@ export default async function ProjectDetailPage(
               // product name — and at the bottom of this clamp one of those is
               // wider than a phone. Breaking inside it is better than letting it
               // run off the side, where `body { overflow-x: clip }` would silently
-              // cut the end off rather than scroll to it.
-              className="font-display text-heading text-text mt-8 max-w-[18ch] text-[clamp(2.5rem,7.5vw,6.5rem)] [overflow-wrap:anywhere]"
+              // cut the end off rather than scroll to it. On a phone the size
+              // follows the width, so a domain name fits whole on one line.
+              className="font-display text-heading text-text mt-8 max-w-[18ch] text-[clamp(1.75rem,8.4vw,6.5rem)] [overflow-wrap:anywhere] lg:text-[clamp(2.5rem,7.5vw,6.5rem)]"
               style={{ "--delay": "160ms" } as React.CSSProperties}
             >
               <SplitWords text={project.name} mode="load" />
@@ -150,7 +152,7 @@ export default async function ProjectDetailPage(
               from={1}
               to={0.35}
             >
-              <div className="reel-grow">
+              <div className="reel-grow overflow-hidden rounded-xl lg:rounded-none">
                 <ProjectImage
                   image={project.cover}
                   ratio="16 / 9"
@@ -285,8 +287,12 @@ export default async function ProjectDetailPage(
           </Section>
         ) : null}
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

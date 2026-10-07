@@ -3,18 +3,21 @@ import Link from "next/link";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
+import { Scrub } from "@/components/scrub";
 import { Section } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RollLetters } from "@/components/split-text";
 import { getProjects } from "@/lib/content";
+import { PHONE_QUERY } from "@/lib/motion-tier";
 import { portfolioPage, projectTint } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Portfolio — ForgeHub Rwanda",
+  title: "Portfolio | ForgeHub Rwanda",
   description: portfolioPage.lede,
 };
 
@@ -91,16 +94,27 @@ export default async function PortfolioPage() {
                   {/* A small still, so the list is not a wall of type. It is
                       the same component the project's own page uses, so an
                       image landing there shows up here too. */}
-                  <div className="lg:col-span-2">
-                    <ProjectImage
-                      image={project.cover}
-                      ratio="4 / 3"
-                      sizes="(min-width: 64rem) 16vw, 100vw"
-                      artId={`art-${project.slug}`}
-                      tint={projectTint(project, index)}
-                      variant={index}
-                    />
-                  </div>
+                  {/* Phones: a short rounded strip that opens out of an inset
+                      frame as it scrolls up, as the homepage's gallery does. */}
+                  <Scrub
+                    from={1}
+                    to={0.45}
+                    query={PHONE_QUERY}
+                    liteQuery="not all"
+                    className="lg:col-span-2"
+                  >
+                    <div className="cover-unmask overflow-hidden rounded-xl lg:rounded-none">
+                      <ProjectImage
+                        image={project.cover}
+                        ratio="16 / 10"
+                        lgRatio="4 / 3"
+                        sizes="(min-width: 64rem) 16vw, 100vw"
+                        artId={`art-${project.slug}`}
+                        tint={projectTint(project, index)}
+                        variant={index}
+                      />
+                    </div>
+                  </Scrub>
 
                   <div className="lg:col-span-5">
                     <h2 className="font-display text-text group-hover:text-text-invert text-[clamp(1.5rem,2.6vw,2.25rem)] font-extrabold tracking-[-0.03em] transition-colors">
@@ -131,8 +145,12 @@ export default async function PortfolioPage() {
           </ul>
         </Section>
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

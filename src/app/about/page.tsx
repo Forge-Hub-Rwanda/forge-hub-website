@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner, ImigongoWatermark } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
@@ -12,7 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { aboutPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About — ForgeHub Rwanda",
+  title: "About | ForgeHub Rwanda",
   description: aboutPage.lede,
 };
 
@@ -130,8 +131,12 @@ export default function About() {
           </Reveal>
         </Section>
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

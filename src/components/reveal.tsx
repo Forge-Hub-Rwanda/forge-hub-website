@@ -22,6 +22,8 @@ type RevealProps = {
   delay?: number;
   as?: ElementType;
   className?: string;
+  /** Extra inline style, merged under `--delay`. */
+  style?: React.CSSProperties;
 };
 
 export function Reveal({
@@ -29,6 +31,7 @@ export function Reveal({
   delay = 0,
   as: Tag = "div",
   className,
+  style,
 }: RevealProps) {
   const ref = useRef<HTMLElement>(null);
   const [shown, setShown] = useState(false);
@@ -81,7 +84,7 @@ export function Reveal({
       ref={ref}
       data-shown={shown}
       className={`reveal ${className ?? ""}`}
-      style={{ "--delay": `${delay}ms` } as React.CSSProperties}
+      style={{ ...style, "--delay": `${delay}ms` } as React.CSSProperties}
     >
       {children}
     </Tag>
