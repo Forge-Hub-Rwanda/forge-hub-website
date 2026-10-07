@@ -36,7 +36,7 @@ export default function NotFound() {
           href="/"
           className="relative z-10 w-fit transition-opacity hover:opacity-85"
         >
-          <span className="sr-only">ForgeHub Rwanda — home</span>
+          <span className="sr-only">ForgeHub Rwanda, home</span>
           <Logo className="w-[3.1rem] sm:w-[3.875rem] lg:w-[4.4rem]" />
         </Link>
 

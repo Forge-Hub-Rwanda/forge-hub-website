@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ViewTransition } from "react";
+import { CookieConsent } from "@/components/cookie-consent";
 import { CursorLabel } from "@/components/cursor-label";
 import { ForgeLoader } from "@/components/forge-loader";
 import { ScrollProgress } from "@/components/scroll-progress";
@@ -36,13 +37,13 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ForgeHub Rwanda — Build · Innovate · Empower",
+  title: "ForgeHub Rwanda | Build · Innovate · Empower",
   description:
-    "A coworking floor, a maker studio and a launchpad in Kigali for the founders, engineers and creators turning ideas into things that ship.",
+    "ForgeHub Rwanda is a Kigali software studio and training hub, building software for clients and training Africa’s next engineers.",
   openGraph: {
     title: "ForgeHub Rwanda",
     description:
-      "Where Rwanda's builders come to work. Coworking, programs and community in Kigali.",
+      "We build software for clients and train Africa’s next engineers, online and in Kigali.",
     type: "website",
     locale: "en_RW",
   },
@@ -130,6 +131,10 @@ export default function RootLayout({
         <ViewTransition update="page-wipe" default="none">
           {children}
         </ViewTransition>
+
+        {/* Outside the transition boundary, so a page wipe never carries the
+            card off with the page it was opened on. */}
+        <CookieConsent />
       </body>
     </html>
   );

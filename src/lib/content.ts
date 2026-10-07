@@ -65,6 +65,26 @@ function toPicture(url: string, alt: string | null): ProjectImage {
   return { src: url, alt: alt ?? "", width: 0, height: 0 };
 }
 
+/**
+ * Stand-in covers for projects that have no image in the CMS yet, keyed by
+ * slug and kept in `public/portfolio/`. An image uploaded through /admin
+ * always wins; delete an entry here once its project has a real one.
+ */
+const FALLBACK_COVERS: Record<string, ProjectImage> = {
+  "forgehub-rwanda-website": {
+    src: "/portfolio/forgehub-rwanda.png",
+    alt: "The ForgeHub Rwanda homepage: “Forge the future” set large across a dark page, over the headline “Building Africa’s next generation of software engineers”.",
+    width: 1600,
+    height: 900,
+  },
+  "client-build-slot": {
+    src: "/portfolio/rabbi-residences.png",
+    alt: "The Rabbi Residences homepage: a white and stone residence in Kigali under the line “four residences. one address in kigali.”",
+    width: 1901,
+    height: 911,
+  },
+};
+
 /** Seconds before a cached read is refreshed even without an admin edit. */
 const REVALIDATE = 300;
 
@@ -149,8 +169,14 @@ const readProjects = unstable_cache(
  * `React.cache` on top shares one result across a single render — the project
  * page asks for it from both `generateMetadata` and the page itself.
  */
-export const getProjects = cache((): Promise<Project[]> =>
-  orFallback(readProjects, []),
+// The stand-in covers are added after the cache rather than inside it, so a
+// change to FALLBACK_COVERS shows on the next load instead of the next refresh.
+export const getProjects = cache(async (): Promise<Project[]> =>
+  (await orFallback(readProjects, [])).map((project) =>
+    project.cover || !FALLBACK_COVERS[project.slug]
+      ? project
+      : { ...project, cover: FALLBACK_COVERS[project.slug] },
+  ),
 );
 
 /**

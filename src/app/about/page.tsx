@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner, ImigongoWatermark } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
@@ -12,7 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { aboutPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About — ForgeHub Rwanda",
+  title: "About | ForgeHub Rwanda",
   description: aboutPage.lede,
 };
 
@@ -26,7 +27,7 @@ export default function About() {
         {/* Same hero zone as the homepage: one positioning context holding the
           blob, the display line, the nav and the intro copy together. */}
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
           <PageHeroLine title={aboutPage.title} />
           <SiteHeader />
           <PageIntro eyebrow={aboutPage.eyebrow} lede={aboutPage.lede} />
@@ -130,8 +131,12 @@ export default function About() {
           </Reveal>
         </Section>
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

@@ -30,6 +30,8 @@ export function ProjectImage({
   image,
   /** Aspect ratio as a CSS value, e.g. "16 / 9". Applies to both states. */
   ratio = "16 / 9",
+  /** The ratio from lg up, where it differs from the phone's. */
+  lgRatio,
   /**
    * Set on the one image above the fold. Everything else stays lazy, which is
    * `next/image`'s default and the right one for a page of screenshots.
@@ -53,24 +55,33 @@ export function ProjectImage({
   /** Which motif the artwork uses; the project's index is a good choice. */
   variant?: number;
   ratio?: string;
+  lgRatio?: string;
   priority?: boolean;
   className?: string;
   sizes?: string;
 }) {
+  // Custom properties rather than an inline `aspect-ratio`, so a breakpoint
+  // class can switch between the two.
+  const ratios = {
+    "--ratio": ratio,
+    "--ratio-lg": lgRatio ?? ratio,
+  } as React.CSSProperties;
+  const aspect = "aspect-(--ratio) lg:aspect-(--ratio-lg)";
+
   if (!image) {
     const motif = ART_MOTIFS[variant % ART_MOTIFS.length];
     return (
       <div
         style={
           {
-            aspectRatio: ratio,
+            ...ratios,
             "--art-tint": tint,
             backgroundColor:
               "color-mix(in srgb, var(--art-tint) 22%, var(--color-surface-2))",
             color: "color-mix(in srgb, var(--art-tint) 70%, var(--color-text))",
           } as React.CSSProperties
         }
-        className={`project-art relative w-full overflow-hidden ${className ?? ""}`}
+        className={`project-art relative w-full overflow-hidden ${aspect} ${className ?? ""}`}
       >
         {/* `project-art-inner` is what the phone gallery's scroll scales. */}
         <div aria-hidden className="project-art-inner absolute inset-0">
@@ -94,8 +105,8 @@ export function ProjectImage({
 
   return (
     <div
-      style={{ aspectRatio: ratio }}
-      className={`bg-surface-2 relative w-full overflow-hidden ${className ?? ""}`}
+      style={ratios}
+      className={`bg-surface-2 relative w-full overflow-hidden ${aspect} ${className ?? ""}`}
     >
       {/* `fill` rather than the intrinsic size: the ratio above owns the box,
           so the image only has to cover it. `sizes` is what lets Next pick a

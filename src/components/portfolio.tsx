@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImigongoRule } from "@/components/imigongo";
+import { MigongoArrow } from "@/components/migongo-arrow";
 import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
@@ -447,7 +448,7 @@ export function Portfolio({
         >
           {Array.from({ length: 8 }, (_, index) => (
             <span key={index} className="flex items-center gap-3">
-              <span className="text-accent tracking-[-0.2em]">▶▶▶</span>
+              <MigongoArrow className="text-accent" />
               {eyebrow}
             </span>
           ))}
@@ -553,9 +554,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           cover; from lg it is exactly as it was. */}
       <Scrub from={1} to={0.6} query={PHONE_QUERY} liteQuery="not all">
         <h3 className="title-slide font-display text-text mt-8 flex items-baseline gap-3 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em] lg:mt-5 lg:block">
-          <span aria-hidden className="text-accent lg:hidden">
-            →
-          </span>
+          <MigongoArrow className="text-accent self-center lg:hidden" />
           <RollLetters text={project.name} />
         </h3>
       </Scrub>
@@ -576,7 +575,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           className="text-text mt-5 inline-flex w-fit items-center gap-2 font-bold underline-offset-4 hover:underline"
         >
           Visit the site
-          <span aria-hidden>↗</span>
+          <MigongoArrow className="-rotate-45" />
           <span className="sr-only">(opens in a new tab)</span>
         </a>
       ) : null}

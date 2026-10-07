@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
@@ -13,7 +14,7 @@ import { getTeam } from "@/lib/content";
 import { teamPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Team — ForgeHub Rwanda",
+  title: "Team | ForgeHub Rwanda",
   description: teamPage.lede,
 };
 
@@ -29,7 +30,7 @@ export default async function Team() {
           landmark, which is also where the root layout's skip link lands. */}
       <main>
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
           <PageHeroLine title={teamPage.title} />
           <SiteHeader />
           <PageIntro eyebrow={teamPage.eyebrow} lede={teamPage.lede} />
@@ -58,8 +59,12 @@ export default async function Team() {
           </Reveal>
         </Section>
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

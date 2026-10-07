@@ -3,7 +3,7 @@ import { AccountScreen } from "@/components/account-screen";
 import { accountPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Account — ForgeHub Rwanda",
+  title: "Account | ForgeHub Rwanda",
   description: accountPage.lede,
   // An admin door, not a page anyone should land on from a search.
   robots: { index: false, follow: false },

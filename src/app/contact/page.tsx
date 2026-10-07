@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ImigongoCorner, ImigongoWatermark } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
@@ -10,7 +11,7 @@ import { ContactForm } from "@/components/contact-form";
 import { contact, contactPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact — ForgeHub Rwanda",
+  title: "Contact | ForgeHub Rwanda",
   description: contactPage.lede,
 };
 
@@ -21,7 +22,7 @@ export default function Contact() {
           landmark, which is also where the root layout's skip link lands. */}
       <main>
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
           <PageHeroLine title={contactPage.title} />
           <SiteHeader />
           <PageIntro eyebrow={contactPage.eyebrow} lede={contactPage.lede} />
@@ -104,6 +105,10 @@ export default function Contact() {
           </div>
         </Section>
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>
