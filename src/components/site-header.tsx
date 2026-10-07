@@ -8,6 +8,7 @@ import { Logo } from "@/components/logo";
 import { RollText } from "@/components/split-text";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getLenis } from "@/lib/lenis";
+import { PHONE_QUERY } from "@/lib/motion-tier";
 import {
   HERO_DISPLAY_ID,
   LOGO_SCROLL_TRAVEL,
@@ -64,14 +65,17 @@ export function SiteHeader() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let frame = 0;
+    let written = "";
 
     const update = () => {
       frame = 0;
       const progress = Math.min(window.scrollY / LOGO_SCROLL_TRAVEL, 1);
-      node.style.setProperty(
-        "--logo-scale",
-        String(1 - (1 - LOGO_MIN_SCALE) * progress),
-      );
+      // Written only on a change, so past its travel — most of the page — the
+      // tile is never restyled by a scroll at all.
+      const scale = String(1 - (1 - LOGO_MIN_SCALE) * progress);
+      if (scale === written) return;
+      written = scale;
+      node.style.setProperty("--logo-scale", scale);
     };
 
     const onScroll = () => {
@@ -99,6 +103,7 @@ export function SiteHeader() {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let frame = 0;
+    let written = NaN;
 
     const update = () => {
       frame = 0;
@@ -113,6 +118,10 @@ export function SiteHeader() {
           node.getBoundingClientRect().top;
         progress = Math.min(Math.max(overlap / NAV_TUCK_TRAVEL, 0), 1);
       }
+
+      // Written only on a change: once tucked, scrolling restyles nothing.
+      if (progress === written) return;
+      written = progress;
 
       node.style.setProperty("--nav-tuck", String(progress));
       // Keep faded-out links off the tab order and out of the a11y tree.
@@ -177,43 +186,131 @@ export function SiteHeader() {
     }
 
     let frame = 0;
+    let written: boolean | null = null;
+
+    // One probe line through the middle of the chrome cluster is enough: a
+    // band spans the full width of the page, so anything crossing this line
+    // crosses all of it. 30px is inside the logo tile at every scale it
+    // takes, and inside the corner controls' 32px circles.
+    const PROBE_Y = 30;
+
+    // Each band's extent in document px, measured when the layout changes
+    // rather than on every scroll. The bands are ordinary sections in the
+    // flow, so their document position plus `scrollY` is exactly what a rect
+    // would report — without making the browser resolve layout mid-scroll.
+    const bands = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-tone]"),
+    );
+    let extents: { top: number; bottom: number }[] = [];
 
     const update = () => {
       frame = 0;
 
-      // One probe line through the middle of the chrome cluster is enough: a
-      // band spans the full width of the page, so anything crossing this line
-      // crosses all of it. 30px is inside the logo tile at every scale it
-      // takes, and inside the corner controls' 32px circles.
-      const PROBE_Y = 30;
-
-      const onColor = Array.from(document.querySelectorAll("[data-tone]")).some(
-        (band) => {
-          const rect = band.getBoundingClientRect();
-          return rect.top <= PROBE_Y && rect.bottom >= PROBE_Y;
-        },
+      const probe = window.scrollY + PROBE_Y;
+      const onColor = extents.some(
+        (band) => band.top <= probe && band.bottom >= probe,
       );
 
+      if (onColor === written) return;
+      written = onColor;
       if (onColor) root.setAttribute("data-chrome", "on-color");
       else root.removeAttribute("data-chrome");
+    };
+
+    const measure = () => {
+      const scroll = window.scrollY;
+      extents = bands.map((band) => {
+        const rect = band.getBoundingClientRect();
+        return { top: rect.top + scroll, bottom: rect.bottom + scroll };
+      });
+      update();
     };
 
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
 
-    update();
+    // Anything above a band changing height moves it, and that changes the
+    // body's height too; a band's own height is watched directly.
+    const sizer = new ResizeObserver(measure);
+    sizer.observe(document.body);
+    for (const band of bands) sizer.observe(band);
+
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", measure);
     return () => {
+      sizer.disconnect();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", measure);
       if (frame) cancelAnimationFrame(frame);
       root.removeAttribute("data-chrome");
     };
     // `pathname` re-measures after a navigation, where the bands are different
     // ones at different offsets and the old measurement means nothing.
   }, [menuOpen, pathname]);
+
+  // On a phone or tablet the fixed logo tile and corner controls sit over the
+  // page's own text, with nothing behind them. So below lg they slide up out of
+  // the way while the visitor scrolls down — reading — and come straight back
+  // on any scroll up, which is where a reader reaches for the menu. Never in
+  // the first screen, and never while the menu is open. The movement itself is
+  // in globals.css, scoped to `data-chrome-away` and to narrow windows; this
+  // only decides when.
+  useEffect(() => {
+    const root = document.documentElement;
+    const narrow = window.matchMedia(PHONE_QUERY);
+    if (menuOpen) {
+      root.removeAttribute("data-chrome-away");
+      return;
+    }
+
+    /** Clear of the first screen's heading before anything hides. */
+    const TOP = 120;
+    /** Downward travel that counts as reading, so a jitter never hides it. */
+    const DOWN = 8;
+
+    let frame = 0;
+    let last = window.scrollY;
+    let down = 0;
+    let away = false;
+
+    const set = (next: boolean) => {
+      if (next === away) return;
+      away = next;
+      if (next) root.setAttribute("data-chrome-away", "");
+      else root.removeAttribute("data-chrome-away");
+    };
+
+    const update = () => {
+      frame = 0;
+      const y = window.scrollY;
+      const delta = y - last;
+      last = y;
+
+      if (!narrow.matches || y < TOP) {
+        down = 0;
+        set(false);
+      } else if (delta > 0) {
+        down += delta;
+        if (down > DOWN) set(true);
+      } else if (delta < 0) {
+        down = 0;
+        set(false);
+      }
+    };
+
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+      root.removeAttribute("data-chrome-away");
+    };
+  }, [menuOpen]);
 
   // Lock body scroll and allow Escape to close while the drawer is open.
   useEffect(() => {
@@ -313,7 +410,10 @@ export function SiteHeader() {
           Phones and tablets have no nav row, so the hamburger and the other
           controls live pinned in the corner. From lg they move into the nav
           row, sitting after the links — see below. */}
-      <div className="fixed top-0 right-0 z-60 flex items-center gap-4 px-6 py-4 lg:hidden">
+      <div
+        data-corner-chrome
+        className="fixed top-0 right-0 z-60 flex items-center gap-4 px-6 py-4 lg:hidden"
+      >
         {/* Kept at every width: one 32px circle leaves the cluster narrow
             enough to clear the centred logo tile even on the smallest phone. */}
         <ThemeToggle className="flex" />

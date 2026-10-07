@@ -1,12 +1,16 @@
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
-import { events, eventsSection } from "@/lib/site";
+import { eventsSection, type SiteEvent } from "@/lib/site";
 
 /**
  * Upcoming events as a date-led list. The date block is the anchor, so it is
  * set as a solid square to the left of each row.
+ *
+ * `events` is passed in rather than imported: the homepage reads it from the
+ * CMS (falling back to the `site.ts` holding row when none are set), so this
+ * component only decides how a row looks.
  */
-export function Events() {
+export function Events({ events }: { events: SiteEvent[] }) {
   return (
     <Section id="events" className="bg-text text-text-invert">
       {/* This band is inverted, so the shared heading's tokens are overridden

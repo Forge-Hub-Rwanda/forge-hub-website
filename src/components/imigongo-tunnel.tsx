@@ -27,7 +27,10 @@ export function ImigongoTunnel() {
       span="full"
       from={1}
       to={0.2}
-      query="(min-width: 48rem)"
+      // Phones too, with the nearer three rings only (globals.css); a lite
+      // phone keeps the still composition.
+      query="all"
+      liteQuery="(min-width: 48rem)"
       className="tunnel pointer-events-none absolute inset-0 overflow-hidden"
     >
       <div aria-hidden className="tunnel-stage">

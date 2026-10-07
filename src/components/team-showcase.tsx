@@ -9,7 +9,7 @@ import {
 } from "@/components/imigongo";
 import { Odometer } from "@/components/odometer";
 import { RollLetters } from "@/components/split-text";
-import { teamMembers, teamPage } from "@/lib/site";
+import { teamPage, type TeamMember } from "@/lib/site";
 
 /** Three digits, as lusion.co numbers its people. */
 const pad3 = (value: number) => String(value).padStart(3, "0");
@@ -70,7 +70,7 @@ const PARALLAX_RANGE = 6;
 /** The same, for the pattern panel — slower, so it reads as further away. */
 const DRIFT_RANGE = 4;
 
-export function TeamShowcase() {
+export function TeamShowcase({ members }: { members: TeamMember[] }) {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -198,7 +198,7 @@ export function TeamShowcase() {
       </div>
 
       <ul className="relative z-1 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-5">
-        {teamMembers.map((member, index) => {
+        {members.map((member, index) => {
           const { offset, depth } = CARDS[index % CARDS.length];
 
           return (

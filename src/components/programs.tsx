@@ -1,6 +1,7 @@
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
 import { RollText } from "@/components/split-text";
+import { PhoneWheel } from "@/components/phone-wheel";
 import { WheelSticks } from "@/components/wheel-sticks";
 import { programs, programsSection } from "@/lib/site";
 
@@ -43,7 +44,11 @@ export function Programs({ tone = "plain" }: { tone?: "plain" | "band" }) {
           /* The same field, drawn as separate planks where the homepage's
              imigongo wheel runs, so the wheel can push them aside as it
              passes; the plain watermark everywhere else. */
-          <WheelSticks id="imigongo-programs" />
+          <>
+            <WheelSticks id="imigongo-programs" />
+            {/* Phones: the wheel, turning as the band scrolls past. */}
+            <PhoneWheel top="40%" />
+          </>
         ) : undefined
       }
     >

@@ -270,19 +270,8 @@ export const eventsSection = {
   cta: { label: "Get in touch", href: "/contact" },
 } as const;
 
-/**
- * TODO: one honest holding row, deliberately. Do not add entries here until an
- * event has a confirmed name, date, time and location.
- */
-export const events: SiteEvent[] = [
-  {
-    date: { day: "TBA", month: "" },
-    name: "Community meetups and demo days",
-    kind: "Coming soon",
-    time: "Dates to be announced",
-    location: "Kigali and online",
-  },
-];
+// The events themselves are managed from /admin/events and read by
+// `getEvents()` in src/lib/content.ts.
 
 /* ========================================================================== */
 /*  Community                                                                 */
@@ -300,18 +289,9 @@ export const communitySection = {
   lede: "A growing community of young African engineers, dreamers and builders determined to turn technology into Africa’s biggest job creator.",
 } as const;
 
-/**
- * TODO: no member quotes yet. Add them only once they are real, sourced, and
- * the person has given written permission to publish their name and words.
- */
-export const testimonials: Testimonial[] = [
-  {
-    quote:
-      "Our first cohort has not finished yet. When it has, this space belongs to their words rather than ours.",
-    name: "Member stories",
-    role: "Coming soon",
-  },
-];
+// The quotes themselves are managed from /admin/community and read by
+// `getTestimonials()` in src/lib/content.ts. Add one only once the member has
+// given written permission to publish their name and words.
 
 /* ========================================================================== */
 /*  Impact                                                                    */
@@ -542,6 +522,21 @@ export type ProjectImage = {
   height: number;
 };
 
+/**
+ * A project's colour, as a CSS value: its own `accent`, or the next in a fixed
+ * cycle so a new project never needs one to look right. With no project — the
+ * homepage gallery's closing card — it is the warm coral the page's blobs end
+ * on. Shared by the gallery's band tint and the project-image artwork.
+ */
+const TINT_CYCLE = ["amber", "sky", "teal", "lime"] as const;
+
+export const projectTint = (project: Project | undefined, index: number) =>
+  `var(--color-blob-${
+    project
+      ? (project.accent ?? TINT_CYCLE[index % TINT_CYCLE.length])
+      : "coral"
+  })`;
+
 /** One part of a project's write-up. */
 export type ProjectSection = { heading: string; body: string };
 
@@ -603,78 +598,8 @@ export const portfolioSection = {
   action: { label: "See the full portfolio", href: "/portfolio" },
 } as const;
 
-/**
- * TODO: only the first entry is a real project. The two after it are empty
- * slots carrying the shape a real entry needs, with copy that says plainly the
- * write-up is still coming rather than inventing a client, a year or a result.
- * Replace them one at a time as each client confirms they are happy to be
- * named — and delete any slot still empty when there are three real projects,
- * rather than leaving a placeholder on a page that no longer needs one.
- */
-export const projects: Project[] = [
-  {
-    slug: "forgehub-rwanda-website",
-    name: "forgehubrwanda.com",
-    blurb: "Our own site — designed, built and shipped in-house.",
-    detail:
-      "One typeface, no photography, and motion on every surface — a scroll-driven hero, a morphing gradient field, and imigongo geometry drawn in SVG.",
-    client: "In-house",
-    year: "2026",
-    disciplines: ["Software development", "Design"],
-    status: "Live",
-    // TODO: add `href` once the site is live on its own domain.
-    // TODO: no screenshots yet. Add a `cover` and `gallery` here and the
-    // project's page picks them up — until then it draws labelled slots.
-    story: [
-      {
-        heading: "What it had to do",
-        body: "Introduce a studio and a training hub as one thing rather than two, before either had a body of public work to point at. That ruled out the usual opening — a wall of client logos — and made the site itself the first thing it had to be able to stand on.",
-      },
-      {
-        heading: "How it is built",
-        body: "Next.js with the App Router, statically rendered. One typeface across every weight, no photography anywhere, and colour carried almost entirely by an animated gradient field rather than by surfaces or text. The imigongo geometry that runs through the pages is drawn as SVG paths, so it stays sharp at any size and re-colours with the theme.",
-      },
-      {
-        heading: "The motion",
-        body: "Every moving part is driven from the real scroll position rather than a timer: a display line that shrinks into the header, a gallery that pins the page and pans the work sideways, a sticky index that marks which option you are reading. Each one degrades to a plain, complete layout on a narrow screen, for a visitor who has asked for less motion, or where the script never runs.",
-      },
-    ],
-  },
-  {
-    slug: "client-build-slot",
-    name: "A client build",
-    blurb: "A commissioned product. Naming it is the client's call, not ours.",
-    detail:
-      "What they needed, what we built, and what changed once it shipped — published the moment they are happy for it to be.",
-    client: "Client to be named",
-    year: "To be confirmed",
-    disciplines: ["Software development"],
-    status: "Write-up in preparation",
-    story: [
-      {
-        heading: "Still to be written",
-        body: "This page is the shape a client project takes here: what they needed, what we built, the decisions worth explaining, and what changed once it shipped. It goes up when the client is happy for it to.",
-      },
-    ],
-  },
-  {
-    slug: "training-engagement-slot",
-    name: "A training engagement",
-    blurb: "Software training delivered for a team, rather than an individual.",
-    detail:
-      "Who we trained, what they needed to be able to build, and where they had got to by the end of it.",
-    client: "Organization to be named",
-    year: "To be confirmed",
-    disciplines: ["Training & education"],
-    status: "Write-up in preparation",
-    story: [
-      {
-        heading: "Still to be written",
-        body: "The same, for the other half of what we do: who we trained, what they needed to be able to build, how the programme was run, and where they had got to by the end of it.",
-      },
-    ],
-  },
-];
+// The projects themselves are managed from /admin/portfolio and read by
+// `getProjects()` in src/lib/content.ts.
 
 /**
  * The card that closes the gallery. Not a project — it is the invitation the
@@ -737,13 +662,9 @@ export type TeamMember = {
   photo?: ProjectImage;
 };
 
-/** TODO: confirm the exact titles for Benjamin Inema and Ishimwe Valentin. */
-export const teamMembers: TeamMember[] = [
-  { name: "Jimmy Shimwa", role: "Founder" },
-  { name: "Fadhiri Ihirwe Ndegeya", role: "Co-Founder" },
-  { name: "Benjamin Inema", role: "Founding team" },
-  { name: "Ishimwe Valentin", role: "Founding team" },
-];
+// The team itself is managed from /admin/team and read by `getTeam()` in
+// src/lib/content.ts. TODO: confirm the exact titles for Benjamin Inema and
+// Ishimwe Valentin, then update them there.
 
 export const teamPage = {
   eyebrow: "The people",
@@ -772,38 +693,31 @@ export const contactPage = {
     title: "Tell us what you’re building",
     lede: "Three fields, no forms to fill twice. Or write to us directly at the address opposite.",
   },
-  /**
-   * The form posts via `mailto:`, so it opens the sender's own mail app with
-   * the message ready to send. Stated plainly rather than letting anyone be
-   * surprised by it. TODO: replace with a server-side handler once there is
-   * somewhere to send it.
-   */
-  note: "Submitting opens your own email app with the message ready to send — there is no server behind this form yet.",
+  note: "Your message goes straight to our team. We read everything that comes in.",
   submit: "Send message",
 } as const;
 
 /**
- * The admin sign-in and sign-up page, reached from the person icon in the nav.
- * TODO: there is no auth backend yet, so both forms stop at the browser and
- * say so. Wire them to a real handler before this is relied on.
+ * The admin sign-in and sign-up page, reached from the person icon in the
+ * nav. Signing up only creates an account — it does not grant admin access;
+ * an existing admin still has to add the new email on Admin → Admins.
  */
 export const accountPage = {
   eyebrow: "Admin",
   title: "Account",
-  lede: "Sign in to manage the site, or create an account for a new member of the team.",
+  lede: "Sign in to manage the site.",
   signIn: {
     tab: "Sign in",
     heading: "Welcome back",
-    lede: "Use the email and password you registered with.",
+    lede: "Use the email and password you were given as an admin.",
     submit: "Sign in",
   },
   signUp: {
     tab: "Create account",
-    heading: "Join the team",
-    lede: "New accounts are reviewed by an existing admin before they can sign in.",
+    heading: "Create an account",
+    lede: "This creates a login only — an existing admin still has to grant you access.",
     submit: "Create account",
   },
-  note: "Accounts are not switched on yet — nothing you enter here is sent anywhere.",
 } as const;
 
 /* ========================================================================== */

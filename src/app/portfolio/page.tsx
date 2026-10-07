@@ -10,12 +10,16 @@ import { Section } from "@/components/section-heading";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RollLetters } from "@/components/split-text";
-import { portfolioPage, projects } from "@/lib/site";
+import { getProjects } from "@/lib/content";
+import { portfolioPage, projectTint } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Portfolio — ForgeHub Rwanda",
   description: portfolioPage.lede,
 };
+
+// CMS-backed and cached; admin edits expire the cache, so new items appear on
+// the next load. See `src/lib/content.ts`.
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
@@ -33,7 +37,9 @@ const pad = (value: number) => String(value).padStart(2, "0");
  * a row can be scanned down a column of names, where a grid of cards has to be
  * read cell by cell.
  */
-export default function PortfolioPage() {
+export default async function PortfolioPage() {
+  const projects = await getProjects();
+
   return (
     <>
       {/* `main` opens before the hero so the page's `h1` sits inside the main
@@ -90,6 +96,9 @@ export default function PortfolioPage() {
                       image={project.cover}
                       ratio="4 / 3"
                       sizes="(min-width: 64rem) 16vw, 100vw"
+                      artId={`art-${project.slug}`}
+                      tint={projectTint(project, index)}
+                      variant={index}
                     />
                   </div>
 

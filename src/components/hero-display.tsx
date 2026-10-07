@@ -53,6 +53,10 @@ export function HeroDisplay() {
 
     let frame = 0;
     let shift = 0;
+    let scale = "";
+    /** Whether the line is anywhere near the window. Scrolls are ignored while
+        it is not — which is everything below the hero — exactly as Scrub does. */
+    let near = true;
 
     const update = () => {
       frame = 0;
@@ -66,31 +70,55 @@ export function HeroDisplay() {
       // to get where the line would come to rest unshifted.
       const restingBottom = node.getBoundingClientRect().bottom - shift;
 
+      // Both properties are written only on a change, so a scroll that moves
+      // neither restyles nothing.
       if (!reduced) {
         const progress = Math.min(window.scrollY / HERO_SCROLL_TRAVEL, 1);
-        node.style.setProperty(
-          "--scale",
-          String(1 - (1 - MIN_SCALE) * progress),
-        );
+        const next = String(1 - (1 - MIN_SCALE) * progress);
+        if (next !== scale) {
+          scale = next;
+          node.style.setProperty("--scale", next);
+        }
       }
 
       // Negative once the headline is within a gap's reach, zero before that.
       // This runs whatever the motion preference: it is what keeps the line off
       // the copy, not decoration.
-      shift = Math.min(0, releaseTop - RELEASE_GAP - restingBottom);
-      node.style.setProperty("--shift", `${shift}px`);
+      const nextShift = Math.min(0, releaseTop - RELEASE_GAP - restingBottom);
+      if (nextShift !== shift) {
+        shift = nextShift;
+        node.style.setProperty("--shift", `${shift}px`);
+      }
     };
 
     const onScroll = () => {
       // Coalesce bursts of scroll events into one write per frame.
-      if (!frame) frame = requestAnimationFrame(update);
+      if (near && !frame) frame = requestAnimationFrame(update);
     };
 
+    // Margin either side, so the line is already tracking again before it
+    // scrolls back into view.
+    const watch =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(
+            ([entry]) => {
+              near = entry.isIntersecting;
+              // One last update on the way out, so a fast scroll never leaves
+              // the line part-way at the edge it left by.
+              if (!frame) frame = requestAnimationFrame(update);
+            },
+            { rootMargin: "20% 0px" },
+          );
+    watch?.observe(node);
+
+    node.style.setProperty("--shift", "0px");
     update();
     window.addEventListener("scroll", onScroll, { passive: true });
     // The release point is measured, so a resize can move it without a scroll.
     window.addEventListener("resize", onScroll);
     return () => {
+      watch?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       if (frame) cancelAnimationFrame(frame);

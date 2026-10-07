@@ -12,8 +12,8 @@ import { SplitWords } from "@/components/split-text";
  *
  * `drift` adds the split drift on top: the title slides in from the left and
  * the lede from the right, scrubbed against the scroll, so the two halves of
- * the heading meet in the middle. Wide windows only; everywhere else the
- * heading simply reveals.
+ * the heading meet in the middle. On every width, except a lite device's
+ * phone-sized window, where the heading simply reveals.
  */
 type SectionHeadingProps = {
   eyebrow: string;
@@ -34,7 +34,10 @@ export function SectionHeading({
   return (
     <Scrub
       className="mb-14 lg:mb-20"
-      query={drift ? "(min-width: 64rem)" : "not all"}
+      // Phones get the drift too (shorter — see `.drift-l` in globals.css),
+      // except a lite device, which keeps it to wide windows as before.
+      query={drift ? "all" : "not all"}
+      liteQuery={drift ? "(min-width: 64rem)" : "not all"}
       from={1}
       to={0.45}
     >

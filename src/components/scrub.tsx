@@ -7,6 +7,7 @@ import {
   type ElementType,
   type ReactNode,
 } from "react";
+import { getMotionTier } from "@/lib/motion-tier";
 
 /**
  * Exposes how far an element has travelled through the window as `--p`, a
@@ -30,7 +31,7 @@ import {
  *              plays across the entire pass, like the closing tunnel.
  *
  * Every frame is a pure function of the scroll position, written to a custom
- * property inside a rAF callback, so scrolling never re-renders React and the
+ * property inside a shared rAF callback, so scrolling never re-renders React and the
  * effect runs backwards exactly as it runs forwards. The listener does nothing
  * while the element is off screen, which is most of the page.
  */
@@ -51,9 +52,40 @@ type ScrubProps = {
    * pointer and a wide window; below that the section simply reveals.
    */
   query?: string;
+  /**
+   * The query used instead on a "lite" device (see src/lib/motion-tier.ts).
+   * Defaults to `query`. An effect that is new on phones passes its old,
+   * desktop-only query here, so a weak phone keeps the plain layout it had.
+   */
+  liteQuery?: string;
 };
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+
+/**
+ * Every Scrub on the page shares one frame. A job MEASURES and hands back a
+ * write; the frame runs every measure first and every write after. Done one
+ * Scrub at a time instead, each one's write invalidates the layout the next
+ * one's measure then has to recompute on the spot - with a phone gallery's
+ * worth of them on screen at once, that was several forced layouts a frame.
+ */
+type ScrubJob = () => () => void;
+
+const queue = new Set<ScrubJob>();
+let batch = 0;
+
+const flush = () => {
+  batch = 0;
+  const jobs = [...queue];
+  queue.clear();
+  const writes = jobs.map((job) => job());
+  for (const write of writes) write();
+};
+
+const enqueue = (job: ScrubJob) => {
+  queue.add(job);
+  if (!batch) batch = requestAnimationFrame(flush);
+};
 
 export function Scrub({
   children,
@@ -64,6 +96,7 @@ export function Scrub({
   from = 0.95,
   to = 0.35,
   query = "(min-width: 0px)",
+  liteQuery,
 }: ScrubProps) {
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(false);
@@ -71,7 +104,9 @@ export function Scrub({
   // Decide whether the effect runs at all, and keep deciding: a visitor can
   // resize across the breakpoint, or turn reduced motion on, mid-visit.
   useEffect(() => {
-    const fits = window.matchMedia(query);
+    const fits = window.matchMedia(
+      getMotionTier() === "lite" && liteQuery ? liteQuery : query,
+    );
     const reduced = window.matchMedia(REDUCED_QUERY);
     const sync = () => setActive(fits.matches && !reduced.matches);
 
@@ -82,17 +117,15 @@ export function Scrub({
       fits.removeEventListener("change", sync);
       reduced.removeEventListener("change", sync);
     };
-  }, [query]);
+  }, [query, liteQuery]);
 
   useEffect(() => {
     const node = ref.current;
     if (!active || !node || typeof IntersectionObserver === "undefined") return;
 
-    let frame = 0;
     let visible = false;
 
-    const paint = () => {
-      frame = 0;
+    const paint: ScrubJob = () => {
       const rect = node.getBoundingClientRect();
       const viewport = window.innerHeight;
 
@@ -106,12 +139,11 @@ export function Scrub({
         distance <= 0
           ? 1
           : Math.min(Math.max((start - rect.top) / distance, 0), 1);
-      node.style.setProperty("--p", progress.toFixed(4));
+      return () => node.style.setProperty("--p", progress.toFixed(4));
     };
 
     const schedule = () => {
-      if (!visible || frame) return;
-      frame = requestAnimationFrame(paint);
+      if (visible) enqueue(paint);
     };
 
     // Attached for the component's life but inert off screen. Gating on a flag
@@ -123,7 +155,7 @@ export function Scrub({
         visible = entry.isIntersecting;
         // One last paint on the way out, so a fast scroll never strands the
         // effect half-played at the edge it left by.
-        if (!frame) frame = requestAnimationFrame(paint);
+        enqueue(paint);
       },
       { rootMargin: "10% 0px" },
     );
@@ -131,13 +163,13 @@ export function Scrub({
     watch.observe(node);
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule, { passive: true });
-    paint();
+    paint()();
 
     return () => {
       watch.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
-      if (frame) cancelAnimationFrame(frame);
+      queue.delete(paint);
       node.style.removeProperty("--p");
     };
   }, [active, from, to, span]);

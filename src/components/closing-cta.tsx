@@ -47,11 +47,12 @@ export function ClosingCta({ wheel = false }: { wheel?: boolean }) {
       {wheel ? (
         /* Where the wheel comes to rest: a square slot between the headline
            and the blob. It holds a static copy of the wheel, which is what a
-           phone or a reduced-motion visitor sees, and which steps aside for
-           the live wheel landing on it. */
+           phone or a reduced-motion visitor sees — turning with the scroll on
+           a phone, see `.phone-wheel` in globals.css — and which steps aside
+           for the live wheel landing on it. */
         <div
           data-wheel-dock
-          className="pointer-events-none absolute top-1/2 right-[28vw] hidden aspect-square w-[18vw] -translate-y-1/2 sm:block lg:w-[14vw]"
+          className="pointer-events-none absolute top-1/2 right-[28vw] block aspect-square w-[34vw] -translate-y-1/2 sm:w-[18vw] lg:w-[14vw]"
         >
           <WheelArt />
         </div>
