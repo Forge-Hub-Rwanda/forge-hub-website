@@ -516,21 +516,26 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       id={project.slug}
       className="roll-host bg-surface flex h-full w-full scroll-mt-24 flex-col p-8 lg:p-10"
     >
-      {/* Phones and tablets: the cover leads, as in lusion.co's gallery, and
-          opens out of an inset frame as it scrolls up. Not rendered from lg,
-          where the pinned row carries the work without pictures. */}
+      {/* The cover leads, as in lusion.co's gallery. On a phone it opens out
+          of an inset frame as it scrolls up; from lg it simply heads the card.
+
+          A landscape strip rather than a tall frame: the work is websites and
+          apps, and a screenshot of one needs width, not height. From lg its
+          height is set outright — which overrides the ratio — so the card's
+          copy still fits a short laptop's pinned row. */}
       <Scrub
         from={1}
         to={0.45}
         query={PHONE_QUERY}
         liteQuery="not all"
-        className="-mx-8 -mt-8 mb-8 lg:hidden"
+        className="-mx-8 -mt-8 mb-8 lg:-mx-10 lg:-mt-10 lg:mb-7"
       >
-        <div className="cover-unmask overflow-hidden rounded-xl">
+        <div className="cover-unmask overflow-hidden rounded-xl lg:rounded-none">
           <ProjectImage
             image={project.cover}
-            ratio="4 / 5"
-            sizes="(min-width: 48rem) 50vw, 100vw"
+            ratio="16 / 10"
+            className="lg:h-[clamp(6.5rem,21vh,12rem)]"
+            sizes="(min-width: 64rem) 30rem, (min-width: 48rem) 50vw, 100vw"
             artId={`art-home-${project.slug}`}
             tint={projectTint(project, index)}
             variant={index}
@@ -547,7 +552,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       {/* Below lg the name carries lusion.co's arrow and slides in after its
           cover; from lg it is exactly as it was. */}
       <Scrub from={1} to={0.6} query={PHONE_QUERY} liteQuery="not all">
-        <h3 className="title-slide font-display text-text mt-8 flex items-baseline gap-3 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em] lg:block">
+        <h3 className="title-slide font-display text-text mt-8 flex items-baseline gap-3 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em] lg:mt-5 lg:block">
           <span aria-hidden className="text-accent lg:hidden">
             →
           </span>

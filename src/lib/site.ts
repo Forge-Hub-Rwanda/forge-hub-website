@@ -81,6 +81,13 @@ export const hero = {
     strong: "online across Africa, and in person in Kigali",
     tail: ".",
   },
+  /**
+   * What a phone shows in place of the summary and the paragraph: the two say
+   * the same thing twice, which a wide screen has room for and a phone's first
+   * screen does not. One sentence, so the opening screen keeps some air.
+   */
+  phoneLine:
+    "We build software for clients and train Africa’s next engineers — online, and in Kigali.",
   primaryCta: { label: "Explore our programs", href: "#programs" },
   secondaryCta: { label: "Work with us", href: "/services" },
   scrollCue: "Scroll",

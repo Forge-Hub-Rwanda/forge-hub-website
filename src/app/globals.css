@@ -1488,193 +1488,97 @@ html.lenis {
   }
 }
 
-/* ---- Membership on a phone: the lion first, then the ways in --------------
-   Everything here hangs off `data-mode="phone-pin"`, which Membership sets
-   only below lg on a full-motion device with a tall enough screen. Without
-   it the three wrappers below are `display: contents`, so the panel list is
-   the grid item it always was and nothing about any other layout changes. */
-.mb-pin,
-.mb-stage,
-.mb-view {
-  display: contents;
-}
+/* ---- Membership on a phone: a deck of three cards -------------------------
+   Below lg the index and the lion step aside and the panels stack as a deck:
+   each sticks under the header a little lower than the one before, so the
+   tops of the cards beneath still show, and the next slides up over it. Plain
+   `position: sticky` — no pin, no added height, nothing listening to the
+   scroll — so this much works on any phone, lite or not.
 
+   What moves is behind `data-deck`, set only on a full-motion device: the
+   card being covered sinks back by `--cover` (0 to 1, written by Membership
+   as the next card rises), shrinking from its top edge and dimming under a
+   shade. Both are composited properties, so the scroll repaints nothing. */
 @media (max-width: 63.99rem) {
-  /* A grid item sizes to its content's widest line by default, and the
-     track's content is a whole row of panels: without these the column, the
-     pin and the strip all stretch to the row's width and there is nothing
-     left to travel. */
-  .mb[data-mode="phone-pin"] {
-    grid-template-columns: minmax(0, 1fr);
+  .mb-nav {
+    display: none;
   }
 
-  /* The pinned range: one held screen plus the track's travel, written by
-     horizontal-pin. Full-bleed, out of the section's gutter. */
-  .mb[data-mode="phone-pin"] .mb-pin {
-    display: block;
-    width: 100vw;
-    min-width: 0;
-    height: var(--pin-height, 300vh);
-    margin-inline: -1.5rem;
-  }
-
-  .mb[data-mode="phone-pin"] .mb-stage {
-    position: sticky;
-    top: 0;
+  .mb-track {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    height: 100vh;
-    height: 100svh;
+    gap: 1.25rem;
   }
 
-  .mb[data-mode="phone-pin"] .mb-view {
-    display: block;
-    overflow: hidden;
+  .mb-panel {
+    justify-content: flex-start;
+    padding: 1.75rem 1.5rem 1.6rem;
+    border: 1px solid var(--color-line);
+    border-radius: 1.5rem;
   }
 
-  /* A full screen of nothing before the first panel: the held screen opens on
-     the lion alone, and the panels arrive from the right across it. */
-  .mb[data-mode="phone-pin"] .mb-track {
-    display: flex;
-    align-items: stretch;
-    gap: 4vw;
-    width: max-content;
-    padding-inline: 100vw 7vw;
-    will-change: transform;
-  }
-
-  .mb[data-mode="phone-pin"] .mb-panel {
-    flex: none;
-    width: 86vw;
-    max-width: 30rem;
-    padding: 1.75rem;
-  }
-
-  .mb[data-mode="phone-pin"] .mb-panel .mb-features {
+  .mb-panel .mb-features {
     margin-top: 1.5rem;
     padding-top: 1.25rem;
   }
 
-  .mb[data-mode="phone-pin"] .mb-panel .mb-cta {
-    margin-top: 1.5rem;
+  .mb-panel .mb-features > li + li {
+    margin-top: 0.6rem;
   }
 
-  /* The index's job passes to the tabs at the foot of the stage. */
-  .mb[data-mode="phone-pin"] .mb-nav {
-    display: none;
+  .mb-panel .mb-cta {
+    margin-top: 1.6rem;
   }
 
-  .mb[data-mode="phone-pin"] .mb-tabs {
+  /* The card's number, set huge in outline and bled off its bottom-right
+     corner. Outline rather than fill so it stays texture, never a second
+     heading competing with the name. */
+  .mb-num {
     position: absolute;
-    bottom: max(1rem, env(safe-area-inset-bottom));
-    left: 50%;
-    display: flex;
-    gap: 0.25rem;
-    padding: 0.3rem;
-    translate: -50% 0;
-    border: 1px solid var(--color-line);
-    border-radius: calc(infinity * 1px);
-    background-color: var(--color-surface);
-  }
-
-  .mb-tab {
-    padding: 0.55rem 1rem;
-    border-radius: calc(infinity * 1px);
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
-    font-weight: 700;
-    transition:
-      background-color 0.3s var(--ease-out-expo),
-      color 0.3s var(--ease-out-expo);
-  }
-
-  .mb-tab[data-active="true"] {
-    background-color: var(--color-text);
-    color: var(--color-text-invert);
-  }
-
-  /* The lion: from the top of the pin to the foot of the band, held to the
-     foot of the screen while the stage is pinned, so it stands alone on the
-     held screen before the first panel arrives. Same drawing, same layers as
-     the desktop column; centred, since a phone has no empty side for it. */
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion {
-    position: absolute;
-    inset-inline: 0;
-    top: var(--mb-pin-top, 0);
-    bottom: 0;
-    display: block;
-    overflow: clip;
+    right: -0.08em;
+    bottom: -0.22em;
+    font-family: var(--font-display);
+    font-size: 9.5rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.06em;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px currentColor;
+    opacity: 0.18;
     pointer-events: none;
   }
+}
 
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion > div {
+/* Stacking needs the window to hold a whole card under the header; a shorter
+   one keeps the cards as a plain rounded stack instead of letting one stick
+   with its call to action out of reach. `--stick` is Membership's correction
+   for a card that is taller than the room anyway: it sticks only once its foot
+   is in view. */
+@media (max-width: 63.99rem) and (min-height: 36rem) {
+  .mb-panel {
     position: sticky;
-    top: 0;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    height: 100vh;
-    height: 100svh;
-    color: var(--color-text);
+    top: var(--stick, calc(4.75rem + var(--i, 0) * 0.85rem));
+    scroll-margin-top: calc(4.75rem + var(--i, 0) * 0.85rem);
+    min-height: min(32rem, calc(100svh - 7.5rem));
   }
 
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art {
-    position: relative;
-    width: min(92vw, calc((100svh - 4rem) * 560 / 750));
-    aspect-ratio: 560 / 750;
+  .mb[data-deck] .mb-panel {
+    transform-origin: 50% 0;
+    scale: calc(1 - var(--cover, 0) * 0.07);
+    will-change: scale;
   }
 
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art svg {
-    width: 100%;
-    height: 100%;
-  }
-
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion-ink {
-    opacity: var(--lion-ink, 0.2);
-  }
-
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion-ox {
+  /* The shade the covered card sinks under. Above the card's own copy, so it
+     dims everything on it evenly, and rounded with it. */
+  .mb[data-deck] .mb-panel::after {
+    content: "";
     position: absolute;
     inset: 0;
-    color: var(--color-accent);
-    opacity: 0;
-    transition: opacity 0.5s var(--ease-out-expo);
-    -webkit-mask-image: radial-gradient(
-      circle 110px at var(--mx, 50%) var(--my, 50%),
-      #000 30%,
-      transparent 100%
-    );
-    mask-image: radial-gradient(
-      circle 110px at var(--mx, 50%) var(--my, 50%),
-      #000 30%,
-      transparent 100%
-    );
-  }
-
-  section:has(.mb[data-mode="phone-pin"])
-    .mb-lion-art[data-lit="true"]
-    .mb-lion-ox {
-    opacity: 0.85;
-  }
-
-  /* Its own layer, so the glow is drawn once and the fade on every scroll is
-     only an opacity change, rather than redrawing the drop shadow. */
-  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art .mb-lion-eye {
-    position: absolute;
-    inset: 0;
-    color: var(--color-accent);
-    opacity: 0;
-    filter: drop-shadow(0 0 10px var(--color-accent));
-    transition: opacity 0.9s var(--ease-out-expo);
-    will-change: opacity;
-  }
-
-  section:has(.mb[data-mode="phone-pin"])
-    .mb-lion-art[data-scrolling="true"]
-    .mb-lion-eye {
-    opacity: var(--lion-eye, 0.5);
-    transition-duration: 0.2s;
+    z-index: 2;
+    border-radius: inherit;
+    background-color: #000;
+    opacity: calc(var(--cover, 0) * 0.45);
+    pointer-events: none;
   }
 }
 
@@ -1858,8 +1762,11 @@ html.lenis {
 
 /* Diameter 86vh: the wheel leaves 7vh clear above and below itself. White
    with `difference` reads as faint dark lines on a light band and faint light
-   lines on a dark one — there is no single colour that would do both. */
-@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+   lines on a dark one — there is no single colour that would do both.
+
+   No width gate: `data-wheel` is only ever set where the wheel runs, which on
+   a phone means a capable one (see `isCapablePhone` in src/lib/wheel.ts). */
+@media (prefers-reduced-motion: no-preference) {
   :root[data-wheel] .wheel-live {
     position: fixed;
     top: 0;
@@ -1877,6 +1784,18 @@ html.lenis {
   }
 }
 
+/* On a phone the window is tall and narrow, so a wheel sized by its height
+   would cover the whole width. Sized by the width instead: half of it shows,
+   about two fifths of the screen, the same share the desktop wheel takes of a
+   wide window's height. `vw` rather than `vh` also keeps it from resizing as
+   a phone's browser bars slide in and out. */
+@media (max-width: 63.99rem) and (prefers-reduced-motion: no-preference) {
+  :root[data-wheel] .wheel-live {
+    width: 84vw;
+    height: 84vw;
+  }
+}
+
 /* The docked copy, in the page's own ink at the same strength. It stands in
    wherever the live wheel does not run, and steps aside while it does. */
 [data-wheel-dock] > svg {
@@ -1889,38 +1808,12 @@ html.lenis {
 }
 
 /* ---- The wheel on phones ------------------------------------------------
-   No fixed layer, no blend and no script below lg: the same artwork sits in a
-   band's own flow (PhoneWheel) and in the closing section's dock, turned by a
-   scroll-driven animation the browser runs off the main thread — one and a
-   half turns as it crosses the window. Only on a full-motion device that
-   supports scroll timelines; anywhere else it stands still. */
-.phone-wheel {
-  position: absolute;
-  right: 0;
-  width: 78vw;
-  aspect-ratio: 1;
-  translate: 50% 0;
-  color: var(--color-text);
-  opacity: var(--wheel-ink);
-}
-
-@keyframes phone-wheel-turn {
-  from {
-    rotate: 0deg;
-  }
-  to {
-    rotate: 540deg;
-  }
-}
-
-@supports (animation-timeline: view()) {
-  @media (max-width: 63.99rem) {
-    :root[data-motion="full"] .phone-wheel,
-    :root[data-motion="full"] [data-wheel-dock] > svg {
-      animation: phone-wheel-turn linear both;
-      animation-timeline: view();
-      animation-range: entry 0% exit 100%;
-    }
+   A capable phone runs the live wheel above, exactly as a desktop does. Any
+   other phone gets no wheel at all — not even the still copy in the closing
+   section's dock, which on a wide screen is the reduced-motion stand-in. */
+@media (max-width: 63.99rem) {
+  :root:not([data-wheel]) [data-wheel-dock] {
+    display: none;
   }
 }
 

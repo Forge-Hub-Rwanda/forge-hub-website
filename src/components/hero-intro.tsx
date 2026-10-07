@@ -18,7 +18,7 @@ export function HeroIntro() {
     <div
       id="hero-intro"
       tabIndex={-1}
-      className="relative z-20 px-6 pt-2 pb-20 lg:px-[3.6vw] lg:pt-4 lg:pb-28 lg:landscape:pt-2 lg:landscape:pl-[calc(3.6vw+8px)]"
+      className="relative z-20 px-6 pt-6 pb-28 lg:px-[3.6vw] lg:pt-4 lg:pb-28 lg:landscape:pt-2 lg:landscape:pl-[calc(3.6vw+8px)]"
     >
       {/* The sticky display line above releases as this headline reaches it.
           The words rise on their own rather than the heading carrying `rise`,
@@ -36,19 +36,26 @@ export function HeroIntro() {
           scroll, so the opening screen is the display line, the nav and the
           headline alone. No `rise` here: it simply appears. */}
       <RevealOnScroll>
+        {/* Phones get one short sentence in place of the two below: the
+            summary and the paragraph say the same thing twice, and on a
+            phone's first screen that is what made the hero feel crammed. */}
+        <p className="text-text mt-16 max-w-[34ch] text-lg leading-snug sm:text-xl lg:hidden">
+          {hero.phoneLine}
+        </p>
+
         {/* One line from xl, sized in vw so it holds that line at any desktop
             width; below xl there is not the room, so it wraps. */}
-        <p className="text-text mt-14 max-w-[90ch] text-lg leading-snug sm:text-xl lg:mt-24 lg:text-[1.4rem] xl:max-w-none xl:text-[clamp(1rem,1.3vw,1.4rem)] xl:whitespace-nowrap">
+        <p className="text-text mt-14 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:mt-24 lg:block lg:text-[1.4rem] xl:max-w-none xl:text-[clamp(1rem,1.3vw,1.4rem)] xl:whitespace-nowrap">
           {hero.summary}
         </p>
 
-        <p className="text-text mt-5 max-w-[90ch] text-lg leading-snug sm:text-xl lg:text-[1.4rem]">
+        <p className="text-text mt-5 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:block lg:text-[1.4rem]">
           {hero.body.text}
           <strong className="font-bold">{hero.body.strong}</strong>
           {hero.body.tail}
         </p>
 
-        <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4 lg:justify-end">
+        <div className="mt-12 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-4 lg:justify-end">
           {/* `btn-strong` is the only thing separating the page's main action
             from the one beside it — without it both CTAs are the same pill and
             nothing tells a visitor which one we actually want them to take. */}

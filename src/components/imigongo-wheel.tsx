@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { WheelArt } from "@/components/wheel-art";
 import {
   gallery,
+  isCapablePhone,
+  PHONE_WHEEL_QUERY,
   runWheelReactors,
   setWheelWake,
   WHEEL_QUERY,
@@ -50,7 +52,15 @@ import {
  * turning it repaints nothing. The loop runs only while something is changing
  * — scrolling, the gallery moving, a reactor still settling — and sleeps the
  * moment everything is at rest, and while the tab is hidden. It exists only
- * from 64rem up and without a reduced-motion preference.
+ * without a reduced-motion preference: from 64rem up, and on a phone only if
+ * it is a capable one (see `isCapablePhone`). A cheaper phone gets no wheel at
+ * all, still or turning.
+ *
+ * ## On a phone
+ *
+ * The same wheel and the same loop, smaller — sized by the window's width
+ * rather than its height, see `.wheel-live` in globals.css. None of the
+ * reactors run there, so each frame is one transform and nothing else.
  */
 
 /** Degrees of turn per px of scroll. About a turn and a half over the page. */
@@ -73,6 +83,9 @@ export function ImigongoWheel() {
     if (!node) return;
 
     const query = window.matchMedia(WHEEL_QUERY);
+    const phone = window.matchMedia(PHONE_WHEEL_QUERY);
+    const capablePhone = isCapablePhone();
+    const runs = () => query.matches || (capablePhone && phone.matches);
     let stop: (() => void) | null = null;
 
     const start = () => {
@@ -233,8 +246,8 @@ export function ImigongoWheel() {
     // on mid-visit — in which case the static copy in the closing section is
     // all that remains, and the page is exactly as it was.
     const sync = () => {
-      if (query.matches && !stop) stop = start();
-      else if (!query.matches && stop) {
+      if (runs() && !stop) stop = start();
+      else if (!runs() && stop) {
         stop();
         stop = null;
       }
@@ -242,8 +255,10 @@ export function ImigongoWheel() {
 
     sync();
     query.addEventListener("change", sync);
+    phone.addEventListener("change", sync);
     return () => {
       query.removeEventListener("change", sync);
+      phone.removeEventListener("change", sync);
       stop?.();
     };
   }, []);
