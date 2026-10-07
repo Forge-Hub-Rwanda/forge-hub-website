@@ -1,9 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/supabase/server";
+import { CONTENT_TAGS } from "@/lib/content-tags";
 
 export type EventState = {
   status: "idle" | "error";
@@ -58,7 +59,10 @@ function toRow(parsed: z.infer<typeof schema>) {
 }
 
 // The "What's on" band is on the homepage; refresh it whenever events change.
+// The public read is cached under its tag, so expiring the tag is what makes
+// the edit show on the next load.
 function revalidatePublic() {
+  updateTag(CONTENT_TAGS.events);
   revalidatePath("/");
 }
 

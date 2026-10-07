@@ -12,16 +12,15 @@ import { RollLetters, SplitWords } from "@/components/split-text";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getProject, getProjects } from "@/lib/content";
-import { projectPage } from "@/lib/site";
+import { projectPage, projectTint } from "@/lib/site";
 
 /**
  * One project, in full.
  *
- * CMS-backed: the project is read by slug at request time, so a project added
- * or edited in /admin shows here on the next load. Rendered dynamically rather
- * than prerendered, since the set of slugs is no longer known at build time.
+ * CMS-backed: the project is read from the cached project list, which every
+ * admin edit expires, so a project added or edited in /admin shows here on the
+ * next load. Each slug is rendered on its first request and cached after that.
  */
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata(
   props: PageProps<"/portfolio/[slug]">,
@@ -145,9 +144,21 @@ export default async function ProjectDetailPage(
             everything below it, never moves. */}
         <Section className="border-line border-t">
           <Reveal>
-            <Scrub query="(min-width: 48rem)" from={1} to={0.35}>
+            <Scrub
+              query="all"
+              liteQuery="(min-width: 48rem)"
+              from={1}
+              to={0.35}
+            >
               <div className="reel-grow">
-                <ProjectImage image={project.cover} ratio="16 / 9" priority />
+                <ProjectImage
+                  image={project.cover}
+                  ratio="16 / 9"
+                  priority
+                  artId={`art-${project.slug}`}
+                  tint={projectTint(project, Math.max(index, 0))}
+                  variant={Math.max(index, 0)}
+                />
               </div>
             </Scrub>
           </Reveal>

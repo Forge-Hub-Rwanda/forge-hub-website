@@ -1,10 +1,18 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/supabase/server";
 import { uploadImage, deleteImage } from "@/lib/supabase/storage";
+import { CONTENT_TAGS } from "@/lib/content-tags";
+
+// The homepage gallery and the /portfolio pages read projects (and their
+// images) from a tagged cache; expire it on every change so the edit shows on
+// the next load.
+function revalidatePublic() {
+  updateTag(CONTENT_TAGS.portfolio);
+}
 
 const BUCKET = "portfolio-images";
 
@@ -104,6 +112,7 @@ export async function createPortfolioItem(
   }
 
   revalidatePath("/admin/portfolio");
+  revalidatePublic();
   redirect(`/admin/portfolio/${data.id}`);
 }
 
@@ -135,6 +144,7 @@ export async function updatePortfolioItem(
   }
 
   revalidatePath("/admin/portfolio");
+  revalidatePublic();
   revalidatePath(`/admin/portfolio/${id}`);
   redirect("/admin/portfolio");
 }
@@ -156,6 +166,7 @@ export async function deletePortfolioItem(id: string) {
   await supabase.from("portfolio_items").delete().eq("id", id);
 
   revalidatePath("/admin/portfolio");
+  revalidatePublic();
 }
 
 export async function addPortfolioImages(itemId: string, formData: FormData) {
@@ -188,6 +199,7 @@ export async function addPortfolioImages(itemId: string, formData: FormData) {
   }
 
   revalidatePath(`/admin/portfolio/${itemId}`);
+  revalidatePublic();
 }
 
 export async function deletePortfolioImage(itemId: string, imageId: string) {
@@ -204,6 +216,7 @@ export async function deletePortfolioImage(itemId: string, imageId: string) {
   await supabase.from("portfolio_images").delete().eq("id", imageId);
 
   revalidatePath(`/admin/portfolio/${itemId}`);
+  revalidatePublic();
 }
 
 export async function movePortfolioImage(
@@ -239,6 +252,7 @@ export async function movePortfolioImage(
     .eq("id", other.id);
 
   revalidatePath(`/admin/portfolio/${itemId}`);
+  revalidatePublic();
 }
 
 export async function updatePortfolioImageAlt(
@@ -253,4 +267,5 @@ export async function updatePortfolioImageAlt(
   await supabase.from("portfolio_images").update({ alt }).eq("id", imageId);
 
   revalidatePath(`/admin/portfolio/${itemId}`);
+  revalidatePublic();
 }

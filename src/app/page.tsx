@@ -15,10 +15,9 @@ import { SiteHeader } from "@/components/site-header";
 import { getEvents, getProjects, getTestimonials } from "@/lib/content";
 import { portfolioSection } from "@/lib/site";
 
-// Read the CMS at request time, so content added in /admin shows on the next
-// page load rather than waiting for a rebuild. The site is small and mostly
-// animation, so the server render cost is negligible.
-export const dynamic = "force-dynamic";
+// CMS-backed. Served from Next's cache rather than read from Supabase on every
+// visit; the admin actions expire the cache on each edit, so new content still
+// shows on the next load. See `src/lib/content.ts`.
 
 export default async function Home() {
   const [projects, events, testimonials] = await Promise.all([

@@ -84,7 +84,45 @@ export function ImigongoWheel() {
 
       let frame = 0;
       let last = { angle: NaN, x: NaN, y: NaN, scale: NaN };
+      let hidden = false;
       const began = performance.now();
+
+      // Geometry, in document px, measured on resize rather than on every
+      // frame — the same arrangement as WheelNudge. A rect read inside the loop
+      // forces whatever style the gallery and the reactors have just written to
+      // be resolved synchronously, every frame. Neither the slot nor the
+      // closing section moves except by scrolling, so their document positions
+      // plus `scrollY` give the very same numbers the rects did.
+      const geometry = {
+        size: 0,
+        closingTop: 0,
+        slotLeft: 0,
+        slotTop: 0,
+        slotWidth: 0,
+        slotHeight: 0,
+      };
+      const measure = () => {
+        geometry.size = node.offsetWidth;
+        if (dock && closing) {
+          const scroll = window.scrollY;
+          geometry.closingTop = closing.getBoundingClientRect().top + scroll;
+          const slot = dock.getBoundingClientRect();
+          geometry.slotLeft = slot.left;
+          geometry.slotTop = slot.top + scroll;
+          geometry.slotWidth = slot.width;
+          geometry.slotHeight = slot.height;
+        }
+      };
+      measure();
+      // Anything above the closing section changing height moves it down the
+      // document, and that always changes the body's height too.
+      const sizer = new ResizeObserver(() => {
+        measure();
+        wake();
+      });
+      sizer.observe(document.body);
+      sizer.observe(node);
+      if (closing) sizer.observe(closing);
 
       const paint = (now: number) => {
         frame = 0;
@@ -92,7 +130,7 @@ export function ImigongoWheel() {
         const viewport = window.innerHeight;
         // clientWidth, not innerWidth: the scrollbar is not part of the page.
         const edge = document.documentElement.clientWidth;
-        const size = node.offsetWidth;
+        const size = geometry.size;
         const radius = size / 2;
         const scroll = window.scrollY;
 
@@ -112,17 +150,29 @@ export function ImigongoWheel() {
         let x = edge;
         let y = viewport / 2;
         let scale = 1;
+        // Off screen: docked, and the slot it docked into has scrolled out of
+        // the window. The layer stays mounted and keeps its transform, so it
+        // is simply hidden — which takes its full-window `difference` blend
+        // out of every frame while the footer is in view — and shows again,
+        // exactly where it was, the moment the slot comes back.
+        let away = false;
         if (dock && closing) {
-          const top = closing.getBoundingClientRect().top;
+          const top = geometry.closingTop - scroll;
           const progress = smoothstep(
             (viewport - top) / (viewport * (1 - DOCK_END)),
           );
           if (progress > 0) {
-            const slot = dock.getBoundingClientRect();
-            x += (slot.left + slot.width / 2 - x) * progress;
-            y += (slot.top + slot.height / 2 - y) * progress;
-            scale += (slot.width / size - 1) * progress;
+            const slotTop = geometry.slotTop - scroll;
+            x += (geometry.slotLeft + geometry.slotWidth / 2 - x) * progress;
+            y += (slotTop + geometry.slotHeight / 2 - y) * progress;
+            scale += (geometry.slotWidth / size - 1) * progress;
+            away = progress === 1 && slotTop + geometry.slotHeight < 0;
           }
+        }
+
+        if (away !== hidden) {
+          hidden = away;
+          node.style.visibility = away ? "hidden" : "";
         }
 
         const moved =
@@ -151,24 +201,31 @@ export function ImigongoWheel() {
         }
       };
 
-      const wake = () => {
+      function wake() {
         if (!frame && !document.hidden) frame = requestAnimationFrame(paint);
+      }
+
+      const onResize = () => {
+        measure();
+        wake();
       };
 
       setWheelWake(wake);
       window.addEventListener("scroll", wake, { passive: true });
-      window.addEventListener("resize", wake);
+      window.addEventListener("resize", onResize);
       document.addEventListener("visibilitychange", wake);
       wake();
 
       return () => {
         if (frame) cancelAnimationFrame(frame);
         setWheelWake(null);
+        sizer.disconnect();
         window.removeEventListener("scroll", wake);
-        window.removeEventListener("resize", wake);
+        window.removeEventListener("resize", onResize);
         document.removeEventListener("visibilitychange", wake);
         root.removeAttribute("data-wheel");
         node.style.transform = "";
+        node.style.visibility = "";
       };
     };
 

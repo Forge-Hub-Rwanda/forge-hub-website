@@ -81,6 +81,7 @@ async function counts() {
     community,
     communityDrafts,
     team,
+    admins,
   ] = await Promise.all([
     supabase.from("messages").select("id", head),
     supabase.from("messages").select("id", head).eq("is_read", false),
@@ -93,11 +94,10 @@ async function counts() {
     supabase.from("testimonials").select("id", head),
     drafts("testimonials"),
     supabase.from("team_members").select("id", head),
+    // RLS lets an admin read only their own `admins` row, so a count through
+    // the session client would always be 1 — the service client sees them all.
+    adminCount(),
   ]);
-
-  // RLS lets an admin read only their own `admins` row, so a count through the
-  // session client would always be 1 — the service client sees them all.
-  const admins = await adminCount();
 
   const messageLine =
     messages.error || messages.count === null

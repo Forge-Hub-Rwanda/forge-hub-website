@@ -1488,6 +1488,196 @@ html.lenis {
   }
 }
 
+/* ---- Membership on a phone: the lion first, then the ways in --------------
+   Everything here hangs off `data-mode="phone-pin"`, which Membership sets
+   only below lg on a full-motion device with a tall enough screen. Without
+   it the three wrappers below are `display: contents`, so the panel list is
+   the grid item it always was and nothing about any other layout changes. */
+.mb-pin,
+.mb-stage,
+.mb-view {
+  display: contents;
+}
+
+@media (max-width: 63.99rem) {
+  /* A grid item sizes to its content's widest line by default, and the
+     track's content is a whole row of panels: without these the column, the
+     pin and the strip all stretch to the row's width and there is nothing
+     left to travel. */
+  .mb[data-mode="phone-pin"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The pinned range: one held screen plus the track's travel, written by
+     horizontal-pin. Full-bleed, out of the section's gutter. */
+  .mb[data-mode="phone-pin"] .mb-pin {
+    display: block;
+    width: 100vw;
+    min-width: 0;
+    height: var(--pin-height, 300vh);
+    margin-inline: -1.5rem;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-stage {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100vh;
+    height: 100svh;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-view {
+    display: block;
+    overflow: hidden;
+  }
+
+  /* A full screen of nothing before the first panel: the held screen opens on
+     the lion alone, and the panels arrive from the right across it. */
+  .mb[data-mode="phone-pin"] .mb-track {
+    display: flex;
+    align-items: stretch;
+    gap: 4vw;
+    width: max-content;
+    padding-inline: 100vw 7vw;
+    will-change: transform;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-panel {
+    flex: none;
+    width: 86vw;
+    max-width: 30rem;
+    padding: 1.75rem;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-panel .mb-features {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-panel .mb-cta {
+    margin-top: 1.5rem;
+  }
+
+  /* The index's job passes to the tabs at the foot of the stage. */
+  .mb[data-mode="phone-pin"] .mb-nav {
+    display: none;
+  }
+
+  .mb[data-mode="phone-pin"] .mb-tabs {
+    position: absolute;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    left: 50%;
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.3rem;
+    translate: -50% 0;
+    border: 1px solid var(--color-line);
+    border-radius: calc(infinity * 1px);
+    background-color: var(--color-surface);
+  }
+
+  .mb-tab {
+    padding: 0.55rem 1rem;
+    border-radius: calc(infinity * 1px);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition:
+      background-color 0.3s var(--ease-out-expo),
+      color 0.3s var(--ease-out-expo);
+  }
+
+  .mb-tab[data-active="true"] {
+    background-color: var(--color-text);
+    color: var(--color-text-invert);
+  }
+
+  /* The lion: from the top of the pin to the foot of the band, held to the
+     foot of the screen while the stage is pinned, so it stands alone on the
+     held screen before the first panel arrives. Same drawing, same layers as
+     the desktop column; centred, since a phone has no empty side for it. */
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion {
+    position: absolute;
+    inset-inline: 0;
+    top: var(--mb-pin-top, 0);
+    bottom: 0;
+    display: block;
+    overflow: clip;
+    pointer-events: none;
+  }
+
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion > div {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 100vh;
+    height: 100svh;
+    color: var(--color-text);
+  }
+
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art {
+    position: relative;
+    width: min(92vw, calc((100svh - 4rem) * 560 / 750));
+    aspect-ratio: 560 / 750;
+  }
+
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion-ink {
+    opacity: var(--lion-ink, 0.2);
+  }
+
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion-ox {
+    position: absolute;
+    inset: 0;
+    color: var(--color-accent);
+    opacity: 0;
+    transition: opacity 0.5s var(--ease-out-expo);
+    -webkit-mask-image: radial-gradient(
+      circle 110px at var(--mx, 50%) var(--my, 50%),
+      #000 30%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      circle 110px at var(--mx, 50%) var(--my, 50%),
+      #000 30%,
+      transparent 100%
+    );
+  }
+
+  section:has(.mb[data-mode="phone-pin"])
+    .mb-lion-art[data-lit="true"]
+    .mb-lion-ox {
+    opacity: 0.85;
+  }
+
+  /* Its own layer, so the glow is drawn once and the fade on every scroll is
+     only an opacity change, rather than redrawing the drop shadow. */
+  section:has(.mb[data-mode="phone-pin"]) .mb-lion-art .mb-lion-eye {
+    position: absolute;
+    inset: 0;
+    color: var(--color-accent);
+    opacity: 0;
+    filter: drop-shadow(0 0 10px var(--color-accent));
+    transition: opacity 0.9s var(--ease-out-expo);
+    will-change: opacity;
+  }
+
+  section:has(.mb[data-mode="phone-pin"])
+    .mb-lion-art[data-scrolling="true"]
+    .mb-lion-eye {
+    opacity: var(--lion-eye, 0.5);
+    transition-duration: 0.2s;
+  }
+}
+
 /* ---- Team: numbered tag --------------------------------------------------
    Sits in the frame's corner under the wipe (z 3), so it is uncovered with the
    portrait rather than floating over the block that is still hiding it. */
@@ -1522,6 +1712,26 @@ html.lenis {
   );
 }
 
+/* Phones: the same drift over a shorter distance, so the halves still meet
+   without either one starting most of the way off a narrow screen. */
+@media (max-width: 63.99rem) {
+  [data-scrub="true"] .drift-l {
+    transform: translate3d(
+      calc((1 - var(--p, 1)) * (1 - var(--p, 1)) * -8vw),
+      0,
+      0
+    );
+  }
+
+  [data-scrub="true"] .drift-r {
+    transform: translate3d(
+      calc((1 - var(--p, 1)) * (1 - var(--p, 1)) * 8vw),
+      0,
+      0
+    );
+  }
+}
+
 /* Deal the deck: the About pillars start stacked and fanned in the middle of
    their grid and are dealt out to their own cells. `--dx` and `--rot` are set
    per card; the resting state is the grid exactly as it was. */
@@ -1541,6 +1751,28 @@ html.lenis {
 [data-scrub="true"] .reel-grow {
   transform: scale(calc(0.78 + 0.22 * var(--p, 1)));
   transform-origin: 50% 0;
+}
+
+/* ---- Portfolio on phones: the lusion.co gallery -------------------------
+   Scoped to `[data-scrub="true"]`, which the portfolio's Scrubs only set below
+   lg on a full-motion device. Elsewhere every one of these is at rest: the
+   cover square and full, the name in place, the strip still. */
+[data-scrub="true"] .cover-unmask {
+  clip-path: inset(
+    calc((1 - var(--p, 1)) * 12%) calc((1 - var(--p, 1)) * 8%) round 0.75rem
+  );
+}
+
+[data-scrub="true"] .cover-unmask .project-art-inner {
+  transform: scale(calc(1.18 - 0.18 * var(--p, 1)));
+}
+
+[data-scrub="true"] .title-slide {
+  transform: translate3d(calc((1 - var(--p, 1)) * 12vw), 0, 0);
+}
+
+[data-scrub="true"] .work-strip-track {
+  transform: translate3d(calc(var(--p, 0) * -40%), 0, 0);
 }
 
 /* ---- Portfolio: colour takeover -------------------------------------------
@@ -1656,6 +1888,42 @@ html.lenis {
   visibility: hidden;
 }
 
+/* ---- The wheel on phones ------------------------------------------------
+   No fixed layer, no blend and no script below lg: the same artwork sits in a
+   band's own flow (PhoneWheel) and in the closing section's dock, turned by a
+   scroll-driven animation the browser runs off the main thread — one and a
+   half turns as it crosses the window. Only on a full-motion device that
+   supports scroll timelines; anywhere else it stands still. */
+.phone-wheel {
+  position: absolute;
+  right: 0;
+  width: 78vw;
+  aspect-ratio: 1;
+  translate: 50% 0;
+  color: var(--color-text);
+  opacity: var(--wheel-ink);
+}
+
+@keyframes phone-wheel-turn {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 540deg;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (max-width: 63.99rem) {
+    :root[data-motion="full"] .phone-wheel,
+    :root[data-motion="full"] [data-wheel-dock] > svg {
+      animation: phone-wheel-turn linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+  }
+}
+
 /* Each programs-band plank turns about its own middle. */
 .wheel-stick {
   transform-box: fill-box;
@@ -1710,6 +1978,18 @@ html.lenis {
 #site-menu[data-open="true"] {
   visibility: visible;
   transition: none;
+}
+
+/* Under an open menu the page's two most expensive layers — the wheel's
+   full-window `difference` blend and the morphing blobs — are hidden, so they
+   stop being painted while nobody can see them. The delay is the opening
+   curtain's: they go only once the veil (0.7s) and the panel (0.14s + 0.85s)
+   have both landed over them. Closing has no delay, so they are back before
+   the first sliver of page shows. Their animations keep running while hidden,
+   so they reappear exactly where they would have been. */
+:root:has(#site-menu[data-open="true"]) :is(.wheel-live, .blob) {
+  visibility: hidden;
+  transition: visibility 0s linear 1s;
 }
 
 .menu-veil,
@@ -2048,6 +2328,42 @@ html.lenis {
 
 [data-logo-tile] {
   view-transition-name: site-logo;
+}
+
+/* ---- Phone chrome: out of the way while reading ---------------------------
+   Below lg the logo tile and the corner controls are fixed over the page's own
+   text. While the visitor scrolls down they slide up out of view, and any
+   scroll up brings them straight back — see the `data-chrome-away` effect in
+   SiteHeader. `translate` rather than `transform`: the tile's inline transform
+   carries its centring and scale, and the two properties compose. Focus inside
+   either brings it back, so a keyboard never lands on a hidden control. */
+@media (max-width: 63.99rem) {
+  /* `opacity` kept from the tile's own hover fade, which this replaces. */
+  [data-logo-tile],
+  [data-corner-chrome] {
+    transition:
+      translate 0.35s var(--ease-out-expo),
+      opacity 0.15s linear;
+  }
+
+  :root[data-chrome-away] [data-logo-tile]:not(:focus-visible),
+  :root[data-chrome-away] [data-corner-chrome]:not(:focus-within) {
+    translate: 0 -140%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-logo-tile],
+    [data-corner-chrome] {
+      transition: opacity 0.2s linear;
+    }
+
+    :root[data-chrome-away] [data-logo-tile]:not(:focus-visible),
+    :root[data-chrome-away] [data-corner-chrome]:not(:focus-within) {
+      translate: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
 }
 
 ::view-transition-group(site-logo) {

@@ -15,21 +15,23 @@ export default async function EditPortfolioItem(
   const { id } = await props.params;
   const supabase = await createServerSupabaseClient();
 
-  const { data: item } = await supabase
-    .from("portfolio_items")
-    .select(
-      "id, name, blurb, client, year, status, href, disciplines, is_published",
-    )
-    .eq("id", id)
-    .maybeSingle();
+  // Both at once: the images query needs only the id, not the item.
+  const [{ data: item }, { data: images }] = await Promise.all([
+    supabase
+      .from("portfolio_items")
+      .select(
+        "id, name, blurb, client, year, status, href, disciplines, is_published",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    supabase
+      .from("portfolio_images")
+      .select("id, image_url, alt, position")
+      .eq("portfolio_item_id", id)
+      .order("position", { ascending: true }),
+  ]);
 
   if (!item) notFound();
-
-  const { data: images } = await supabase
-    .from("portfolio_images")
-    .select("id, image_url, alt, position")
-    .eq("portfolio_item_id", id)
-    .order("position", { ascending: true });
 
   return (
     <div>

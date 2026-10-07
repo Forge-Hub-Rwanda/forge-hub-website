@@ -14,8 +14,23 @@
  *
  * Server-only: these run in Server Components and must never be imported into a
  * client component.
+ *
+ * ## Caching
+ *
+ * Each read is cached by Next and tagged (`CONTENT_TAGS`), so a visit is served
+ * from the cache instead of waiting on Supabase. Every admin action that changes
+ * a table calls `updateTag` for it, so an edit still shows on the very next
+ * load. `REVALIDATE` is only a safety net for edits made outside /admin, such
+ * as straight in the Supabase dashboard.
+ *
+ * A failed query throws INSIDE the cached function, so the failure is never
+ * cached: the empty fallback is returned for that one request, and the next
+ * request tries Supabase again.
  */
 
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
+import { CONTENT_TAGS } from "@/lib/content-tags";
 import { createPublicClient } from "@/lib/supabase/public";
 import type {
   Project,
@@ -50,8 +65,25 @@ function toPicture(url: string, alt: string | null): ProjectImage {
   return { src: url, alt: alt ?? "", width: 0, height: 0 };
 }
 
-function logError(table: string, error: { message: string }) {
-  console.error(`Couldn't read ${table}: ${error.message}`);
+/** Seconds before a cached read is refreshed even without an admin edit. */
+const REVALIDATE = 300;
+
+class ReadError extends Error {}
+
+/** Throws, so `unstable_cache` stores nothing for a failed query. */
+function fail(table: string, error: { message: string }): never {
+  throw new ReadError(`Couldn't read ${table}: ${error.message}`);
+}
+
+/** The cached read, or `fallback` (logged) if Supabase failed this time. */
+async function orFallback<T>(read: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await read();
+  } catch (error) {
+    if (!(error instanceof ReadError)) throw error;
+    console.error(error.message);
+    return fallback;
+  }
 }
 
 type PortfolioImageRow = {
@@ -97,35 +129,38 @@ function toProject(row: PortfolioItemRow): Project {
 const PROJECT_SELECT =
   "slug, name, blurb, client, year, disciplines, status, href, created_at, portfolio_images ( image_url, alt, position )";
 
-/** Every portfolio project, oldest first, so a new one joins the end. */
-export async function getProjects(): Promise<Project[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("portfolio_items")
-    .select(PROJECT_SELECT)
-    .order("created_at", { ascending: true });
+const readProjects = unstable_cache(
+  async (): Promise<Project[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("portfolio_items")
+      .select(PROJECT_SELECT)
+      .order("created_at", { ascending: true });
 
-  if (error) {
-    logError("portfolio_items", error);
-    return [];
-  }
-  return (data as PortfolioItemRow[]).map(toProject);
-}
+    if (error) fail("portfolio_items", error);
+    return (data as PortfolioItemRow[]).map(toProject);
+  },
+  ["content", "projects"],
+  { tags: [CONTENT_TAGS.portfolio], revalidate: REVALIDATE },
+);
 
-/** One project by slug, or `null` if there is no such project. */
+/**
+ * Every portfolio project, oldest first, so a new one joins the end.
+ * `React.cache` on top shares one result across a single render — the project
+ * page asks for it from both `generateMetadata` and the page itself.
+ */
+export const getProjects = cache((): Promise<Project[]> =>
+  orFallback(readProjects, []),
+);
+
+/**
+ * One project by slug, or `null` if there is no such project. Read from the
+ * same cached list rather than a query of its own: the list is small, already
+ * cached, and it means a project page needs one cache entry, not two.
+ */
 export async function getProject(slug: string): Promise<Project | null> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("portfolio_items")
-    .select(PROJECT_SELECT)
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (error) {
-    logError("portfolio_items", error);
-    return null;
-  }
-  return data ? toProject(data as PortfolioItemRow) : null;
+  const projects = await getProjects();
+  return projects.find((project) => project.slug === slug) ?? null;
 }
 
 type EventRow = {
@@ -157,20 +192,27 @@ function toSiteEvent(row: EventRow): SiteEvent {
   };
 }
 
-/** Events for the "What's on" band, in their admin order. */
-export async function getEvents(): Promise<SiteEvent[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("events")
-    .select("name, kind, event_date, time_text, location, position, created_at")
-    .order("position", { ascending: true })
-    .order("created_at", { ascending: true });
+const readEvents = unstable_cache(
+  async (): Promise<SiteEvent[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("events")
+      .select(
+        "name, kind, event_date, time_text, location, position, created_at",
+      )
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
 
-  if (error) {
-    logError("events", error);
-    return [];
-  }
-  return (data as EventRow[]).map(toSiteEvent);
+    if (error) fail("events", error);
+    return (data as EventRow[]).map(toSiteEvent);
+  },
+  ["content", "events"],
+  { tags: [CONTENT_TAGS.events], revalidate: REVALIDATE },
+);
+
+/** Events for the "What's on" band, in their admin order. */
+export function getEvents(): Promise<SiteEvent[]> {
+  return orFallback(readEvents, []);
 }
 
 type TestimonialRow = {
@@ -179,24 +221,29 @@ type TestimonialRow = {
   role: string | null;
 };
 
-/** Member quotes for the "Community" band, in their admin order. */
-export async function getTestimonials(): Promise<Testimonial[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("testimonials")
-    .select("quote, name, role, position, created_at")
-    .order("position", { ascending: true })
-    .order("created_at", { ascending: true });
+const readTestimonials = unstable_cache(
+  async (): Promise<Testimonial[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("testimonials")
+      .select("quote, name, role, position, created_at")
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
 
-  if (error) {
-    logError("testimonials", error);
-    return [];
-  }
-  return (data as TestimonialRow[]).map((row) => ({
-    quote: row.quote,
-    name: row.name,
-    role: row.role ?? "",
-  }));
+    if (error) fail("testimonials", error);
+    return (data as TestimonialRow[]).map((row) => ({
+      quote: row.quote,
+      name: row.name,
+      role: row.role ?? "",
+    }));
+  },
+  ["content", "testimonials"],
+  { tags: [CONTENT_TAGS.testimonials], revalidate: REVALIDATE },
+);
+
+/** Member quotes for the "Community" band, in their admin order. */
+export function getTestimonials(): Promise<Testimonial[]> {
+  return orFallback(readTestimonials, []);
 }
 
 type TeamRow = {
@@ -205,22 +252,27 @@ type TeamRow = {
   photo_url: string | null;
 };
 
-/** The team, in the same order as the admin list. */
-export async function getTeam(): Promise<TeamMember[]> {
-  const supabase = createPublicClient();
-  const { data, error } = await supabase
-    .from("team_members")
-    .select("name, role, photo_url, position, created_at")
-    .order("position", { ascending: true })
-    .order("created_at", { ascending: true });
+const readTeam = unstable_cache(
+  async (): Promise<TeamMember[]> => {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("name, role, photo_url, position, created_at")
+      .order("position", { ascending: true })
+      .order("created_at", { ascending: true });
 
-  if (error) {
-    logError("team_members", error);
-    return [];
-  }
-  return (data as TeamRow[]).map((row) => ({
-    name: row.name,
-    role: row.role,
-    photo: row.photo_url ? toPicture(row.photo_url, "") : undefined,
-  }));
+    if (error) fail("team_members", error);
+    return (data as TeamRow[]).map((row) => ({
+      name: row.name,
+      role: row.role,
+      photo: row.photo_url ? toPicture(row.photo_url, "") : undefined,
+    }));
+  },
+  ["content", "team"],
+  { tags: [CONTENT_TAGS.team], revalidate: REVALIDATE },
+);
+
+/** The team, in the same order as the admin list. */
+export function getTeam(): Promise<TeamMember[]> {
+  return orFallback(readTeam, []);
 }

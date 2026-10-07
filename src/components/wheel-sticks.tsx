@@ -172,9 +172,44 @@ export function WheelSticks({ id }: { id: string }) {
     measure();
     window.addEventListener("resize", measure);
 
+    // The box every plank's middle lies in, in band px. If the wheel's reach
+    // misses the whole box, it misses every plank in it, so a frame with the
+    // wheel elsewhere on the page and nothing left settling can stop before
+    // looking at a single plank. Planks are tested individually otherwise,
+    // exactly as before.
+    const bounds = {
+      minX: Infinity,
+      minY: Infinity,
+      maxX: -Infinity,
+      maxY: -Infinity,
+    };
+    for (const plank of planks) {
+      bounds.minX = Math.min(bounds.minX, plank.mx);
+      bounds.minY = Math.min(bounds.minY, plank.my);
+      bounds.maxX = Math.max(bounds.maxX, plank.mx);
+      bounds.maxY = Math.max(bounds.maxY, plank.my);
+    }
+    /** Planks still springing back, so the band cannot be skipped. */
+    let settling = false;
+
     const unregister = registerWheelReactor((wheel) => {
       const bandTop = top - window.scrollY;
       const zone = wheel.r + REACH;
+
+      if (!settling) {
+        const nearestX = Math.min(
+          Math.max(wheel.cx, left + bounds.minX),
+          left + bounds.maxX,
+        );
+        const nearestY = Math.min(
+          Math.max(wheel.cy, bandTop + bounds.minY),
+          bandTop + bounds.maxY,
+        );
+        if (Math.hypot(wheel.cx - nearestX, wheel.cy - nearestY) >= zone) {
+          return false;
+        }
+      }
+
       let busy = false;
 
       for (let i = 0; i < planks.length; i++) {
@@ -229,6 +264,7 @@ export function WheelSticks({ id }: { id: string }) {
         line.style.transform = `translate(${plank.x.toFixed(1)}px, ${plank.y.toFixed(1)}px) rotate(${plank.a.toFixed(2)}deg)`;
       }
 
+      settling = busy;
       return busy;
     });
 

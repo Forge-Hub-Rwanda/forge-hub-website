@@ -6,7 +6,9 @@ import { LionArt, LionEye } from "@/components/lion-art";
 import { Reveal } from "@/components/reveal";
 import { Section } from "@/components/section-heading";
 import { RollText, SplitWords } from "@/components/split-text";
+import { horizontalPin, type HorizontalPin } from "@/lib/horizontal-pin";
 import { getLenis } from "@/lib/lenis";
+import { getMotionTier } from "@/lib/motion-tier";
 import { isFinePointer } from "@/lib/pointer";
 import { membershipSection, plans } from "@/lib/site";
 
@@ -50,6 +52,22 @@ import { membershipSection, plans } from "@/lib/site";
  * window, a reduced-motion visitor and a browser that never ran this file all
  * land in the same fallback of three equally solid links, and none of them
  * needed one written for them.
+ *
+ * ## On a phone: the lion first, then the ways in
+ *
+ * Below lg, on a full-motion device with a tall enough screen, the band turns
+ * into a pinned stage instead. The heading scrolls past as usual; then the
+ * screen holds on the lion, standing alone, and as the visitor keeps scrolling
+ * the three panels slide in from the right across it, one at a time - the
+ * same pinned sideways motion as the desktop gallery (src/lib/horizontal-pin).
+ * A row of tabs along the foot of the stage takes over from the index: it
+ * follows the panel in view and jumps to one when tapped. A tap on the lion
+ * lights the oxblood pool where the finger lands, and the eye still lights
+ * while the page moves.
+ *
+ * As with the tracking, it is one attribute (`data-mode="phone-pin"`) over a
+ * complete stacked layout, so a lite device, a short screen, reduced motion
+ * and a browser without scripting all keep three plain stacked panels.
  */
 
 /**
@@ -67,6 +85,13 @@ import { membershipSection, plans } from "@/lib/site";
  * taken off, which a 45rem gate would have excluded for no reason.
  */
 const TRACK_QUERY = "(min-width: 64rem) and (min-height: 38rem)";
+
+/**
+ * Where the phone stage runs. The height is what a panel's copy, the tabs and
+ * a phone's browser bars need between them; shorter screens keep the stacked
+ * panels rather than clip one.
+ */
+const PHONE_PIN_QUERY = "(max-width: 63.99rem) and (min-height: 40rem)";
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
@@ -94,6 +119,17 @@ const pad = (value: number) => String(value).padStart(2, "0");
 
 export function Membership() {
   const [tracked, setTracked] = useState(false);
+  /** Whether the phone stage is running. See "On a phone" above. */
+  const [phonePin, setPhonePin] = useState(false);
+  const pinRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLUListElement>(null);
+  const pinApi = useRef<HorizontalPin | null>(null);
+  /** Moves the lion's oxblood pool; set by the lion effect, used by the stage. */
+  const steerRef = useRef<
+    ((x: number, y: number, lit: boolean, fraction: boolean) => void) | null
+  >(null);
+  const phonePinRef = useRef(false);
   /**
    * The first way in stands until the second takes over — including before any
    * observer has reported, which is the state a visitor arrives to.
@@ -159,11 +195,68 @@ export function Membership() {
       placed = false;
     };
 
+    // The drawing's size, measured when it changes, so the stage can steer
+    // the pool by fractions of it every frame without reading layout.
+    const size = { w: 0, h: 0 };
+    const sizer = new ResizeObserver(() => {
+      size.w = lion.offsetWidth;
+      size.h = lion.offsetHeight;
+    });
+    sizer.observe(lion);
+
+    // The phone stage's way in: there is no hovering mouse on a phone, so a
+    // tap steers the pool to the point it lands on - in px within the
+    // drawing, or by fractions of it.
+    steerRef.current = (x, y, lit, fraction) => {
+      if (fraction) {
+        if (!size.w) return;
+        target.x = x * size.w;
+        target.y = y * size.h;
+      } else {
+        target.x = x;
+        target.y = y;
+      }
+      lion.dataset.lit = String(lit);
+      if (!placed) {
+        at.x = target.x;
+        at.y = target.y;
+        placed = true;
+      }
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+
+    const onDown = (event: PointerEvent) => {
+      if (!phonePinRef.current || isFinePointer(event)) return;
+      const box = lion.getBoundingClientRect();
+      steerRef.current?.(
+        event.clientX - box.left,
+        event.clientY - box.top,
+        true,
+        false,
+      );
+    };
+
     // The eye: lit on any scroll, and dimmed once the scrolling has been
     // still for EYE_HOLD. Setting an attribute that already holds the value
     // is a no-op, so doing it on every scroll event costs nothing.
+    //
+    // Only while the band is near the window: the eye cannot be seen from
+    // anywhere else, so a scroll elsewhere on the page leaves it alone. The
+    // margin wakes it before the band arrives, so it lights exactly as before.
     let dim = 0;
+    let near = typeof IntersectionObserver === "undefined";
+    const watch = near
+      ? null
+      : new IntersectionObserver(
+          ([entry]) => {
+            near = entry.isIntersecting;
+          },
+          { rootMargin: "20% 0px" },
+        );
+    watch?.observe(band);
+
     const onScroll = () => {
+      if (!near) return;
       lion.dataset.scrolling = "true";
       window.clearTimeout(dim);
       dim = window.setTimeout(() => {
@@ -173,8 +266,13 @@ export function Membership() {
 
     band.addEventListener("pointermove", onMove, { passive: true });
     band.addEventListener("pointerleave", onLeave);
+    band.addEventListener("pointerdown", onDown, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      steerRef.current = null;
+      sizer.disconnect();
+      band.removeEventListener("pointerdown", onDown);
+      watch?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.clearTimeout(dim);
       band.removeEventListener("pointermove", onMove);
@@ -268,6 +366,69 @@ export function Membership() {
     return () => observer.disconnect();
   }, [tracked]);
 
+  // Decide whether the phone stage runs, and keep deciding, as the tracking
+  // does: a phone can rotate, a window can resize, reduced motion can change.
+  useEffect(() => {
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      getMotionTier() !== "full"
+    ) {
+      return;
+    }
+    const fits = window.matchMedia(PHONE_PIN_QUERY);
+    const reduced = window.matchMedia(REDUCED_QUERY);
+    const sync = () => setPhonePin(fits.matches && !reduced.matches);
+
+    sync();
+    fits.addEventListener("change", sync);
+    reduced.addEventListener("change", sync);
+    return () => {
+      fits.removeEventListener("change", sync);
+      reduced.removeEventListener("change", sync);
+    };
+  }, []);
+
+  // Run the stage: the track slides with the scroll and the tabs follow it.
+  // The oxblood pool is left to the visitor's finger (see `onDown`): moving
+  // it is a repaint of the whole masked drawing, too much to pay on every
+  // frame of the slide on a phone.
+  useEffect(() => {
+    phonePinRef.current = phonePin;
+    const pin = pinRef.current;
+    const view = viewRef.current;
+    const track = trackRef.current;
+    const section = rootRef.current?.closest("section");
+    if (!phonePin || !pin || !view || !track || !section) return;
+
+    let shown = ORDER[0];
+    const api = horizontalPin({
+      pin,
+      view,
+      track,
+      items: Array.from(track.querySelectorAll<HTMLElement>("[data-plan]")),
+      // The lion stands from the top of the pin down, so it is first seen
+      // alone on the held screen rather than behind the heading.
+      onMeasure: (top) => {
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+        section.style.setProperty("--mb-pin-top", `${top - sectionTop}px`);
+      },
+      onFrame: ({ index }) => {
+        const next = ORDER[Math.max(index - 1, 0)];
+        if (next !== shown) {
+          shown = next;
+          setActive(next);
+        }
+      },
+    });
+    pinApi.current = api;
+
+    return () => {
+      api.destroy();
+      pinApi.current = null;
+      section.style.removeProperty("--mb-pin-top");
+    };
+  }, [phonePin]);
+
   /**
    * Eases an index click to its panel.
    *
@@ -328,6 +489,7 @@ export function Membership() {
       <div
         ref={rootRef}
         data-tracked={tracked}
+        data-mode={phonePin ? "phone-pin" : undefined}
         className="mb grid gap-14 lg:grid-cols-12 lg:gap-10"
       >
         {/* ---- The index. THIS ELEMENT IS THE STICKY ONE. ---------------- */}
@@ -389,30 +551,40 @@ export function Membership() {
         </div>
 
         {/* ---- The panels. Ordinary flow; nothing here sticks. ----------- */}
-        <ul className="grid gap-px lg:col-span-7 lg:col-start-6">
-          {plans.map((plan, index) => (
-            <li
-              key={plan.slug}
-              id={plan.slug}
-              data-plan={plan.slug}
-              // So a fragment jump can put focus where it put the page.
-              tabIndex={-1}
-              className={`mb-panel relative flex flex-col justify-center overflow-hidden p-9 lg:p-12 ${
-                plan.featured
-                  ? "bg-text text-text-invert"
-                  : "bg-surface text-text"
-              }`}
-            >
-              {/* Marks the featured way in without adding another badge: the
+        {/* The three wrappers are `display: contents` everywhere but the
+            phone stage, where they become the pinned range, the sticky stage
+            and the strip the panels are seen through - see `.mb-pin` in
+            globals.css. So the list is the grid item it always was. */}
+        <div ref={pinRef} className="mb-pin">
+          <div className="mb-stage">
+            <div ref={viewRef} className="mb-view">
+              <ul
+                ref={trackRef}
+                className="mb-track grid gap-px lg:col-span-7 lg:col-start-6"
+              >
+                {plans.map((plan, index) => (
+                  <li
+                    key={plan.slug}
+                    id={plan.slug}
+                    data-plan={plan.slug}
+                    // So a fragment jump can put focus where it put the page.
+                    tabIndex={-1}
+                    className={`mb-panel relative flex flex-col justify-center overflow-hidden p-9 lg:p-12 ${
+                      plan.featured
+                        ? "bg-text text-text-invert"
+                        : "bg-surface text-text"
+                    }`}
+                  >
+                    {/* Marks the featured way in without adding another badge: the
                   motif sits in the corner and bleeds off two edges. */}
-              {plan.featured ? (
-                <ImigongoMark
-                  motif="lozenge"
-                  className="text-text-invert absolute -top-6 -right-6 h-28 w-28 opacity-25"
-                />
-              ) : null}
+                    {plan.featured ? (
+                      <ImigongoMark
+                        motif="lozenge"
+                        className="text-text-invert absolute -top-6 -right-6 h-28 w-28 opacity-25"
+                      />
+                    ) : null}
 
-              {/* Reveal wraps the CONTENTS, not the panel. A panel is most of a
+                    {/* Reveal wraps the CONTENTS, not the panel. A panel is most of a
                   screen tall, and Reveal's lead-in test only clears for an
                   element that size once a third of the window is already
                   showing it — the copy would fade in long after its own box
@@ -420,85 +592,117 @@ export function Membership() {
                   so they behave like every other revealed block on the page.
                   No stagger for the same reason: two panels this tall are never
                   on screen together, so a delay reads as lag, not rhythm. */}
-              <Reveal className="flex flex-col">
-                <p
-                  className={`text-label ${
-                    plan.featured ? "text-text-invert/60" : "text-text-muted"
-                  }`}
-                >
-                  {plan.cadence}
-                </p>
+                    <Reveal className="flex flex-col">
+                      <p
+                        className={`text-label ${
+                          plan.featured
+                            ? "text-text-invert/60"
+                            : "text-text-muted"
+                        }`}
+                      >
+                        {plan.cadence}
+                      </p>
 
-                <div className="mt-6 flex items-baseline gap-5">
-                  <span
-                    className={`font-display text-label tabular-nums ${
-                      plan.featured ? "text-text-invert/60" : "text-text-muted"
-                    }`}
-                  >
-                    {pad(index + 1)}
-                  </span>
-                  <h3 className="font-display text-[clamp(1.8rem,3vw,2.6rem)] leading-none font-extrabold tracking-[-0.03em]">
-                    {plan.name}
-                  </h3>
-                </div>
+                      <div className="mt-6 flex items-baseline gap-5">
+                        <span
+                          className={`font-display text-label tabular-nums ${
+                            plan.featured
+                              ? "text-text-invert/60"
+                              : "text-text-muted"
+                          }`}
+                        >
+                          {pad(index + 1)}
+                        </span>
+                        <h3 className="font-display text-[clamp(1.8rem,3vw,2.6rem)] leading-none font-extrabold tracking-[-0.03em]">
+                          {plan.name}
+                        </h3>
+                      </div>
 
-                {/* A measure, not a column width: the panel is wide enough that
+                      {/* A measure, not a column width: the panel is wide enough that
                     a full line at this size runs past the point the eye can
                     track back to the start of the next one. */}
-                <p className="mt-5 max-w-[26ch] text-[clamp(1.25rem,1.9vw,1.75rem)] leading-snug font-semibold">
-                  {plan.blurb}
-                </p>
+                      <p className="mt-5 max-w-[26ch] text-[clamp(1.25rem,1.9vw,1.75rem)] leading-snug font-semibold">
+                        {plan.blurb}
+                      </p>
 
-                <ul
-                  className={`mb-features mt-10 space-y-3 border-t pt-8 ${
-                    plan.featured ? "border-text-invert/25" : "border-line"
-                  }`}
-                >
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex gap-3 leading-snug">
-                      <svg
-                        aria-hidden
-                        viewBox="0 0 24 24"
-                        className="mt-1 h-4 w-4 shrink-0"
-                      >
-                        <path
-                          d="M4 12.5l5.5 5.5L20 7"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span
-                        className={
+                      <ul
+                        className={`mb-features mt-10 space-y-3 border-t pt-8 ${
                           plan.featured
-                            ? "text-text-invert/85"
-                            : "text-text-muted"
-                        }
+                            ? "border-text-invert/25"
+                            : "border-line"
+                        }`}
                       >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="flex gap-3 leading-snug">
+                            <svg
+                              aria-hidden
+                              viewBox="0 0 24 24"
+                              className="mt-1 h-4 w-4 shrink-0"
+                            >
+                              <path
+                                d="M4 12.5l5.5 5.5L20 7"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2.4"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            <span
+                              className={
+                                plan.featured
+                                  ? "text-text-invert/85"
+                                  : "text-text-muted"
+                              }
+                            >
+                              {feature}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
 
-                {/* `w-fit` because a flex column stretches its children across:
+                      {/* `w-fit` because a flex column stretches its children across:
                     without it the pill runs the full width of the panel. */}
-                <a
-                  href={plan.cta.href}
-                  className={`mb-cta mt-10 w-fit ${
-                    // Mirrored on the dark featured panel: a white outline
-                    // filling white, since an ink hover would vanish against it.
-                    plan.featured ? "btn-invert" : "btn"
-                  }`}
-                >
-                  <RollText>{plan.cta.label}</RollText>
-                </a>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+                      <a
+                        href={plan.cta.href}
+                        className={`mb-cta mt-10 w-fit ${
+                          // Mirrored on the dark featured panel: a white outline
+                          // filling white, since an ink hover would vanish against it.
+                          plan.featured ? "btn-invert" : "btn"
+                        }`}
+                      >
+                        <RollText>{plan.cta.label}</RollText>
+                      </a>
+                    </Reveal>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* The phone stage's tabs: one per way in, following the panel in
+                view and jumping to one when tapped. Rendered only while the
+                stage runs; the index above stands in everywhere else. */}
+            {phonePin ? (
+              <nav aria-labelledby="membership-title" className="mb-tabs">
+                {plans.map((plan, index) => (
+                  <a
+                    key={plan.slug}
+                    href={`#${plan.slug}`}
+                    data-active={active === plan.slug}
+                    aria-current={active === plan.slug ? "location" : undefined}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      pinApi.current?.scrollTo(index + 1);
+                    }}
+                    className="mb-tab"
+                  >
+                    {plan.name}
+                  </a>
+                ))}
+              </nav>
+            ) : null}
+          </div>
+        </div>
       </div>
     </Section>
   );

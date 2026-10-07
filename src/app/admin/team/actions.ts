@@ -1,10 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/supabase/server";
 import { uploadImage, deleteImage } from "@/lib/supabase/storage";
+import { CONTENT_TAGS } from "@/lib/content-tags";
+
+// The public /team page reads the team from a tagged cache; expire it on every
+// change so the edit shows on the next load.
+function revalidatePublic() {
+  updateTag(CONTENT_TAGS.team);
+}
 
 const BUCKET = "team-images";
 
@@ -80,6 +87,7 @@ export async function createTeamMember(
   }
 
   revalidatePath("/admin/team");
+  revalidatePublic();
   redirect("/admin/team");
 }
 
@@ -138,6 +146,7 @@ export async function updateTeamMember(
   }
 
   revalidatePath("/admin/team");
+  revalidatePublic();
   redirect("/admin/team");
 }
 
@@ -155,4 +164,5 @@ export async function deleteTeamMember(id: string) {
   await supabase.from("team_members").delete().eq("id", id);
 
   revalidatePath("/admin/team");
+  revalidatePublic();
 }

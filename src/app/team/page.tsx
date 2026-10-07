@@ -17,8 +17,8 @@ export const metadata: Metadata = {
   description: teamPage.lede,
 };
 
-// CMS-backed, read at request time so new members appear on the next load.
-export const dynamic = "force-dynamic";
+// CMS-backed and cached; admin edits expire the cache, so new members appear
+// on the next load. See `src/lib/content.ts`.
 
 export default async function Team() {
   const members = await getTeam();

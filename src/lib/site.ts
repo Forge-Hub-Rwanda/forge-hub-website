@@ -522,6 +522,21 @@ export type ProjectImage = {
   height: number;
 };
 
+/**
+ * A project's colour, as a CSS value: its own `accent`, or the next in a fixed
+ * cycle so a new project never needs one to look right. With no project — the
+ * homepage gallery's closing card — it is the warm coral the page's blobs end
+ * on. Shared by the gallery's band tint and the project-image artwork.
+ */
+const TINT_CYCLE = ["amber", "sky", "teal", "lime"] as const;
+
+export const projectTint = (project: Project | undefined, index: number) =>
+  `var(--color-blob-${
+    project
+      ? (project.accent ?? TINT_CYCLE[index % TINT_CYCLE.length])
+      : "coral"
+  })`;
+
 /** One part of a project's write-up. */
 export type ProjectSection = { heading: string; body: string };
 

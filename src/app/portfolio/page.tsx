@@ -11,15 +11,15 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RollLetters } from "@/components/split-text";
 import { getProjects } from "@/lib/content";
-import { portfolioPage } from "@/lib/site";
+import { portfolioPage, projectTint } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Portfolio — ForgeHub Rwanda",
   description: portfolioPage.lede,
 };
 
-// CMS-backed, read at request time so new items appear on the next load.
-export const dynamic = "force-dynamic";
+// CMS-backed and cached; admin edits expire the cache, so new items appear on
+// the next load. See `src/lib/content.ts`.
 
 const pad = (value: number) => String(value).padStart(2, "0");
 
@@ -96,6 +96,9 @@ export default async function PortfolioPage() {
                       image={project.cover}
                       ratio="4 / 3"
                       sizes="(min-width: 64rem) 16vw, 100vw"
+                      artId={`art-${project.slug}`}
+                      tint={projectTint(project, index)}
+                      variant={index}
                     />
                   </div>
 
