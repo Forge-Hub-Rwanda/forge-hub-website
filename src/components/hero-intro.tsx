@@ -1,6 +1,5 @@
 import { HERO_RELEASE_ID } from "@/lib/motion";
 import { Magnetic } from "@/components/magnetic";
-import { RevealOnScroll } from "@/components/reveal-on-scroll";
 import { RollText, SplitWords } from "@/components/split-text";
 import { hero } from "@/lib/site";
 
@@ -32,60 +31,58 @@ export function HeroIntro() {
         <SplitWords text={hero.headline} mode="load" />
       </h2>
 
-      {/* Everything under the sub-headline stays hidden until the first
-          scroll, so the opening screen is the display line, the nav and the
-          headline alone. No `rise` here: it simply appears. */}
-      <RevealOnScroll>
-        {/* Phones get one short sentence in place of the two below: the
+      {/* Everything under the sub-headline is shown from the first paint. It
+          used to wait for the first scroll, which on phones read as the page
+          failing to load. No `rise` here: it simply appears. */}
+      {/* Phones get one short sentence in place of the two below: the
             summary and the paragraph say the same thing twice, and on a
             phone's first screen that is what made the hero feel crammed. */}
-        <p className="text-text mt-16 max-w-[34ch] text-lg leading-snug sm:text-xl lg:hidden">
-          {hero.phoneLine}
-        </p>
+      <p className="text-text mt-16 max-w-[34ch] text-lg leading-snug sm:text-xl lg:hidden">
+        {hero.phoneLine}
+      </p>
 
-        {/* One line from xl, sized in vw so it holds that line at any desktop
+      {/* One line from xl, sized in vw so it holds that line at any desktop
             width; below xl there is not the room, so it wraps. */}
-        <p className="text-text mt-14 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:mt-24 lg:block lg:text-[1.4rem] xl:max-w-none xl:text-[clamp(1rem,1.3vw,1.4rem)] xl:whitespace-nowrap">
-          {hero.summary}
-        </p>
+      <p className="text-text mt-14 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:mt-24 lg:block lg:text-[1.4rem] xl:max-w-none xl:text-[clamp(1rem,1.3vw,1.4rem)] xl:whitespace-nowrap">
+        {hero.summary}
+      </p>
 
-        <p className="text-text mt-5 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:block lg:text-[1.4rem]">
-          {hero.body.text}
-          <strong className="font-bold">{hero.body.strong}</strong>
-          {hero.body.tail}
-        </p>
+      <p className="text-text mt-5 hidden max-w-[90ch] text-lg leading-snug sm:text-xl lg:block lg:text-[1.4rem]">
+        {hero.body.text}
+        <strong className="font-bold">{hero.body.strong}</strong>
+        {hero.body.tail}
+      </p>
 
-        <div className="mt-12 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-4 lg:justify-end">
-          {/* `btn-strong` is the only thing separating the page's main action
+      <div className="mt-12 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-4 lg:justify-end">
+        {/* `btn-strong` is the only thing separating the page's main action
             from the one beside it — without it both CTAs are the same pill and
             nothing tells a visitor which one we actually want them to take. */}
-          <Magnetic>
-            <a
-              href={hero.primaryCta.href}
-              className="group btn btn-strong bg-surface gap-3"
+        <Magnetic>
+          <a
+            href={hero.primaryCta.href}
+            className="group btn btn-strong bg-surface gap-3"
+          >
+            <RollText>{hero.primaryCta.label}</RollText>
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
             >
-              <RollText>{hero.primaryCta.label}</RollText>
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                className="h-4 w-4 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
-              >
-                <path
-                  d="M4 12h15m0 0-6-6m6 6-6 6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
-          </Magnetic>
-          <a href={hero.secondaryCta.href} className="btn bg-surface">
-            <RollText>{hero.secondaryCta.label}</RollText>
+              <path
+                d="M4 12h15m0 0-6-6m6 6-6 6"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </a>
-        </div>
-      </RevealOnScroll>
+        </Magnetic>
+        <a href={hero.secondaryCta.href} className="btn bg-surface">
+          <RollText>{hero.secondaryCta.label}</RollText>
+        </a>
+      </div>
     </div>
   );
 }

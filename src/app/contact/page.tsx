@@ -22,7 +22,7 @@ export default function Contact() {
           landmark, which is also where the root layout's skip link lands. */}
       <main>
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
           <PageHeroLine title={contactPage.title} />
           <SiteHeader />
           <PageIntro eyebrow={contactPage.eyebrow} lede={contactPage.lede} />

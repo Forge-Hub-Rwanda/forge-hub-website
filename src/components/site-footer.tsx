@@ -1,5 +1,6 @@
 import { ImigongoBand, ImigongoCorner } from "@/components/imigongo";
 import { Logo } from "@/components/logo";
+import { legalLinks } from "@/lib/legal";
 import { contact, footerLinks, site, socials } from "@/lib/site";
 
 /**
@@ -104,14 +105,31 @@ export function SiteFooter() {
           </nav>
         </div>
 
-        {/* Legal rail: credit on one end, tagline on the other. */}
+        {/* Legal rail: credit and policy links on one end, tagline on the
+            other. */}
         <div className="border-text-invert/20 mt-10 flex flex-col items-center gap-4 border-t pt-6 sm:flex-row sm:justify-between">
           {/* /70 rather than /50: in dark mode the footer's ink is near-black
               on a near-white ground, where 50% composites to about 3.5:1 —
               under the 4.5:1 minimum. /70 clears it in both themes. */}
-          <p className="text-text-invert/70 text-sm">
-            © {year} {site.name} {site.region}.
-          </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+            <p className="text-text-invert/70 text-sm">
+              © {year} {site.name} {site.region}.
+            </p>
+            <nav aria-label="Legal">
+              <ul className="flex gap-6">
+                {legalLinks.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      className="text-text-invert/70 hover:text-text-invert text-sm underline-offset-4 transition-colors hover:underline"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             {/* Rendered only when there are real profiles to link to, so an

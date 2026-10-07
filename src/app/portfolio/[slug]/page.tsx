@@ -5,6 +5,7 @@ import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner, ImigongoRule } from "@/components/imigongo";
 import { ImigongoWheel } from "@/components/imigongo-wheel";
+import { MigongoArrow } from "@/components/migongo-arrow";
 import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
 import { Scrub } from "@/components/scrub";
@@ -68,7 +69,7 @@ export default async function ProjectDetailPage(
           one-word page name like "Portfolio" and would run off the screen for
           a project called "forgehubrwanda.com". This one wraps. */}
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
 
           <div className="relative z-20 px-6 pt-24 sm:pt-28 lg:px-[3.6vw] lg:pt-32">
             <p
@@ -174,7 +175,7 @@ export default async function ProjectDetailPage(
                 className="text-text mt-8 inline-flex items-center gap-2 text-lg font-bold underline-offset-4 hover:underline"
               >
                 Visit the site
-                <span aria-hidden>↗</span>
+                <MigongoArrow className="-rotate-45" />
                 <span className="sr-only">(opens in a new tab)</span>
               </a>
             </Reveal>

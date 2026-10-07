@@ -10,9 +10,12 @@ import { useEffect, useRef, useState } from "react";
  * into notches on others — and a border-radius can only ever describe a
  * rounded rectangle tending toward an ellipse.
  *
- * `preserveAspectRatio="none"` lets the caller set the proportions purely with
- * width/height classes, so the same path serves the tall desktop shape and the
- * squatter mobile one. Decorative only: the hero's meaning is all in the text.
+ * `preserveAspectRatio="none"` lets the caller set the proportions with
+ * classes. Callers fix them with an `aspect-[…]` class and size the blob by
+ * its width alone, so the shape is the same on every screen and only its size
+ * changes; setting a width and a height in different units (vw against vh)
+ * would stretch it thin on a tall phone and squat on a short laptop.
+ * Decorative only: the hero's meaning is all in the text.
  *
  * The motion — a slow glide, a morphing silhouette and a cycling gradient — is
  * defined in globals.css. All this component owns is when it runs: the shape

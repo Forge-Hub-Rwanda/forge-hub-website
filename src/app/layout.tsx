@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { ViewTransition } from "react";
+import { CookieConsent } from "@/components/cookie-consent";
 import { CursorLabel } from "@/components/cursor-label";
 import { ForgeLoader } from "@/components/forge-loader";
 import { ScrollProgress } from "@/components/scroll-progress";
@@ -130,6 +131,10 @@ export default function RootLayout({
         <ViewTransition update="page-wipe" default="none">
           {children}
         </ViewTransition>
+
+        {/* Outside the transition boundary, so a page wipe never carries the
+            card off with the page it was opened on. */}
+        <CookieConsent />
       </body>
     </html>
   );

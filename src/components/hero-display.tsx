@@ -54,6 +54,12 @@ export function HeroDisplay() {
     let frame = 0;
     let shift = 0;
     let scale = "";
+    /** How far inside the gap the headline already sits with the page at the
+        top. On a short phone it starts closer than RELEASE_GAP, and without
+        this the line would be pulled up by the difference the moment the
+        script ran — a visible jump on load, with nothing scrolled. Taken
+        whenever a measurement is made at the top of the page. */
+    let restOverlap = 0;
     /** Whether the line is anywhere near the window. Scrolls are ignored while
         it is not — which is everything below the hero — exactly as Scrub does. */
     let near = true;
@@ -84,7 +90,9 @@ export function HeroDisplay() {
       // Negative once the headline is within a gap's reach, zero before that.
       // This runs whatever the motion preference: it is what keeps the line off
       // the copy, not decoration.
-      const nextShift = Math.min(0, releaseTop - RELEASE_GAP - restingBottom);
+      const overlap = Math.min(0, releaseTop - RELEASE_GAP - restingBottom);
+      if (window.scrollY <= 0) restOverlap = overlap;
+      const nextShift = Math.min(0, overlap - restOverlap);
       if (nextShift !== shift) {
         shift = nextShift;
         node.style.setProperty("--shift", `${shift}px`);
@@ -117,7 +125,28 @@ export function HeroDisplay() {
     window.addEventListener("scroll", onScroll, { passive: true });
     // The release point is measured, so a resize can move it without a scroll.
     window.addEventListener("resize", onScroll);
+    // Nor does the font arriving fire either event, yet it reflows the
+    // headline the line is measured against.
+    document.fonts?.ready.then(onScroll);
+
+    // Once the words have risen, drop their entrance animation so they are
+    // plain static text. Some phone browsers do not repaint the last frame of
+    // an animation inside a sticky, separately-composited element until
+    // something else invalidates it, which left the line blank until the
+    // first touch or scroll. Removing the animation is such an invalidation,
+    // and it lands on the finished state, so nothing visibly changes.
+    let cancelled = false;
+    const outer = node.parentElement;
+    if (outer && typeof outer.getAnimations === "function") {
+      Promise.all(outer.getAnimations({ subtree: true }).map((a) => a.finished))
+        .catch(() => undefined)
+        .then(() => {
+          if (!cancelled) outer.setAttribute("data-entered", "");
+        });
+    }
+
     return () => {
+      cancelled = true;
       watch?.disconnect();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
