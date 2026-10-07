@@ -2,14 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImigongoRule } from "@/components/imigongo";
-import { ProjectImage } from "@/components/project-image";
 import { Reveal } from "@/components/reveal";
-import { Scrub } from "@/components/scrub";
 import { RollLetters, RollText, SplitWords } from "@/components/split-text";
 import { getLenis } from "@/lib/lenis";
-import { PHONE_QUERY } from "@/lib/motion-tier";
 import { setGallery } from "@/lib/wheel";
-import { portfolioEnd, projectTint, type Project } from "@/lib/site";
+import { portfolioEnd, type Project } from "@/lib/site";
 
 /**
  * The work, as a row of cards the page pans across.
@@ -57,18 +54,6 @@ import { portfolioEnd, projectTint, type Project } from "@/lib/site";
  * Pinning is an enhancement, never the baseline. The markup renders as an
  * ordinary stacked grid, and only switches once the component has confirmed a
  * wide viewport, no reduced-motion preference and JavaScript actually running.
- *
- * ## On a phone
- *
- * Below lg the stacked grid is the design, not a fallback, and it takes
- * lusion.co's phone gallery as its model: each card leads with a large cover,
- * which opens out of an inset, rounded frame and settles from a slight zoom as
- * it comes up the screen, and the project's name slides in beneath it. Above
- * the stack a strip of the section's eyebrow runs sideways as the page is
- * scrolled. All of it is scrubbed against the scroll by `Scrub`, so it plays
- * backwards as well as forwards and costs nothing off screen; a lite device
- * (see src/lib/motion-tier.ts) gets the same layout, still. None of it renders
- * from lg up, where the pinned row above is unchanged.
  */
 
 /**
@@ -116,11 +101,20 @@ const easeInOut = (t: number) =>
 const pad = (value: number) => String(value).padStart(2, "0");
 
 /**
- * The band's tint per card — see `projectTint` in site.ts, and
+ * The band's tint per card, for projects that do not name their own — and the
+ * closing card's, which is always the warm coral the page's blobs end on. See
  * `.pf[data-pinned]` in globals.css: it is only ever a tint of the band behind
  * the cards, never a colour any text sits on.
  */
-const tintOf = projectTint;
+const TINT_CYCLE = ["amber", "sky", "teal", "lime"] as const;
+const CLOSING_TINT = "coral";
+
+const tintOf = (project: Project | undefined, index: number) =>
+  `var(--color-blob-${
+    project
+      ? (project.accent ?? TINT_CYCLE[index % TINT_CYCLE.length])
+      : CLOSING_TINT
+  })`;
 
 type PortfolioProps = {
   projects: Project[];
@@ -249,20 +243,9 @@ export function Portfolio({
       }
     };
 
-    /** Whether the row is near the screen; the loop only ever runs while it is. */
-    let near = false;
-
-    // One write per frame, in step with paint, for as long as the row is still
-    // easing toward where the scroll wants it. Once it has arrived the loop
-    // sleeps until the next scroll or resize wakes it, so a row at rest under
-    // a still page costs nothing, and its motion is exactly what it was.
     const loop = () => {
       draw();
-      frame = current !== target ? requestAnimationFrame(loop) : 0;
-    };
-
-    const wake = () => {
-      if (near && !frame) frame = requestAnimationFrame(loop);
+      frame = requestAnimationFrame(loop);
     };
 
     const measure = () => {
@@ -294,7 +277,6 @@ export function Portfolio({
       // The pinned range, for the wheel: scroll inside it turns the wheel
       // through the cards' travel instead of through the scroll itself.
       setGallery({ top: metrics.current.top, length: travel * DRAG });
-      wake();
     };
 
     // Card widths are in vw and the strip is the viewport, so a resize changes
@@ -309,15 +291,16 @@ export function Portfolio({
     // The pinned range's position in the document moves whenever anything above
     // it changes height, which no observer on this section would report.
     window.addEventListener("resize", measure);
-    window.addEventListener("scroll", wake, { passive: true });
 
-    // Scroll wakes the loop only while the row is near the screen. Away from
+    // The loop runs every frame the row is near the screen, rather than being
+    // driven by scroll events: one write per frame, in step with paint, with no
+    // frame doubled or dropped because an event landed early or late. Away from
     // it the loop is stopped outright, so the rest of the page costs nothing.
     const visibility = new IntersectionObserver(
       ([entry]) => {
-        near = entry.isIntersecting;
-        if (near) wake();
-        else if (frame) {
+        if (entry.isIntersecting && !frame) {
+          frame = requestAnimationFrame(loop);
+        } else if (!entry.isIntersecting && frame) {
           cancelAnimationFrame(frame);
           frame = 0;
         }
@@ -330,7 +313,6 @@ export function Portfolio({
       observer.disconnect();
       visibility.disconnect();
       window.removeEventListener("resize", measure);
-      window.removeEventListener("scroll", wake);
       if (frame) cancelAnimationFrame(frame);
       pin.style.removeProperty("--pin-height");
       pin.style.removeProperty("--x");
@@ -430,30 +412,6 @@ export function Portfolio({
         </div>
       </div>
 
-      {/* Phones: the section's eyebrow, repeated along a strip that runs
-          sideways as the page scrolls down past it — lusion.co's "play reel"
-          ribbon. Decorative; the eyebrow itself is read above. */}
-      <Scrub
-        span="full"
-        from={1}
-        to={0}
-        query={PHONE_QUERY}
-        liteQuery="not all"
-        className="work-strip overflow-hidden pb-10 lg:hidden"
-      >
-        <p
-          aria-hidden
-          className="work-strip-track text-label text-text flex w-max gap-10 whitespace-nowrap"
-        >
-          {Array.from({ length: 8 }, (_, index) => (
-            <span key={index} className="flex items-center gap-3">
-              <span className="text-accent tracking-[-0.2em]">▶▶▶</span>
-              {eyebrow}
-            </span>
-          ))}
-        </p>
-      </Scrub>
-
       {/* The pinned range. Its height is the one screen the stage holds plus
           the distance the row has to travel — written by the component, because
           only it can measure how far that is. */}
@@ -516,52 +474,21 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       id={project.slug}
       className="roll-host bg-surface flex h-full w-full scroll-mt-24 flex-col p-8 lg:p-10"
     >
-      {/* Phones and tablets: the cover leads, as in lusion.co's gallery, and
-          opens out of an inset frame as it scrolls up. Not rendered from lg,
-          where the pinned row carries the work without pictures. */}
-      <Scrub
-        from={1}
-        to={0.45}
-        query={PHONE_QUERY}
-        liteQuery="not all"
-        className="-mx-8 -mt-8 mb-8 lg:hidden"
-      >
-        <div className="cover-unmask overflow-hidden rounded-xl">
-          <ProjectImage
-            image={project.cover}
-            ratio="4 / 5"
-            sizes="(min-width: 48rem) 50vw, 100vw"
-            artId={`art-home-${project.slug}`}
-            tint={projectTint(project, index)}
-            variant={index}
-          />
-        </div>
-      </Scrub>
-
       <div className="text-label text-text-muted flex items-center gap-4">
         <span className="font-display tabular-nums">{pad(index + 1)}</span>
         <span className="bg-line h-px w-8" aria-hidden />
         <span>{project.status}</span>
       </div>
 
-      {/* Below lg the name carries lusion.co's arrow and slides in after its
-          cover; from lg it is exactly as it was. */}
-      <Scrub from={1} to={0.6} query={PHONE_QUERY} liteQuery="not all">
-        <h3 className="title-slide font-display text-text mt-8 flex items-baseline gap-3 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em] lg:block">
-          <span aria-hidden className="text-accent lg:hidden">
-            →
-          </span>
-          <RollLetters text={project.name} />
-        </h3>
-      </Scrub>
+      <h3 className="font-display text-text mt-8 text-[clamp(1.5rem,2.2vw,2.1rem)] leading-[1.05] font-extrabold tracking-[-0.03em]">
+        <RollLetters text={project.name} />
+      </h3>
 
       <p className="text-text mt-4 text-lg leading-snug font-semibold">
         {project.blurb}
       </p>
 
-      {project.detail ? (
-        <p className="text-text-muted mt-4 leading-relaxed">{project.detail}</p>
-      ) : null}
+      <p className="text-text-muted mt-4 leading-relaxed">{project.detail}</p>
 
       {project.href ? (
         <a

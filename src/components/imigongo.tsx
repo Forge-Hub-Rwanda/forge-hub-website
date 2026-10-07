@@ -29,20 +29,15 @@ type Tile = { size: number; paint: React.ReactNode };
  * needs. On such a panel `text` would resolve to the panel's own background
  * and the artwork would be invisible — and because the footer flips with the
  * theme, no fixed hue would work in both.
- *
- * `current` sets no colour at all, so the artwork takes whatever colour its
- * container sets — for a colour no token names, like a project's own tint.
  */
-export type ImigongoTone = "text" | "accent" | "invert" | "current";
+export type ImigongoTone = "text" | "accent" | "invert";
 
 function toneClass(tone: ImigongoTone) {
   return tone === "accent"
     ? "text-accent"
     : tone === "invert"
       ? "text-text-invert"
-      : tone === "current"
-        ? ""
-        : "text-text";
+      : "text-text";
 }
 
 /**

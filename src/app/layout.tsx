@@ -7,7 +7,6 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ThemeScript } from "@/components/theme-script";
 import { loaderScriptSource } from "@/lib/loader";
-import { motionTierScriptSource } from "@/lib/motion-tier";
 import "./globals.css";
 
 /**
@@ -112,9 +111,6 @@ export default function RootLayout({
         {/* Decides before first paint whether this is the session's first
             page view, and so whether the loader plays. See src/lib/loader.ts. */}
         <script dangerouslySetInnerHTML={{ __html: loaderScriptSource }} />
-        {/* Likewise decides how much motion this device gets — full, lite or
-            none — as `data-motion` on <html>. See src/lib/motion-tier.ts. */}
-        <script dangerouslySetInnerHTML={{ __html: motionTierScriptSource }} />
         <ForgeLoader />
 
         {/* Renders nothing; starts Lenis for every page. */}

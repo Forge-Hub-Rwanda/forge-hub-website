@@ -1,16 +1,16 @@
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
-import { communitySection, type Testimonial } from "@/lib/site";
+import { communitySection, testimonials } from "@/lib/site";
 
 /**
  * Member quotes, three across.
  *
- * `testimonials` is passed in: the homepage reads it from the CMS, falling back
- * to the honest "Member stories / Coming soon" holding entry in `site.ts` when
- * none have been added. Add real quotes through /admin/community, and only once
- * the member has given permission to publish their name and words.
+ * `testimonials` currently holds one honest holding entry — "Member stories /
+ * Coming soon" — rather than invented praise. Keep it that way: add a quote
+ * here only once it is real, sourced, and attributed to a member who has given
+ * written permission.
  */
-export function Community({ testimonials }: { testimonials: Testimonial[] }) {
+export function Community() {
   return (
     <Section id="community" className="border-line border-t">
       <SectionHeading {...communitySection} />

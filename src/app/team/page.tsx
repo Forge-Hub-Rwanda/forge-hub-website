@@ -9,7 +9,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { RollText } from "@/components/split-text";
 import { TeamShowcase } from "@/components/team-showcase";
-import { getTeam } from "@/lib/content";
 import { teamPage } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -17,12 +16,7 @@ export const metadata: Metadata = {
   description: teamPage.lede,
 };
 
-// CMS-backed and cached; admin edits expire the cache, so new members appear
-// on the next load. See `src/lib/content.ts`.
-
-export default async function Team() {
-  const members = await getTeam();
-
+export default function Team() {
   return (
     <>
       {/* `main` opens before the hero so the page's `h1` sits inside the main
@@ -49,7 +43,7 @@ export default async function Team() {
         <Section className="border-line relative overflow-hidden border-t">
           <SectionHeading {...teamPage.heading} />
 
-          <TeamShowcase members={members} />
+          <TeamShowcase />
 
           <Reveal delay={220}>
             <a href={teamPage.cta.href} className="btn relative z-1 mt-16">
