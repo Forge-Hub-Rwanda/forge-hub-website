@@ -94,6 +94,10 @@ export function ImigongoWheel() {
 
       const dock = document.querySelector<HTMLElement>("[data-wheel-dock]");
       const closing = dock?.closest("section") ?? null;
+      // A page with no dock (Contact) has nowhere to land the wheel, so it
+      // rolls off the right edge as the footer comes up instead, rather than
+      // turning on over the footer's text.
+      const footer = dock ? null : document.querySelector("footer");
 
       let frame = 0;
       let last = { angle: NaN, x: NaN, y: NaN, scale: NaN };
@@ -124,6 +128,9 @@ export function ImigongoWheel() {
           geometry.slotTop = slot.top + scroll;
           geometry.slotWidth = slot.width;
           geometry.slotHeight = slot.height;
+        } else if (footer) {
+          geometry.closingTop =
+            footer.getBoundingClientRect().top + window.scrollY;
         }
       };
       measure();
@@ -136,6 +143,7 @@ export function ImigongoWheel() {
       sizer.observe(document.body);
       sizer.observe(node);
       if (closing) sizer.observe(closing);
+      if (footer) sizer.observe(footer);
 
       const paint = (now: number) => {
         frame = 0;
@@ -181,6 +189,11 @@ export function ImigongoWheel() {
             scale += (geometry.slotWidth / size - 1) * progress;
             away = progress === 1 && slotTop + geometry.slotHeight < 0;
           }
+        } else if (footer) {
+          const top = geometry.closingTop - scroll;
+          const progress = smoothstep((viewport - top) / (viewport * 0.5));
+          x += radius * progress;
+          away = progress === 1;
         }
 
         if (away !== hidden) {

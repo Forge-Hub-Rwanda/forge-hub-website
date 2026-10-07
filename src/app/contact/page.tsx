@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ImigongoCorner, ImigongoWatermark } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Reveal } from "@/components/reveal";
 import { Section, SectionHeading } from "@/components/section-heading";
@@ -10,7 +11,7 @@ import { ContactForm } from "@/components/contact-form";
 import { contact, contactPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact — ForgeHub Rwanda",
+  title: "Contact | ForgeHub Rwanda",
   description: contactPage.lede,
 };
 
@@ -104,6 +105,10 @@ export default function Contact() {
           </div>
         </Section>
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

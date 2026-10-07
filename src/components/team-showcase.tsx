@@ -197,7 +197,7 @@ export function TeamShowcase({ members }: { members: TeamMember[] }) {
         />
       </div>
 
-      <ul className="relative z-1 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-5">
+      <ul className="relative z-1 grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 sm:gap-y-12 lg:grid-cols-4 lg:gap-x-5">
         {members.map((member, index) => {
           const { offset, depth } = CARDS[index % CARDS.length];
 
@@ -243,7 +243,9 @@ export function TeamShowcase({ members }: { members: TeamMember[] }) {
                           motif="lozenge"
                           className="text-text absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 opacity-[0.09]"
                         />
-                        <p className="text-label text-text-muted relative p-6">
+                        {/* Read out but not shown on a phone, where the
+                            landscape frame leaves it under the name. */}
+                        <p className="text-label text-text-muted relative p-6 max-sm:sr-only">
                           {teamPage.photoPending}
                         </p>
                       </div>

@@ -50,7 +50,11 @@ export function PageIntro({
     <div
       id="hero-intro"
       tabIndex={-1}
-      className="relative z-20 px-6 pt-10 pb-20 lg:px-[3.6vw] lg:pt-20 lg:pb-28"
+      // Phones: the intro fills most of the first screen, eyebrow and lede set
+      // low, so the title at the top has room around it and the blob stays
+      // inside the hero instead of spilling into the band below. From lg the
+      // hero is wide enough to breathe as it is.
+      className="relative z-20 flex min-h-[70svh] flex-col justify-end px-6 pt-10 pb-16 lg:block lg:min-h-0 lg:px-[3.6vw] lg:pt-20 lg:pb-28"
     >
       <p
         className="rise text-label text-text-muted flex items-center gap-4"

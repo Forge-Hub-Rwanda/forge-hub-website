@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Blob } from "@/components/blob";
 import { ClosingCta } from "@/components/closing-cta";
 import { ImigongoCorner } from "@/components/imigongo";
+import { ImigongoWheel } from "@/components/imigongo-wheel";
 import { PageHeroLine, PageIntro } from "@/components/page-hero";
 import { Programs } from "@/components/programs";
 import { Reveal } from "@/components/reveal";
@@ -12,7 +13,7 @@ import { SiteHeader } from "@/components/site-header";
 import { services, servicesPage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Services — ForgeHub Rwanda",
+  title: "Services | ForgeHub Rwanda",
   description: servicesPage.lede,
 };
 
@@ -42,13 +43,17 @@ export default function Services() {
         <Section className="border-line border-t">
           <SectionHeading {...servicesPage.heading} />
 
-          <ul className="border-line border-t">
+          {/* Below lg the rows become the homepage's deck of rounded cards,
+              each sticking a little below the last - see `.svc-deck` in
+              globals.css. */}
+          <ul className="svc-deck border-line lg:border-t">
             {services.map((service, index) => (
               <Reveal
                 key={service.id}
                 as="li"
                 delay={index * 70}
-                className="border-line border-b"
+                className="svc-card border-line lg:border-b"
+                style={{ "--i": index } as React.CSSProperties}
               >
                 {/* `data-cursor-motif`: a slowly turning lozenge trails the
                     pointer across the row. A motif rather than a word, because
@@ -56,11 +61,17 @@ export default function Services() {
                 <div
                   id={service.id}
                   data-cursor-motif
-                  className="grid scroll-mt-24 gap-4 px-2 py-8 lg:grid-cols-12 lg:gap-8 lg:px-6 lg:py-12"
+                  className="relative grid scroll-mt-24 gap-4 px-2 py-8 lg:grid-cols-12 lg:gap-8 lg:px-6 lg:py-12"
                 >
                   <p className="font-display text-text-muted text-label lg:col-span-1">
                     {service.index}
                   </p>
+
+                  {/* Phones: the number again, huge and in outline, bled off
+                      the card's corner as on the homepage's ways-in deck. */}
+                  <span aria-hidden className="mb-num lg:hidden">
+                    {service.index}
+                  </span>
 
                   <h3 className="font-display text-text text-[clamp(1.5rem,2.6vw,2.25rem)] font-extrabold tracking-[-0.03em] lg:col-span-4">
                     {service.name}
@@ -94,8 +105,12 @@ export default function Services() {
             same content, so it is reused rather than restated. */}
         <Programs />
 
-        <ClosingCta />
+        <ClosingCta wheel />
       </main>
+
+      {/* The homepage's imigongo wheel, turning down this page too. After
+          `main` for the same layering reason given in src/app/page.tsx. */}
+      <ImigongoWheel />
 
       <SiteFooter />
     </>

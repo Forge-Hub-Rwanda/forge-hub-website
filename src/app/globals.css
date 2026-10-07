@@ -1036,6 +1036,15 @@ html.lenis {
   border: 1px solid var(--color-line);
 }
 
+/* One column on a phone: landscape and rounded, so a person takes half a
+   screen rather than a whole one — the same strip the portfolio covers use. */
+@media (max-width: 39.99rem) {
+  .tm-frame {
+    aspect-ratio: 4 / 3;
+    border-radius: 1.25rem;
+  }
+}
+
 .tm-media {
   position: absolute;
   inset-inline: 0;
@@ -1579,6 +1588,36 @@ html.lenis {
     background-color: #000;
     opacity: calc(var(--cover, 0) * 0.45);
     pointer-events: none;
+  }
+}
+
+/* ---- Services on a phone: the same deck --------------------------------
+   The homepage's ways-in cards, without the sinking: rounded, bordered, each
+   sticking a little below the one before so the stack shows its edges. Plain
+   sticky, so it costs nothing to scroll. From lg the rows are as they were. */
+@media (max-width: 63.99rem) {
+  .svc-deck {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .svc-card {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 1.5rem;
+    background-color: var(--color-surface);
+  }
+
+  .svc-card > div {
+    padding: 1.75rem 1.5rem 3.5rem;
+  }
+}
+
+@media (max-width: 63.99rem) and (min-height: 36rem) {
+  .svc-card {
+    position: sticky;
+    top: calc(4.75rem + var(--i, 0) * 0.85rem);
   }
 }
 

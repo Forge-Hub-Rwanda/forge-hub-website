@@ -36,7 +36,7 @@ export default function RouteError({
       <Link
         href="/"
         className="w-fit transition-opacity hover:opacity-85"
-        aria-label="ForgeHub Rwanda — home"
+        aria-label="ForgeHub Rwanda, home"
       >
         <Logo className="w-[3.1rem] sm:w-[3.875rem] lg:w-[4.4rem]" />
       </Link>

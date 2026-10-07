@@ -36,13 +36,13 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ForgeHub Rwanda — Build · Innovate · Empower",
+  title: "ForgeHub Rwanda | Build · Innovate · Empower",
   description:
-    "A coworking floor, a maker studio and a launchpad in Kigali for the founders, engineers and creators turning ideas into things that ship.",
+    "ForgeHub Rwanda is a Kigali software studio and training hub, building software for clients and training Africa’s next engineers.",
   openGraph: {
     title: "ForgeHub Rwanda",
     description:
-      "Where Rwanda's builders come to work. Coworking, programs and community in Kigali.",
+      "We build software for clients and train Africa’s next engineers, online and in Kigali.",
     type: "website",
     locale: "en_RW",
   },

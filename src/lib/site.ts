@@ -52,7 +52,7 @@ export const navItems: NavItem[] = [
   {
     label: "Contact",
     href: "/contact",
-    blurb: "Kigali, Rwanda — and online",
+    blurb: "Kigali, Rwanda, and online",
     primary: true,
   },
 ];
@@ -77,7 +77,7 @@ export const hero = {
    * in bold, matching the reference's emphasised clause.
    */
   body: {
-    text: "We design and build software for clients, and we train the engineers who will build the rest — ",
+    text: "We design and build software for clients, and we train the engineers who will build the rest, ",
     strong: "online across Africa, and in person in Kigali",
     tail: ".",
   },
@@ -87,7 +87,7 @@ export const hero = {
    * screen does not. One sentence, so the opening screen keeps some air.
    */
   phoneLine:
-    "We build software for clients and train Africa’s next engineers — online, and in Kigali.",
+    "We build software for clients and train Africa’s next engineers, online and in Kigali.",
   primaryCta: { label: "Explore our programs", href: "#programs" },
   secondaryCta: { label: "Work with us", href: "/services" },
   scrollCue: "Scroll",
@@ -121,8 +121,8 @@ export const manifesto = {
   eyebrow: "Why we exist",
   /** Rendered word-by-word so each can be revealed on scroll. */
   statement:
-    "We believe Africa’s biggest opportunity is technology — and its biggest challenge is jobs. ForgeHub exists to close that gap, one engineer at a time.",
-  body: "Founded in 2026 in Kigali by software engineers trained at African Leadership University. Our curriculum put Africa’s grand challenges in front of us and asked us to pick one — we chose job creation.",
+    "Africa’s biggest opportunity is technology. Its biggest challenge is jobs. ForgeHub exists to close that gap, one engineer at a time.",
+  body: "Founded in Kigali in 2026 by software engineers trained at African Leadership University. Our curriculum asked us to take on one of Africa’s grand challenges. We chose job creation.",
   cta: { label: "Learn more about us", href: "/about" },
 } as const;
 
@@ -158,7 +158,7 @@ export type Plan = {
 export const membershipSection = {
   eyebrow: "Ways in",
   title: "Three ways to join us",
-  lede: "Whether you want to learn, to build, or to back the mission — there is a door for you. We will publish pricing when there is real pricing to publish.",
+  lede: "Whether you want to learn, build or back the mission, there is a door for you. Pricing will be published once it is confirmed.",
 } as const;
 
 export const plans: Plan[] = [
@@ -172,7 +172,7 @@ export const plans: Plan[] = [
       "Online cohorts, open across Africa",
       "In-person intensives in Kigali",
       "Taught by working software engineers",
-      "Course names and dates — coming soon",
+      "Course names and dates coming soon",
     ],
     cta: { label: "See our training", href: "/services" },
   },
@@ -186,7 +186,7 @@ export const plans: Plan[] = [
       "We design and build software products",
       "Scoped with you before anything starts",
       "Built by the same engineers we train",
-      "Tell us what you need and we will answer straight",
+      "Tell us what you need and get a straight answer",
     ],
     featured: true,
     cta: { label: "Start a project", href: "/contact" },
@@ -201,7 +201,7 @@ export const plans: Plan[] = [
       "Sponsor a cohort or a learner",
       "Hire from the people we train",
       "Host or co-run a workshop",
-      "Founding partners — coming soon",
+      "Founding partners coming soon",
     ],
     cta: { label: "Talk to us", href: "/contact" },
   },
@@ -236,8 +236,7 @@ export const programs: Program[] = [
     name: "Online cohorts",
     format: "Live, online",
     duration: "Dates to come",
-    blurb:
-      "Software training you can join from any city in Africa, taught live rather than recorded.",
+    blurb: "Live software training you can join from any city in Africa.",
     status: "Details soon",
   },
   {
@@ -245,7 +244,7 @@ export const programs: Program[] = [
     format: "In person",
     duration: "Dates to come",
     blurb:
-      "Hands-on training in the room with us, for the people who can get to Kigali.",
+      "Hands-on training in the room with us, for those who can get to Kigali.",
     status: "Details soon",
   },
   {
@@ -253,7 +252,7 @@ export const programs: Program[] = [
     format: "Team training",
     duration: "By arrangement",
     blurb:
-      "Software training for your team, shaped around what your organization is actually building.",
+      "Software training for your team, shaped around what your organization builds.",
     status: "Talk to us",
   },
 ];
@@ -273,7 +272,7 @@ export type SiteEvent = {
 export const eventsSection = {
   eyebrow: "What’s on",
   title: "Our first meetups are in the works",
-  lede: "Community meetups and demo days are being planned. They will be listed here the moment they are set — and not before.",
+  lede: "Community meetups and demo days are being planned. They will appear here as soon as they are confirmed.",
   cta: { label: "Get in touch", href: "/contact" },
 } as const;
 
@@ -308,8 +307,8 @@ export const impactSection = {
   eyebrow: "Impact",
   title: "We’re just getting started",
   body: [
-    "Founded in 2026 in Kigali by a team of software engineers trained at African Leadership University, ForgeHub set out to solve one problem: jobs. Our mission is measured one engineer, one job, one product at a time.",
-    "We will publish real numbers — graduates trained, jobs created, products shipped — as soon as we have earned them. Until then, what follows is only what we can state for certain.",
+    "Founded in Kigali in 2026 by software engineers trained at African Leadership University, ForgeHub set out to solve one problem: jobs. We measure our mission one engineer, one job, one product at a time.",
+    "Figures on graduates trained, jobs created and products shipped will follow once we have earned them. Until then, we share only what we can state for certain.",
   ],
   cta: { label: "Read our story", href: "/about" },
 } as const;
@@ -429,23 +428,23 @@ export const socials: NavItem[] = [];
 export const aboutPage = {
   eyebrow: "Who we are",
   title: "About",
-  lede: "ForgeHub Rwanda is a Kigali-based software studio and training hub — turning young African talent into world-class engineers, and technology into jobs.",
+  lede: "ForgeHub Rwanda is a Kigali-based software studio and training hub, turning young African talent into world-class engineers and technology into jobs.",
   story: {
     eyebrow: "Our story",
     title: "Founded in Kigali, in 2026",
     body: [
       "ForgeHub Rwanda was founded in 2026 in Kigali by Jimmy Shimwa and Fadhiri Ihirwe Ndegeya, two software engineers trained at African Leadership University.",
-      "Our curriculum put Africa’s grand challenges in front of us and asked us to pick one as our opportunity. We chose technology — and job creation as the specific problem we set out to solve.",
+      "Our curriculum asked us to choose one of Africa’s grand challenges as our opportunity. We chose technology, with job creation as the problem we set out to solve.",
     ],
   },
   pillars: [
     {
       name: "Our mission",
-      body: "To build a community and a platform where young African dreamers, software engineers, and the people who support them can grow into the talent that transforms the continent.",
+      body: "To build a community and a platform where young African dreamers, software engineers and those who support them grow into the talent that transforms the continent.",
     },
     {
       name: "Our vision",
-      body: "An Africa where technology is a reliable engine for job creation — and where the engineers who build that future were trained right here.",
+      body: "An Africa where technology is a reliable engine for job creation, built by engineers trained right here.",
     },
   ],
   cta: { label: "Meet the team", href: "/team" },
@@ -478,8 +477,8 @@ export const services: Service[] = [
     name: "Software development",
     blurb: "We design and build software products for clients.",
     detail:
-      "Tell us what you are building and we will tell you plainly whether we are the right team for it, what it would take, and how we would approach it.",
-    meta: "Full service list — coming soon",
+      "Tell us what you are building. We will tell you plainly whether we are the right team, what it would take and how we would approach it.",
+    meta: "Full service list coming soon",
   },
   {
     id: "train",
@@ -487,19 +486,19 @@ export const services: Service[] = [
     name: "Training & education",
     blurb: "Software training for individuals and organizations.",
     detail:
-      "Delivered online across Africa and in person in Kigali — for people starting out, and for teams that need to level up on what they already run.",
-    meta: "Tracks and curricula — coming soon",
+      "Delivered online across Africa and in person in Kigali, for beginners and for teams sharpening the skills they already use.",
+    meta: "Tracks and curricula coming soon",
   },
 ];
 
 export const servicesPage = {
   eyebrow: "What we do",
   title: "Services",
-  lede: "Two things, done well: we build software for clients, and we train the engineers who will build the rest.",
+  lede: "We build software for clients, and we train the engineers who will build the rest.",
   heading: {
     eyebrow: "Our work",
     title: "Two things, done well",
-    lede: "Everything ForgeHub does sits under one of these two headings. If it does not, we are probably not the right people for it.",
+    lede: "Everything ForgeHub does falls under one of these two. If it does not, we are probably not the right people for it.",
   },
   cta: { label: "Work with us", href: "/contact" },
 } as const;
@@ -601,7 +600,7 @@ export type Project = {
 export const portfolioSection = {
   eyebrow: "Selected work",
   title: "What we have built",
-  lede: "Software we designed, built and shipped — for clients, and for ourselves.",
+  lede: "Software we designed, built and shipped, for clients and for ourselves.",
   action: { label: "See the full portfolio", href: "/portfolio" },
 } as const;
 
@@ -640,11 +639,11 @@ export const projectPage = {
 export const portfolioPage = {
   eyebrow: "Our work",
   title: "Portfolio",
-  lede: "The software we have built, for clients and for ourselves. This page grows as each project is cleared to be named.",
+  lede: "Software we have built for clients and for ourselves. New projects appear here as clients clear them to be named.",
   heading: {
     eyebrow: "Selected work",
     title: "Built in Kigali, shipped wherever it is needed",
-    lede: "Two things sit behind every entry here: software we designed and built, and engineers we trained to do the same.",
+    lede: "Behind every entry: software we designed and built, and engineers we trained to do the same.",
   },
 } as const;
 
@@ -676,11 +675,11 @@ export type TeamMember = {
 export const teamPage = {
   eyebrow: "The people",
   title: "Team",
-  lede: "All ALU-trained software engineers who chose technology as Africa’s opportunity, and job creation as the challenge worth solving.",
+  lede: "Software engineers trained at African Leadership University, building technology and jobs from Kigali.",
   heading: {
     eyebrow: "Founding team",
     title: "The engineers behind ForgeHub",
-    lede: "All ALU-trained software engineers who chose technology as Africa’s opportunity, and job creation as the challenge worth solving.",
+    lede: "Each of us chose technology as Africa’s opportunity, and job creation as the challenge worth solving.",
   },
   cta: { label: "Work with us", href: "/contact" },
   /** Stands in the empty portrait frames until the photographs are taken. */
@@ -694,11 +693,11 @@ export const teamPage = {
 export const contactPage = {
   eyebrow: "Say hello",
   title: "Contact",
-  lede: "Join a program, bring us a project, or simply introduce yourself. We read everything that comes in.",
+  lede: "Join a program, bring us a project, or simply introduce yourself.",
   heading: {
     eyebrow: "Send a message",
     title: "Tell us what you’re building",
-    lede: "Three fields, no forms to fill twice. Or write to us directly at the address opposite.",
+    lede: "Just three fields. Or write to us directly at the address opposite.",
   },
   note: "Your message goes straight to our team. We read everything that comes in.",
   submit: "Send message",
@@ -722,7 +721,7 @@ export const accountPage = {
   signUp: {
     tab: "Create account",
     heading: "Create an account",
-    lede: "This creates a login only — an existing admin still has to grant you access.",
+    lede: "This creates a login only. An existing admin still has to grant you access.",
     submit: "Create account",
   },
 } as const;
@@ -744,7 +743,7 @@ export const notFoundPage = {
   code: "404",
   eyebrow: "Not found",
   title: "That page is not here",
-  body: "The link may be out of date, or the address mistyped. Nothing is broken on our end — the page simply does not exist.",
+  body: "The link may be out of date or the address mistyped. The page you are looking for does not exist.",
   links: [
     { label: "Back to home", href: "/" },
     { label: "See our work", href: "/portfolio" },
@@ -759,7 +758,7 @@ export const notFoundPage = {
 export const errorPage = {
   eyebrow: "Something went wrong",
   title: "That did not load",
-  body: "An unexpected error stopped this page from rendering. Trying again will often clear it — if it does not, the link below always will.",
+  body: "An unexpected error stopped this page from loading. Trying again usually fixes it. If not, the link below will take you home.",
   retry: "Try again",
   home: "Back to home",
 } as const;
