@@ -27,7 +27,7 @@ export default function About() {
         {/* Same hero zone as the homepage: one positioning context holding the
           blob, the display line, the nav and the intro copy together. */}
         <div className="relative">
-          <Blob className="top-[9vh] left-[10vw] h-[54vh] w-[52vw] sm:h-[60vh] sm:w-[30vw] lg:left-[11vw] lg:h-[64vh] lg:w-[24vw]" />
+          <Blob className="top-[9vh] left-[10vw] aspect-[3/5] h-auto w-[min(38.4vh,40vw)] lg:left-[11vw]" />
           <PageHeroLine title={aboutPage.title} />
           <SiteHeader />
           <PageIntro eyebrow={aboutPage.eyebrow} lede={aboutPage.lede} />

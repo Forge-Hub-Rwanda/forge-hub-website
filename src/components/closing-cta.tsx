@@ -64,7 +64,7 @@ export function ClosingCta({ wheel = false }: { wheel?: boolean }) {
 
       <Blob
         id="closing-blob"
-        className="top-[8%] right-[6vw] h-[60%] w-[46vw] opacity-90 sm:w-[26vw] lg:w-[20vw]"
+        className="top-[8%] right-[6vw] aspect-[288/315] h-auto w-[max(9rem,20vw)] opacity-90"
       />
 
       {/* Narrower than the 110rem every other band runs to. This one is a
